@@ -46,7 +46,7 @@ const AddCard = () => {
     }
   })
   const { fields, append, remove } = useFieldArray({ name: 'invoice_items', control })
-  // /const onSubmit = data => console.log(data)
+  const onSubmit = data => console.log(data)
 
   useEffect(() => {
     // ** Get Clients
