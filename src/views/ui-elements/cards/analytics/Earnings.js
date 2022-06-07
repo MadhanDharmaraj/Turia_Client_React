@@ -94,7 +94,7 @@ const Earnings = ({ success }) => {
       <CardBody>
         <Row>
           <Col xs='6'>
-            <CardTitle className='mb-1'>Earnings</CardTitle>
+            <CardTitle className='mb-1'>Pending</CardTitle>
             <div className='font-small-2'>This Month</div>
             <h5 className='mb-1'>$4055.56</h5>
             <CardText className='text-muted font-small-2'>

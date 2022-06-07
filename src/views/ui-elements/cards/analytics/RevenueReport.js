@@ -84,10 +84,6 @@ const RevenueReport = props => {
       {
         name: 'Earning',
         data: [95, 177, 284, 256, 105, 63, 168, 218, 72]
-      },
-      {
-        name: 'Expense',
-        data: [-145, -80, -60, -180, -100, -60, -85, -75, -100]
       }
     ]
 
@@ -128,10 +124,6 @@ const RevenueReport = props => {
                 <span className='bullet bullet-primary me-50 cursor-pointer'></span>
                 <span>Earning</span>
               </div>
-              <div className='d-flex align-items-center'>
-                <span className='bullet bullet-warning me-50 cursor-pointer'></span>
-                <span>Expense</span>
-              </div>
             </div>
           </div>
           <Chart id='revenue-report-chart' type='bar' height='230' options={revenueOptions} series={revenueSeries} />
@@ -155,7 +147,6 @@ const RevenueReport = props => {
             <span>{data.budget}</span>
           </div>
           <Chart id='budget-chart' type='line' height='80' options={budgetOptions} series={budgetSeries} />
-          <Button color='primary'>Increase Budget</Button>
         </Col>
       </Row>
     </Card>

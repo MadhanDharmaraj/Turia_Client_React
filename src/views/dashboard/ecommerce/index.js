@@ -38,7 +38,7 @@ const EcommerceDashboard = () => {
           <CardMedal />
         </Col>
         <Col xl='8' md='6' xs='12'>
-          <StatsCard cols={{ xl: '3', sm: '6' }} />
+          <StatsCard cols={{ xl: '2', sm: '6' }} />
         </Col>
       </Row>
       <Row className='match-height'>

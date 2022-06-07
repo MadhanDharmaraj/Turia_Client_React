@@ -8,7 +8,7 @@ import { Row, Col } from 'reactstrap'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
-const ClientEdit = () => {
+const ClientAdd = () => {
   return (
     <div className='invoice-add-wrapper'>
       <Row className='invoice-add'>
@@ -20,4 +20,4 @@ const ClientEdit = () => {
   )
 }
 
-export default ClientEdit
+export default ClientAdd

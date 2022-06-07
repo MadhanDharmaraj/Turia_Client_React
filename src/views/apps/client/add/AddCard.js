@@ -1,6 +1,6 @@
 // ** React Imports
 import { Fragment, useState, useEffect } from 'react'
-
+import { Link } from 'react-router-dom'
 // ** Custom Components
 import AddActions from './AddActions'
 import Repeater from '@components/repeater'
@@ -37,6 +37,7 @@ const AddCard = () => {
   // ** States
   //const [setValue] = useState({})
   const [setOpen] = useState(false)
+  let billingAddress = {}
   // const [clients, setClients] = useState(null)
   // const [selected, setSelected] = useState(null)
   // const [picker, setPicker] = useState(new Date())
@@ -51,19 +52,17 @@ const AddCard = () => {
   //   }
   // ])
   const schema = yup.object().shape({
-    contactPersonName : yup.string().required("Please Enter a Contact Person Name"),
-    businessName : yup.string(),
-    contactNo : yup.number("Please select Start Date").min(10).max(10),
-    email : yup.date("Please select End Date"),
-    gstType : yup.string().required("Please select a Priority"),
-    gstin : yup.string().required("Please select a Priority"),
-    placeOfSupply : yup.string().required("Please select a Priority"),
-    currencyId : yup.string().required("Please select a Priority"),
-    billingAddress : yup.string().required("Please select a Priority"),
-    contact_info : yup.array().of(
+    contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
+    businessName: yup.string(),
+    contactNo: yup.string().max(10).min(0, "Invalid Contact No"),
+    email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
+    gstType: yup.string().required("Please select a GST Type"),
+    gstin: yup.string().required("Please Enter GSTIN No"),
+    placeOfSupply: yup.string().required("Please select Place Of Supply"),
+    contact_info: yup.array().of(
       yup.object().shape({
         firstName: yup.string().required("Please Enter A Name"),
-        email: yup.string()
+        email: yup.string().email().required("Please Enter valid Email")
       })
     )
   })
@@ -71,7 +70,7 @@ const AddCard = () => {
   const { register, handleSubmit, setValue, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      clientType: '1',
+      clientType: '2',
       contactPersonName: '',
       businessName: '',
       contactNo: '',
@@ -81,8 +80,14 @@ const AddCard = () => {
       placeOfSupply: '',
       currencyId: '',
       contact_info: [],
-      billingAddress : {
-
+      billingAddress: {
+        countryId: '1',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        useAsBillingAddress: ''
       }
     }
   })
@@ -91,7 +96,7 @@ const AddCard = () => {
   const onSubmit = data => console.log(data)
 
   const addItem = (() => {
-    append({ firstName: '', email: '', contactNo: '', designation: '', isPrimary: ''})
+    append({ firstName: '', email: '', contactNo: '', designation: '', isPrimary: '' })
   })
 
   const removeItem = ((val) => {
@@ -103,6 +108,8 @@ const AddCard = () => {
   }, [])
 
   const handleCallback = ((data) => {
+    billingAddress = data
+    console.log(billingAddress)
     setValue('billingAddress', data)
   })
 
@@ -131,13 +138,13 @@ const AddCard = () => {
               <Label size="lg" className='col-lg-3 col-sm-12' >Client Type</Label>
               <Col className='my-lg-0 my-2 d-flex' lg='9' sm='9'>
                 <div className='form-check form-check-primary mx-2'>
-                  <Input type='radio' id='client_type_1' name='clientType' value='2' {...register("clientType")} />
+                  <input className='form-check-input' type='radio' id='client_type_1' name='clientType' value='2' {...register("clientType")} />
                   <Label className='form-check-label' for='client_type_1'>
                     Business
                   </Label>
                 </div>
                 <div className='form-check form-check-primary mx-2'>
-                  <Input type='radio' id='client_type_2' name='clientType' value='1' {...register("clientType")} />
+                  <input className='form-check-input' type='radio' id='client_type_2' name='clientType' value='1' {...register("clientType")} />
                   <Label className='form-check-label' for='client_type_2'>
                     Individual
                   </Label>
@@ -153,13 +160,14 @@ const AddCard = () => {
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
                 <Label className='col-lg-3 col-sm-12' >Contact Person Name</Label>
-                <input className={`form-control ${errors.contactPersonName ? 'is-invalid' : ''}`} size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
+                <input className='form-control' size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
               </div>
+              <p className='text-danger'>{errors.contactPersonName?.message}</p>
             </Col>
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
                 <Label className='col-lg-3 col-sm-12' >Business Name</Label>
-                <input className={`form-control ${errors.businessName ? 'is-invalid' : ''}`} size="md" type='text' {...register("businessName", { required: "Business Name Required" })} />
+                <input className='form-control' size="md" type='text' {...register("businessName", { required: "Business Name Required" })} />
               </div>
             </Col>
           </Row>
@@ -169,12 +177,14 @@ const AddCard = () => {
                 <Label className='col-lg-3 col-sm-12'>Mobile Number</Label>
                 <input className='form-control' size="md" type='number' {...register("contactNo")} />
               </div>
+              <p className='text-danger'>{errors.contactNo?.message}</p>
             </Col>
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
                 <Label className='col-lg-3 col-sm-12'>Emiail ID</Label>
-                <input className={`form-control ${errors.email ? 'is-invalid' : ''}`} size="md" type='email' {...register("email", { required: "E Mail Required" })} />
+                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
               </div>
+              <p className='text-danger'>{errors.email?.message}</p>
             </Col>
           </Row>
         </CardBody>
@@ -191,17 +201,18 @@ const AddCard = () => {
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
                     <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-50 mb-0'>First Name</CardText>
-                      <input type='text' {...register(`contact_info.${i}.firstName`, { required: true })} className={`form-control ${errors.contact_info?.[i]?.firstName ? 'is-invalid' : ''}`} />
-                      <div className="invalid-feedback">{errors.contact_info?.[i]?.firstName?.message}</div>
+                      <input name='firstName' type='text' {...register(`contact_info.${i}.firstName`, { required: true })} className='form-control' />
+                      <p className='text-danger'>{errors.contact_info?.[i]?.firstName?.message}</p>
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-2 mb-0'>Email</CardText>
-                      <input type='email' {...register(`contact_info.${i}.email`, { required: true })} className={`form-control ${errors.contact_info?.[i]?.email ? 'is-invalid' : ''}`} />
-                      <div className="invalid-feedback">{errors.contact_info?.[i]?.email?.message}</div>
+                      <input type='email' {...register(`contact_info.${i}.email`, { required: true })} className='form-control' />
+                      <p className='text-danger'>{errors.contact_info?.[i]?.email?.message}</p>
                     </Col>
                     <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-2 mb-0'>Mobile</CardText>
                       <input className='form-control' type='number' placeholder='' {...register(`contact_info.${i}.contactNo`)} />
+                      <p className='text-danger'>{errors.contact_info?.[i]?.contactNo?.message}</p>
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Designation</CardText>
@@ -242,17 +253,17 @@ const AddCard = () => {
                 control={control}
                 name="gstType"
                 render={({ field, value, ref }) => (
-                    <Select
-                       {...register("gstType")}
-                        inputRef={ref}
-                        className="react-select"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                    />
+                  <Select
+                    {...register("gstType")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
                 )}
-            />
+              />
             </Col>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
               <Label className='col-lg-3 col-sm-12' >Place Of Supply</Label>
@@ -260,23 +271,23 @@ const AddCard = () => {
                 control={control}
                 name="placeOfSupply"
                 render={({ field, value, ref }) => (
-                    <Select
-                       {...register("placeOfSupply")}
-                        inputRef={ref}
-                        className="react-select"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                    />
+                  <Select
+                    {...register("placeOfSupply")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
                 )}
-            />
+              />
             </Col>
           </Row>
           <Row className='row-bill-to invoice-spacing'>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
               <Label className='col-lg-3 col-sm-12'>GST Number</Label>
-              <input className='form-control' size="md" type='text' {...register("gstin")}/>
+              <input className='form-control' size="md" type='text' {...register("gstin")} />
             </Col>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
               <Label className='col-lg-3 col-sm-12'>Currency</Label>
@@ -284,23 +295,75 @@ const AddCard = () => {
                 control={control}
                 name="currencyId"
                 render={({ field, value, ref }) => (
-                    <Select
-                       {...register("currencyId")}
-                        inputRef={ref}
-                        className="react-select"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                    />
+                  <Select
+                    {...register("currencyId")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
                 )}
-            />
+              />
             </Col>
           </Row>
         </CardBody>
         {/* Invoice Total */}
         <CardBody className=''>
-          <BillingAddress parentCallback = {handleCallback}/>
+          <BillingAddress parentCallback={handleCallback} />
+          <Row className='px-2'>
+            <Col xl='7' xs='12'>
+              <Row tag='dl' className='mb-0'>
+                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
+                  Address Line 1:
+                </Col>
+                <Col tag='dd' sm='8' className='mb-1'>
+                  { billingAddress.addressLine1 } 
+                </Col>
+
+                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
+                  Address Line 2:
+                </Col>
+                <Col tag='dd' sm='8' className='mb-1'>
+                { billingAddress.addressLine2 } 
+                </Col>
+
+                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
+                  City:
+                </Col>
+                <Col tag='dd' sm='8' className='mb-1'>
+                { billingAddress.city } 
+                </Col>
+              </Row>
+            </Col>
+            <Col xl='5' xs='12'>
+              <Row tag='dl' className='mb-0'>
+                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
+                  State:
+                </Col>
+                <Col tag='dd' sm='8' className='mb-1'>
+                { billingAddress.state } 
+                </Col>
+
+                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
+                  Zip Code:
+                </Col>
+                <Col tag='dd' sm='8' className='mb-1'>
+                { billingAddress.zipCode } 
+                </Col>
+
+                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
+                  Country:
+                </Col>
+                <Col tag='dd' sm='8' className='mb-1'>
+                { billingAddress.countryId } 
+                </Col>
+
+
+              </Row>
+            </Col>
+          </Row>
         </CardBody>
         {/* /Invoice Total */}
 
@@ -308,7 +371,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline>
+            <Button color='warning' outline tag={Link} to='/client/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

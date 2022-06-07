@@ -25,6 +25,11 @@ const ClientView = lazy(() => import('../../views/apps/client/view'))
 const ClientAdd = lazy(() => import('../../views/apps/client/add'))
 const ClientEdit = lazy(() => import('../../views/apps/client/edit'))
 
+const TeamList = lazy(() => import('../../views/apps/team/list'))
+const TeamView = lazy(() => import('../../views/apps/team/view'))
+const TeamAdd = lazy(() => import('../../views/apps/team/add'))
+const TeamEdit = lazy(() => import('../../views/apps/team/edit'))
+
 const ServiceList = lazy(() => import('../../views/apps/service/list'))
 const ServiceView = lazy(() => import('../../views/apps/service/view'))
 const ServiceAdd = lazy(() => import('../../views/apps/service/add'))
@@ -268,6 +273,18 @@ const AppRoutes = [
   {
     element: <DSCEdit />,
     path: '/digital-signature/edit/:id'
+  },
+  {
+    element: <TeamList />,
+    path: '/team/list'
+  },
+  {
+    element: <TeamView />,
+    path: '/team/view/:id'
+  },
+  {
+    element: <TeamAdd />,
+    path: '/team/add/'
   },
   {
     element: <Organization />,

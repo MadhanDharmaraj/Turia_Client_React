@@ -10,25 +10,7 @@ export default [
         id: 'team-members',
         title: 'Team Members',
         icon: <Circle />,
-        navLink: '/charts/chartjs'
-      },
-      {
-        id: 'leave',
-        title: 'Leave',
-        icon: <Circle />,
-        navLink: '/charts/apex'
-      },
-      {
-        id: 'attendance',
-        title: 'Attendance',
-        icon: <Circle />,
-        navLink: '/charts/apex'
-      },
-      {
-        id: 'time-sheet',
-        title: 'Time Sheet',
-        icon: <Circle />,
-        navLink: '/charts/apex'
+        navLink: '/team/list'
       }
     ]
   }

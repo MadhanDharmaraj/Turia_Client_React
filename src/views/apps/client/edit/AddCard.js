@@ -13,7 +13,8 @@ import { SlideDown } from 'react-slidedown'
 import { X, Plus, Hash } from 'react-feather'
 import Select, { components } from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
-
+import * as yup from "yup"
+import { yupResolver } from "@hookform/resolvers/yup"
 const options = [
   { value: 'uk', label: 'UK' },
   { value: 'usa', label: 'USA' },
@@ -49,9 +50,26 @@ const AddCard = () => {
   //     color: 'flat-success'
   //   }
   // ])
+  const schema = yup.object().shape({
+    contactPersonName : yup.string().required("Please Enter a Contact Person Name"),
+    businessName : yup.string(),
+    contactNo : yup.string().max(10).min(0, "Invalid Contact No"),
+    email : yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),  
+    gstType : yup.string().required("Please select a GST Type"),
+    gstin : yup.string().required("Please Enter GSTIN No"),
+    placeOfSupply : yup.string().required("Please select Place Of Supply"),
+    contact_info : yup.array().of(
+      yup.object().shape({  
+        firstName: yup.string().required("Please Enter A Name"),
+        email: yup.string().email().required("Please Enter valid Email")
+      })  
+    )
+  })
+
   const { register, handleSubmit, setValue, control, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
     defaultValues: {
-      clientType: '1',
+      clientType: '2',
       contactPersonName: '',
       businessName: '',
       contactNo: '',
@@ -111,13 +129,13 @@ const AddCard = () => {
               <Label size="lg" className='col-lg-3 col-sm-12' >Client Type</Label>
               <Col className='my-lg-0 my-2 d-flex' lg='9' sm='9'>
                 <div className='form-check form-check-primary mx-2'>
-                  <Input type='radio' id='client_type_1' name='clientType' value='2' {...register("clientType")} />
+                  <input className='form-check-input' type='radio' id='client_type_1' name='clientType' value='2' {...register("clientType")} />
                   <Label className='form-check-label' for='client_type_1'>
                     Business
                   </Label>
                 </div>
                 <div className='form-check form-check-primary mx-2'>
-                  <Input type='radio' id='client_type_2' name='clientType' value='1' {...register("clientType")} />
+                  <input className='form-check-input' type='radio' id='client_type_2' name='clientType' value='1' {...register("clientType")} />
                   <Label className='form-check-label' for='client_type_2'>
                     Individual
                   </Label>
@@ -133,13 +151,14 @@ const AddCard = () => {
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
                 <Label className='col-lg-3 col-sm-12' >Contact Person Name</Label>
-                <input className={`form-control ${errors.contactPersonName ? 'is-invalid' : ''}`} size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
+                <input className='form-control' size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
               </div>
+              <p className='text-danger'>{errors.contactPersonName?.message}</p>
             </Col>
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
                 <Label className='col-lg-3 col-sm-12' >Business Name</Label>
-                <input className={`form-control ${errors.businessName ? 'is-invalid' : ''}`} size="md" type='text' {...register("businessName", { required: "Business Name Required" })} />
+                <input className='form-control' size="md" type='text' {...register("businessName", { required: "Business Name Required" })} />
               </div>
             </Col>
           </Row>
@@ -149,12 +168,14 @@ const AddCard = () => {
                 <Label className='col-lg-3 col-sm-12'>Mobile Number</Label>
                 <input className='form-control' size="md" type='number' {...register("contactNo")} />
               </div>
+              <p className='text-danger'>{errors.contactNo?.message}</p>
             </Col>
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
                 <Label className='col-lg-3 col-sm-12'>Emiail ID</Label>
-                <input className={`form-control ${errors.email ? 'is-invalid' : ''}`} size="md" type='email' {...register("email", { required: "E Mail Required" })} />
+                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
               </div>
+              <p className='text-danger'>{errors.email?.message}</p>
             </Col>
           </Row>
         </CardBody>
@@ -171,18 +192,19 @@ const AddCard = () => {
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
                     <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-50 mb-0'>First Name</CardText>
-                      <input type='text' {...register(`contact_info.${i}.firstName`, { required: true })} className={`form-control ${errors.contact_info?.[i]?.firstName ? 'is-invalid' : ''}`} />
-                      <div className="invalid-feedback">{errors.contact_info?.[i]?.firstName?.message}</div>
+                      <input name='firstName' type='text' {...register(`contact_info.${i}.firstName`, { required: true })} className='form-control' />
+                      <p className='text-danger'>{errors.contact_info?.[i]?.firstName?.message}</p>
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-2 mb-0'>Email</CardText>
-                      <input type='email' {...register(`contact_info.${i}.email`, { required: true })} className={`form-control ${errors.contact_info?.[i]?.email ? 'is-invalid' : ''}`} />
-                      <div className="invalid-feedback">{errors.contact_info?.[i]?.email?.message}</div>
+                      <input type='email' {...register(`contact_info.${i}.email`, { required: true })} className='form-control' />
+                      <p className='text-danger'>{errors.contact_info?.[i]?.email?.message}</p>
                     </Col>
                     <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-2 mb-0'>Mobile</CardText>
                       <input className='form-control' type='number' placeholder='' {...register(`contact_info.${i}.contactNo`)} />
-                    </Col>
+                      <p className='text-danger'>{errors.contact_info?.[i]?.contactNo?.message}</p>
+                    </Col>    
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Designation</CardText>
                       <input className='form-control' type='text' placeholder='' {...register(`contact_info.${i}.designation`)} />
@@ -225,7 +247,7 @@ const AddCard = () => {
                     <Select
                        {...register("gstType")}
                         inputRef={ref}
-                        className="react-select"
+                        className="react-select col-lg-9 col-sm-12"
                         classNamePrefix="addl-class"
                         options={options}
                         value={options.find(c => c.value === value)}
@@ -243,7 +265,7 @@ const AddCard = () => {
                     <Select
                        {...register("placeOfSupply")}
                         inputRef={ref}
-                        className="react-select"
+                        className="react-select col-lg-9 col-sm-12"
                         classNamePrefix="addl-class"
                         options={options}
                         value={options.find(c => c.value === value)}
@@ -267,7 +289,7 @@ const AddCard = () => {
                     <Select
                        {...register("currencyId")}
                         inputRef={ref}
-                        className="react-select"
+                        className="react-select col-lg-9 col-sm-12"
                         classNamePrefix="addl-class"
                         options={options}
                         value={options.find(c => c.value === value)}

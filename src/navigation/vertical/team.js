@@ -10,7 +10,7 @@ export default [
         id: 'team-members',
         title: 'Team Members',
         icon: <Circle />,
-        navLink: '/charts/chartjs'
+        navLink: '/team/list'
       },
       {
         id: 'leave',

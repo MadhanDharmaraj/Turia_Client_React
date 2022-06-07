@@ -12,27 +12,39 @@ const StatsCard = ({ cols }) => {
   const data = [
     {
       title: '230k',
-      subtitle: 'Sales',
+      subtitle: 'Assigned',
       color: 'light-primary',
       icon: <TrendingUp size={24} />
     },
     {
+      title: '230k',
+      subtitle: 'Inprogress',
+      color: 'light-primary',
+      icon: <TrendingUp size={24} />
+    },
+    {
+      title: '230k',
+      subtitle: 'Pending Review',
+      color: 'light-primary',
+      icon: <TrendingUp size={24} />
+    },
+    {
+      title: '230k',
+      subtitle: 'Request Changes',
+      color: 'light-primary',
+      icon: <TrendingUp size={24} />
+    },  
+    {
       title: '8.549k',
-      subtitle: 'Customers',
+      subtitle: 'Overdue  ',
       color: 'light-info',
       icon: <User size={24} />
     },
     {
       title: '1.423k',
-      subtitle: 'Products',
+      subtitle: 'Completed',
       color: 'light-danger',
       icon: <Box size={24} />
-    },
-    {
-      title: '$9745',
-      subtitle: 'Revenue',
-      color: 'light-success',
-      icon: <DollarSign size={24} />
     }
   ]
 
@@ -51,7 +63,7 @@ const StatsCard = ({ cols }) => {
           <div className='d-flex align-items-center'>
             <Avatar color={item.color} icon={item.icon} className='me-2' />
             <div className='my-auto'>
-              <h4 className='fw-bolder mb-0'>{item.title}</h4>
+              <h6 className='fw-bolder mb-0'>{item.title}</h6>
               <CardText className='font-small-3 mb-0'>{item.subtitle}</CardText>
             </div>
           </div>
@@ -64,7 +76,7 @@ const StatsCard = ({ cols }) => {
     <Card className='card-statistics'>
       <CardHeader>
         <CardTitle tag='h4'>Statistics</CardTitle>
-        <CardText className='card-text font-small-2 me-25 mb-0'>Updated 1 month ago</CardText>
+        {/* <CardText className='card-text font-small-2 me-25 mb-0'>Updated 1 month ago</CardText> */}
       </CardHeader>
       <CardBody className='statistics-body'>
         <Row>{renderData()}</Row>

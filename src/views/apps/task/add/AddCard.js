@@ -1,6 +1,6 @@
 // ** React Imports
 import { Fragment, useState, useEffect, useRef } from 'react'
-
+import {Link } from 'react-router-dom'
 // ** Custom Components
 import AddActions from './AddActions'
 import Repeater from '@components/repeater'
@@ -394,7 +394,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline>
+          <Button className='add-new-user' color='warning' tag={Link} to='/task/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >
