@@ -72,23 +72,6 @@ const RoleCards = () => {
               <h4 className='mt-2 pt-50'>Role Permissions</h4>
               <Table className='table-flush-spacing' responsive>
                 <tbody>
-                  <tr>
-                    <td className='text-nowrap fw-bolder'>
-                      <span className='me-50'> Administrator Access</span>
-                      <Info size={14} id='info-tooltip' />
-                      <UncontrolledTooltip placement='top' target='info-tooltip'>
-                        Allows a full access to the system
-                      </UncontrolledTooltip>
-                    </td>
-                    <td>
-                      <div className='form-check'>
-                        <Input type='checkbox' id='select-all' />
-                        <Label className='form-check-label' for='select-all'>
-                          Select All
-                        </Label>
-                      </div>
-                    </td>
-                  </tr>
                   {rolesArr.map((role, index) => {
                     return (
                       
