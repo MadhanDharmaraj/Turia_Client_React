@@ -340,9 +340,6 @@ const UsersList = () => {
   return (
     <Fragment>
       <Card>
-        <CardHeader>
-          <CardTitle tag='h4'>Filters</CardTitle>
-        </CardHeader>
         <CardBody>
           <Row>
             <Col md='4'>

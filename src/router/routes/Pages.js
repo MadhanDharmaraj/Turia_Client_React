@@ -41,7 +41,7 @@ const PagesRoutes = [
     element: <KBCategoryQuestion />
   },
   {
-    path: '/pages/account-settings',
+    path: '/account-settings',
     element: <AccountSettings />
   },
   {

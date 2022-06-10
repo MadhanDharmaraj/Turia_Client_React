@@ -50,6 +50,10 @@ const DSCView = lazy(() => import('../../views/apps/digital-signature/view'))
 const DSCAdd = lazy(() => import('../../views/apps/digital-signature/add'))
 const DSCEdit = lazy(() => import('../../views/apps/digital-signature/edit'))
 
+const ComplianceList = lazy(() => import('../../views/apps/compliance/list'))
+const ComplianceView = lazy(() => import('../../views/apps/compliance/view'))
+const ComplianceAdd = lazy(() => import('../../views/apps/compliance/add'))
+
 const Organization = lazy(() => import('../../views/organization'))
 
 const Roles = lazy(() => import('../../views/apps/roles-permissions/roles'))
@@ -281,6 +285,18 @@ const AppRoutes = [
   {
     element: <TeamView />,
     path: '/team/view/:id'
+  },
+  {
+    element: <ComplianceAdd />,
+    path: '/compliance/add/'
+  },
+  {
+    element: <ComplianceList />,
+    path: '/compliance/list'
+  },
+  {
+    element: <ComplianceView />,
+    path: '/compliance/view/:id'
   },
   {
     element: <TeamAdd />,

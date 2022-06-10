@@ -13,7 +13,7 @@ import { useDispatch } from 'react-redux'
 import { handleLogout } from '@store/authentication'
 
 // ** Third Party Components
-import { User, Mail, CheckSquare, MessageSquare, Settings, CreditCard, HelpCircle, Power } from 'react-feather'
+import { User, Mail, CheckSquare, MessageSquare, Settings, CreditCard, HelpCircle, Power, Calendar } from 'react-feather'
 
 // ** Reactstrap Imports
 import { UncontrolledDropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap'
@@ -56,22 +56,18 @@ const UserDropdown = () => {
           <Mail size={14} className='me-75' />
           <span className='align-middle'>Inbox</span>
         </DropdownItem>
-        <DropdownItem tag={Link} to='/apps/todo'>
-          <CheckSquare size={14} className='me-75' />
-          <span className='align-middle'>Tasks</span>
+        <DropdownItem tag={Link} to='/apps/calendar'>
+          <Calendar size={14} className='me-75' />
+          <span className='align-middle'>Calendar</span>
         </DropdownItem>
         <DropdownItem tag={Link} to='/apps/chat'>
           <MessageSquare size={14} className='me-75' />
           <span className='align-middle'>Chats</span>
         </DropdownItem>
         <DropdownItem divider />
-        <DropdownItem tag={Link} to='/pages/account-settings'>
+        <DropdownItem tag={Link} to='/account-settings'>  
           <Settings size={14} className='me-75' />
           <span className='align-middle'>Settings</span>
-        </DropdownItem>
-        <DropdownItem tag={Link} to='/pages/pricing'>
-          <CreditCard size={14} className='me-75' />
-          <span className='align-middle'>Pricing</span>
         </DropdownItem>
         <DropdownItem tag={Link} to='/pages/faq'>
           <HelpCircle size={14} className='me-75' />

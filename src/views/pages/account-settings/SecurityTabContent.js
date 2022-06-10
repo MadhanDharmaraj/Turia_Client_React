@@ -13,11 +13,6 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import InputPasswordToggle from '@components/input-password-toggle'
 
 // ** Demo Components
-import ApiKeysList from './ApiKeysList'
-import CreateApiKey from './CreateApikey'
-import TwoFactorAuth from './TwoFactorAuth'
-import RecentDevices from './RecentDevices'
-
 const showErrors = (field, valueLen, min) => {
   if (valueLen === 0) {
     return `${field} field is required`
@@ -160,10 +155,6 @@ const SecurityTabContent = () => {
           </Form>
         </CardBody>
       </Card>
-      <TwoFactorAuth />
-      <CreateApiKey />
-      <ApiKeysList />
-      <RecentDevices />
     </Fragment>
   )
 }

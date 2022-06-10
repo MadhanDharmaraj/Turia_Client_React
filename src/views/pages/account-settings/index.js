@@ -52,9 +52,12 @@ const AccountSettings = () => {
                 <BillingTabContent />
               </TabPane>
               <TabPane tabId='4'>
-                <NotificationsTabContent />
+                <BillingTabContent />
               </TabPane>
               <TabPane tabId='5'>
+                <NotificationsTabContent />
+              </TabPane>
+              <TabPane tabId='6'>
                 <ConnectionsTabContent />
               </TabPane>
             </TabContent>

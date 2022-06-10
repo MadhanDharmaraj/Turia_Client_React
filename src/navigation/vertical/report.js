@@ -5,6 +5,7 @@ export default [
   {
     id: 'report',
     title: 'Report',
-    icon: <BarChart2 />
+    icon: <BarChart2 />,
+    navLink: '/charts/apex'
   }
 ]

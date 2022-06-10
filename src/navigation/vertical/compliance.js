@@ -4,6 +4,7 @@ export default [
   {
     id: 'compliance',
     title: 'Compliance',
-    icon: <File />
+    icon: <File />,
+    navLink: '/compliance/list'
   }
 ]

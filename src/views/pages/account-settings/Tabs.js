@@ -2,15 +2,15 @@
 import { Nav, NavItem, NavLink } from 'reactstrap'
 
 // ** Icons Imports
-import { User, Lock, Bookmark, Link, Bell } from 'react-feather'
+import { User, Lock, Bookmark, Link, Bell, Home, PenTool } from 'react-feather'
 
 const Tabs = ({ activeTab, toggleTab }) => {
   return (
     <Nav pills className='mb-2'>
       <NavItem>
         <NavLink active={activeTab === '1'} onClick={() => toggleTab('1')}>
-          <User size={18} className='me-50' />
-          <span className='fw-bold'>Account</span>
+          <Home size={18} className='me-50' />
+          <span className='fw-bold'>Organization Setting</span>
         </NavLink>
       </NavItem>
       <NavItem>
@@ -21,18 +21,24 @@ const Tabs = ({ activeTab, toggleTab }) => {
       </NavItem>
       <NavItem>
         <NavLink active={activeTab === '3'} onClick={() => toggleTab('3')}>
+          <PenTool size={18} className='me-50' />
+          <span className='fw-bold'>Appearence</span>
+        </NavLink>
+      </NavItem>
+      <NavItem>
+        <NavLink active={activeTab === '4'} onClick={() => toggleTab('4')}>
           <Bookmark size={18} className='me-50' />
           <span className='fw-bold'>Billing & Plans</span>
         </NavLink>
       </NavItem>
       <NavItem>
-        <NavLink active={activeTab === '4'} onClick={() => toggleTab('4')}>
+        <NavLink active={activeTab === '5'} onClick={() => toggleTab('5')}>
           <Bell size={18} className='me-50' />
           <span className='fw-bold'>Notifications</span>
         </NavLink>
       </NavItem>
       <NavItem>
-        <NavLink active={activeTab === '5'} onClick={() => toggleTab('5')}>
+        <NavLink active={activeTab === '6'} onClick={() => toggleTab('6')}>
           <Link size={18} className='me-50' />
           <span className='fw-bold'>Connections</span>
         </NavLink>

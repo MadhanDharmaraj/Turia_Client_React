@@ -321,9 +321,9 @@ const AddCard = () => {
 
             <div key={i} className='repeater-wrapper'>
               <Row>
-                <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
-                  <Row className='w-100 pe-lg-0 pe-1 py-2'>
-                    <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-4 col-sm-12'>
+                <Col className='d-lg-flex product-details-border position-relative pe-0 ps-sm-0' sm='12'>
+                  <Row className='w-100 pe-lg-0 py-2 ms-sm-1'>
+                    <Col className='my-lg-0 my-2' lg='4' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
                       <Controller
                         control={control}
@@ -342,7 +342,7 @@ const AddCard = () => {
                       />
                       <p className='text-danger'>{errors.invoice_items?.[i]?.itemId?.message}</p>
                     </Col>
-                    <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
+                    <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
                       <input type='number' {...register(`invoice_items.${i}.sacCode`)} className={`form-control ${errors.invoice_items?.[i]?.sacCode ? 'is-invalid' : ''}`} />
                     </Col>
