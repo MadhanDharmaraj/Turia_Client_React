@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 
 // ** Store & Actions
-import { getUser } from '../store'
+import { getDsc } from '../store'
 import { useSelector, useDispatch } from 'react-redux'
 
 // ** Reactstrap Imports
@@ -26,7 +26,7 @@ const ServiceView = () => {
 
   // ** Get suer on mount
   useEffect(() => {
-    dispatch(getUser(parseInt(id)))
+    dispatch(getDsc(parseInt(id)))
   }, [dispatch])
 
   const [active, setActive] = useState('1')
@@ -50,9 +50,9 @@ const ServiceView = () => {
     </div>
   ) : (
     <Alert color='danger'>
-      <h4 className='alert-heading'>User not found</h4>
+      <h4 className='alert-heading'>DSC not found</h4>
       <div className='alert-body'>
-        User with id: {id} doesn't exist. Check list of all Users: <Link to='/apps/user/list'>Users List</Link>
+        DSC with id: {id} doesn't exist. Check list of all DSC's: <Link to='/digital-signature/list'>DSC's List</Link>
       </div>
     </Alert>
   )

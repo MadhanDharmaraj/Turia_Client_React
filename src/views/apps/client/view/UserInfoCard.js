@@ -40,22 +40,6 @@ const statusOptions = [
   { value: 'suspended', label: 'Suspended' }
 ]
 
-const countryOptions = [
-  { value: 'uk', label: 'UK' },
-  { value: 'usa', label: 'USA' },
-  { value: 'france', label: 'France' },
-  { value: 'russia', label: 'Russia' },
-  { value: 'canada', label: 'Canada' }
-]
-
-const languageOptions = [
-  { value: 'english', label: 'English' },
-  { value: 'spanish', label: 'Spanish' },
-  { value: 'french', label: 'French' },
-  { value: 'german', label: 'German' },
-  { value: 'dutch', label: 'Dutch' }
-]
-
 const MySwal = withReactContent(Swal)
 
 const UserInfoCard = ({ selectedUser }) => {
@@ -71,9 +55,9 @@ const UserInfoCard = ({ selectedUser }) => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      username: selectedUser.username,
-      lastName: selectedUser.fullName.split(' ')[1],
-      firstName: selectedUser.fullName.split(' ')[0]
+      username: selectedUser.name
+      // lastName: selectedUser.fullName.split(' ')[1],
+      // firstName: selectedUser.fullName.split(' ')[0]
     }
   })
 
@@ -95,7 +79,7 @@ const UserInfoCard = ({ selectedUser }) => {
           initials
           color={selectedUser.avatarColor || 'light-primary'}
           className='rounded mt-3 mb-2'
-          content={selectedUser.fullName}
+          content={selectedUser.name  }
           contentStyles={{
             borderRadius: 0,
             fontSize: 'calc(48px)',
@@ -212,12 +196,20 @@ const UserInfoCard = ({ selectedUser }) => {
             {selectedUser !== null ? (
               <ul className='list-unstyled'>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Username:</span>
-                  <span>{selectedUser.username}</span>
+                  <span className='fw-bolder me-25'>Name:</span>
+                  <span>{selectedUser.name}</span>
                 </li>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Billing Email:</span>
+                  <span className='fw-bolder me-25'>Business Name:</span>
+                  <span>{selectedUser.businessName}</span>
+                </li>
+                <li className='mb-75'>
+                  <span className='fw-bolder me-25'>Email:</span>
                   <span>{selectedUser.email}</span>
+                </li>
+                <li className='mb-75'>
+                  <span className='fw-bolder me-25'>Contact:</span>
+                  <span>{selectedUser.contactNo}</span>
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Status:</span>
@@ -225,26 +217,7 @@ const UserInfoCard = ({ selectedUser }) => {
                     {selectedUser.status}
                   </Badge>
                 </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Role:</span>
-                  <span className='text-capitalize'>{selectedUser.role}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Tax ID:</span>
-                  <span>Tax-{selectedUser.contact.substr(selectedUser.contact.length - 4)}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Contact:</span>
-                  <span>{selectedUser.contact}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Language:</span>
-                  <span>English</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Country:</span>
-                  <span>England</span>
-                </li>
+                
               </ul>
             ) : null}
           </div>
@@ -311,7 +284,7 @@ const UserInfoCard = ({ selectedUser }) => {
               </Col>
               <Col md={6} xs={12}>
                 <Label className='form-label' for='billing-email'>
-                  Billing Email
+                  Email
                 </Label>
                 <Input
                   type='email'
@@ -319,6 +292,12 @@ const UserInfoCard = ({ selectedUser }) => {
                   defaultValue={selectedUser.email}
                   placeholder='example@domain.com'
                 />
+              </Col>
+              <Col md={6} xs={12}>
+                <Label className='form-label' for='contact'>
+                  Contact
+                </Label>
+                <Input id='contact' defaultValue={selectedUser.contact} placeholder='+1 609 933 4422' />
               </Col>
               <Col md={6} xs={12}>
                 <Label className='form-label' for='status'>
@@ -333,51 +312,7 @@ const UserInfoCard = ({ selectedUser }) => {
                   theme={selectThemeColors}
                   defaultValue={statusOptions[statusOptions.findIndex(i => i.value === selectedUser.status)]}
                 />
-              </Col>
-              <Col md={6} xs={12}>
-                <Label className='form-label' for='tax-id'>
-                  Tax ID
-                </Label>
-                <Input
-                  id='tax-id'
-                  placeholder='Tax-1234'
-                  defaultValue={selectedUser.contact.substr(selectedUser.contact.length - 4)}
-                />
-              </Col>
-              <Col md={6} xs={12}>
-                <Label className='form-label' for='contact'>
-                  Contact
-                </Label>
-                <Input id='contact' defaultValue={selectedUser.contact} placeholder='+1 609 933 4422' />
-              </Col>
-              <Col md={6} xs={12}>
-                <Label className='form-label' for='language'>
-                  language
-                </Label>
-                <Select
-                  id='language'
-                  isClearable={false}
-                  className='react-select'
-                  classNamePrefix='select'
-                  options={languageOptions}
-                  theme={selectThemeColors}
-                  defaultValue={languageOptions[0]}
-                />
-              </Col>
-              <Col md={6} xs={12}>
-                <Label className='form-label' for='country'>
-                  Country
-                </Label>
-                <Select
-                  id='country'
-                  isClearable={false}
-                  className='react-select'
-                  classNamePrefix='select'
-                  options={countryOptions}
-                  theme={selectThemeColors}
-                  defaultValue={countryOptions[0]}
-                />
-              </Col>
+              </Col>  
               <Col xs={12}>
                 <div className='d-flex align-items-center mt-1'>
                   <div className='form-switch'>

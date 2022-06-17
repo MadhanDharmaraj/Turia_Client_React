@@ -5,12 +5,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
 
 export const getAllData = createAsyncThunk('appUsers/getAllData', async () => {
-  const response = await axios.get('/api/users/list/all-data')
+  const response = await axios.get('/api/task/list/all-data')
   return response.data
 })
 
 export const getData = createAsyncThunk('appUsers/getData', async params => {
-  const response = await axios.get('/api/users/list/data', params)
+  const response = await axios.get('/api/task/list/data', params)
   return {
     params,
     data: response.data.users,
@@ -18,8 +18,8 @@ export const getData = createAsyncThunk('appUsers/getData', async params => {
   }
 })
 
-export const getUser = createAsyncThunk('appUsers/getUser', async id => {
-  const response = await axios.get('/api/users/user', { id })
+export const getTask = createAsyncThunk('appUsers/getUser', async id => {
+  const response = await axios.get('/api/task', { id })
   return response.data.user
 })
 

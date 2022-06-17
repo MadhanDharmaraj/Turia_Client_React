@@ -394,7 +394,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-          <Button className='add-new-user' color='warning' tag={Link} to='/task/list'>
+          <Button className='add-new-user' outline color='warning' tag={Link} to='/task/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

@@ -1,6 +1,6 @@
 // ** React Imports
-import { Fragment, useState, useEffect } from 'react'
-
+import { Fragment, useState, useEffect, useRef } from 'react'
+import {Link } from 'react-router-dom'
 // ** Custom Components
 import AddActions from './AddActions'
 import Repeater from '@components/repeater'
@@ -36,6 +36,8 @@ import '@styles/base/pages/app-invoice.scss'
 
 const AddCard = () => {
   // ** States
+
+  const inputRef = useRef(null)
   const [setOpen] = useState(false)
   // const [clients, setClients] = useState(null)
   // const [selected, setSelected] = useState(null)
@@ -69,7 +71,6 @@ const AddCard = () => {
       startDate: new Date(),
       endDate: new Date(),
       priority: '',
-      duration: '',
       invoice_items: []
     }
   })
@@ -99,6 +100,10 @@ const AddCard = () => {
   const handleReviwerChange = (e) => {
     const tempArr = Array.isArray(e) ? e.map(x => x.value) : []
     setValue("reviewer", tempArr)
+  }
+
+  const changeHandler = (event) => {
+    console.log(event.target.files)
   }
 
   // const handleSubmission = () => {
@@ -188,6 +193,15 @@ const AddCard = () => {
                   </div>
                 </Col>
               </Row>
+              <Row className='my-2'>
+                <Col>
+                  <div className='d-lg-flex'>
+                    <input type='file' className='hidden' multiple onChange={changeHandler} ref={inputRef} />
+                    <Button type='button' outline color='primary' onClick={() => inputRef.current.click()}>
+                      <Plus size={14} className='me-25'></Plus> Add Attachment</Button>
+                  </div>
+                </Col>
+              </Row>
             </div>
             <div className='col-lg-6 col-sm-12'>
               <Row className='my-2'>
@@ -232,46 +246,6 @@ const AddCard = () => {
                     )}
                   />
                 </div>
-              </Row>  
-              <Row className='my-2'>
-                <div className='d-lg-flex'>
-                  <Label className='col-lg-3 col-sm-12' >Priority</Label>
-                  <Controller
-                    control={control}
-                    name="priority"
-                    render={({ field, value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                      />
-                    )}
-                  />
-                </div>
-               {errors.priority} <p className='text-danger'>{errors.priority?.message}</p>
-              </Row>
-              <Row className='my-2'>
-                <div className='d-lg-flex'>
-                  <Label className='col-lg-3 col-sm-12' >Duration</Label>
-                  <Controller
-                    control={control}
-                    name="duration"
-                    render={({ field, value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                      />
-                    )}
-                  />
-                </div>
-                {errors.duration}<p className='text-danger'>{errors.duration?.message}</p>
               </Row>
               <Row className='my-2'>
                 <Col>
@@ -288,7 +262,7 @@ const AddCard = () => {
                       )}
                     />
                   </div>
-                  {errors.startDate}<p className='text-danger'>{errors.startDate?.message}</p>
+                  <p className='text-danger'>{errors.startDate?.message}</p>
                 </Col>
               </Row>
               <Row className='my-2'>
@@ -307,8 +281,28 @@ const AddCard = () => {
                       )}
                     />
                   </div>
-                  {errors.endDate}<p className='text-danger'>{errors.endDate?.message}</p>
+                  <p className='text-danger'>{errors.endDate?.message}</p>
                 </Col>
+              </Row>
+              <Row className='my-2'>
+                <div className='d-lg-flex'>
+                  <Label className='col-lg-3 col-sm-12' >Priority</Label>
+                  <Controller
+                    control={control}
+                    name="priority"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        inputRef={ref}
+                        className="react-select col-lg-9 col-sm-12"
+                        classNamePrefix="addl-class"
+                        options={options}
+                        value={options.find(c => c.value === value)}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+                  />
+                </div>
+                <p className='text-danger'>{errors.priority?.message}</p>
               </Row>
             </div>
           </Row>
@@ -327,9 +321,9 @@ const AddCard = () => {
 
             <div key={i} className='repeater-wrapper'>
               <Row>
-                <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
-                  <Row className='w-100 pe-lg-0 pe-1 py-2'>
-                    <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-4 col-sm-12'>
+                <Col className='d-lg-flex product-details-border position-relative pe-0 ps-sm-0' sm='12'>
+                  <Row className='w-100 pe-lg-0 py-2 ms-sm-1'>
+                    <Col className='my-lg-0 my-2' lg='4' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
                       <Controller
                         control={control}
@@ -348,7 +342,7 @@ const AddCard = () => {
                       />
                       <p className='text-danger'>{errors.invoice_items?.[i]?.itemId?.message}</p>
                     </Col>
-                    <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
+                    <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
                       <input type='number' {...register(`invoice_items.${i}.sacCode`)} className={`form-control ${errors.invoice_items?.[i]?.sacCode ? 'is-invalid' : ''}`} />
                     </Col>
@@ -400,7 +394,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline>
+          <Button className='add-new-user' outline color='warning' tag={Link} to='/task/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

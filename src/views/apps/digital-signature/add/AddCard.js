@@ -1,6 +1,6 @@
 // ** React Imports
 import { Fragment, useState, useEffect } from 'react'
-
+import {Link } from 'react-router-dom'
 // ** Custom Components
 import AddActions from './AddActions'
 import Repeater from '@components/repeater'
@@ -183,7 +183,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline>
+            <Button color='warning' outline tag={Link} to='/digital-signature/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

@@ -31,39 +31,6 @@ const renderClient = row => {
 }
 
 // ** Renders Role Columns
-const renderRole = row => {
-  const roleObj = {
-    subscriber: {
-      class: 'text-primary',
-      icon: User
-    },
-    maintainer: {
-      class: 'text-success',
-      icon: Database
-    },
-    editor: {
-      class: 'text-info',
-      icon: Edit2
-    },
-    author: {
-      class: 'text-warning',
-      icon: Settings
-    },
-    admin: {
-      class: 'text-danger',
-      icon: Slack
-    }
-  }
-
-  const Icon = roleObj[row.role] ? roleObj[row.role].icon : Edit2
-
-  return (
-    <span className='text-truncate text-capitalize align-middle'>
-      <Icon size={18} className={`${roleObj[row.role] ? roleObj[row.role].class : ''} me-50`} />
-      {row.role}
-    </span>
-  )
-}
 
 const statusObj = {
   pending: 'light-warning',
@@ -73,11 +40,11 @@ const statusObj = {
 
 export const columns = [
   {
-    name: 'User',
+    name: 'Client',
     sortable: true,
     minWidth: '300px',
-    sortField: 'fullName',
-    selector: row => row.fullName,
+    sortField: 'name',
+    selector: row => row.name,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
         {renderClient(row)}
@@ -87,7 +54,7 @@ export const columns = [
             className='user_name text-truncate text-body'
             onClick={() => store.dispatch(getUser(row.id))}
           >
-            <span className='fw-bolder'>{row.fullName}</span>
+            <span className='fw-bolder'>{row.name}</span>
           </Link>
           <small className='text-truncate text-muted mb-0'>{row.email}</small>
         </div>
@@ -95,28 +62,20 @@ export const columns = [
     )
   },
   {
-    name: 'Role',
-    sortable: true,
-    minWidth: '172px',
-    sortField: 'role',
-    selector: row => row.role,
-    cell: row => renderRole(row)
-  },
-  {
-    name: 'Plan',
-    minWidth: '138px',
-    sortable: true,
-    sortField: 'currentPlan',
-    selector: row => row.currentPlan,
-    cell: row => <span className='text-capitalize'>{row.currentPlan}</span>
-  },
-  {
-    name: 'Billing',
+    name: 'Business Name',
     minWidth: '230px',
     sortable: true,
-    sortField: 'billing',
-    selector: row => row.billing,
-    cell: row => <span className='text-capitalize'>{row.billing}</span>
+    sortField: 'businessName',
+    selector: row => row.businessName,
+    cell: row => <span className='text-capitalize'>{row.businessName}</span>
+  },
+  {
+    name: 'Contact',
+    minWidth: '138px',
+    sortable: true,
+    sortField: 'contactNo',
+    selector: row => row.contactNo,
+    cell: row => <span className='text-capitalize'>{row.contactNo}</span>
   },
   {
     name: 'Status',

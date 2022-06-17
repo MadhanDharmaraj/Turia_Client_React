@@ -50,9 +50,9 @@ const ClientView = () => {
     </div>
   ) : (
     <Alert color='danger'>
-      <h4 className='alert-heading'>User not found</h4>
+      <h4 className='alert-heading'>Client not found</h4>
       <div className='alert-body'>
-        User with id: {id} doesn't exist. Check list of all Users: <Link to='/apps/user/list'>Users List</Link>
+        Client with id: {id} doesn't exist. Check list of all Clients: <Link to='/client/list'>Clients List</Link>
       </div>
     </Alert>
   )

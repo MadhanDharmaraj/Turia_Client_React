@@ -6,7 +6,7 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getUser, deleteUser } from '../store'
+import { getService, deleteUser } from '../store'
 
 // ** Icons Imports
 import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive } from 'react-feather'
@@ -30,40 +30,6 @@ const renderClient = row => {
   }
 }
 
-// ** Renders Role Columns
-const renderRole = row => {
-  const roleObj = {
-    subscriber: {
-      class: 'text-primary',
-      icon: User
-    },
-    maintainer: {
-      class: 'text-success',
-      icon: Database
-    },
-    editor: {
-      class: 'text-info',
-      icon: Edit2
-    },
-    author: {
-      class: 'text-warning',
-      icon: Settings
-    },
-    admin: {
-      class: 'text-danger',
-      icon: Slack
-    }
-  }
-
-  const Icon = roleObj[row.role] ? roleObj[row.role].icon : Edit2
-
-  return (
-    <span className='text-truncate text-capitalize align-middle'>
-      <Icon size={18} className={`${roleObj[row.role] ? roleObj[row.role].class : ''} me-50`} />
-      {row.role}
-    </span>
-  )
-}
 
 const statusObj = {
   pending: 'light-warning',
@@ -73,11 +39,11 @@ const statusObj = {
 
 export const columns = [
   {
-    name: 'User',
+    name: 'Service',
     sortable: true,
     minWidth: '300px',
-    sortField: 'fullName',
-    selector: row => row.fullName,
+    sortField: 'name',
+    selector: row => row.name,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
         {renderClient(row)}
@@ -85,40 +51,23 @@ export const columns = [
           <Link
             to={`/service/view/${row.id}`}
             className='user_name text-truncate text-body'
-            onClick={() => store.dispatch(getUser(row.id))}
+            onClick={() => store.dispatch(getService(row.id))}
           >
-            <span className='fw-bolder'>{row.fullName}</span>
+            <span className='fw-bolder'>{row.name}</span>
           </Link>
-          <small className='text-truncate text-muted mb-0'>{row.email}</small>
         </div>
       </div>
     )
   },
   {
-    name: 'Role',
+    name: 'Category',
     sortable: true,
     minWidth: '172px',
     sortField: 'role',
-    selector: row => row.role,
-    cell: row => renderRole(row)
+    selector: row => row.category,
+    cell: row => row.category
   },
-  {
-    name: 'Plan',
-    minWidth: '138px',
-    sortable: true,
-    sortField: 'currentPlan',
-    selector: row => row.currentPlan,
-    cell: row => <span className='text-capitalize'>{row.currentPlan}</span>
-  },
-  {
-    name: 'Billing',
-    minWidth: '230px',
-    sortable: true,
-    sortField: 'billing',
-    selector: row => row.billing,
-    cell: row => <span className='text-capitalize'>{row.billing}</span>
-  },
-  {
+  { 
     name: 'Status',
     minWidth: '138px',
     sortable: true,
@@ -144,7 +93,7 @@ export const columns = [
               tag={Link}
               className='w-100'
               to={`/service/view/${row.id}`}
-              onClick={() => store.dispatch(getUser(row.id))}
+              onClick={() => store.dispatch(getService(row.id))}
             >
               <FileText size={14} className='me-50' />
               <span className='align-middle'>Details</span>

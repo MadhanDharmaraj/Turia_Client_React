@@ -7,6 +7,7 @@ import chat from '@src/views/apps/chat/store'
 import users from '@src/views/apps/user/store'
 import email from '@src/views/apps/email/store'
 import invoice from '@src/views/apps/invoice/store'
+import task from '@src/views/apps/task/store'
 import calendar from '@src/views/apps/calendar/store'
 import ecommerce from '@src/views/apps/ecommerce/store'
 import dataTables from '@src/views/tables/data-tables/store'
@@ -21,6 +22,7 @@ const rootReducer = {
   navbar,
   layout,
   invoice,
+  task,
   calendar,
   ecommerce,
   dataTables,

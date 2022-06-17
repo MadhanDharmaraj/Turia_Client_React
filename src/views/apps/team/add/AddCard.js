@@ -209,13 +209,13 @@ const AddCard = () => {
 
         {/* Product Details */}
         <CardBody className='invoice-padding'>
-          <RoleCards/>
+          <RoleCards />
         </CardBody>
       </Card>
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline tag={Link} to='/client/list'>
+            <Button color='warning' outline tag={Link} to='/team/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

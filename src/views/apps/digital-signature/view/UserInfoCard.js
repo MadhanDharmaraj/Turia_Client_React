@@ -1,6 +1,6 @@
 // ** React Imports
 import { useState, Fragment } from 'react'
-
+import { Link } from 'react-router-dom'
 // ** Reactstrap Imports
 import { Row, Col, Card, Form, CardBody, Button, Badge, Modal, Input, Label, ModalBody, ModalHeader } from 'reactstrap'
 
@@ -19,14 +19,6 @@ import { selectThemeColors } from '@utils'
 
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
-
-const roleColors = {
-  editor: 'light-info',
-  admin: 'light-danger',
-  author: 'light-warning',
-  maintainer: 'light-success',
-  subscriber: 'light-primary'
-}
 
 const statusColors = {
   active: 'light-success',
@@ -64,16 +56,13 @@ const UserInfoCard = ({ selectedUser }) => {
 
   // ** Hook
   const {
-    reset,
     control,
     setError,
     handleSubmit,
     formState: { errors }
   } = useForm({
     defaultValues: {
-      username: selectedUser.username,
-      lastName: selectedUser.fullName.split(' ')[1],
-      firstName: selectedUser.fullName.split(' ')[0]
+      username: selectedUser.username
     }
   })
 
@@ -95,7 +84,7 @@ const UserInfoCard = ({ selectedUser }) => {
           initials
           color={selectedUser.avatarColor || 'light-primary'}
           className='rounded mt-3 mb-2'
-          content={selectedUser.fullName}
+          content={selectedUser.client}
           contentStyles={{
             borderRadius: 0,
             fontSize: 'calc(48px)',
@@ -125,49 +114,6 @@ const UserInfoCard = ({ selectedUser }) => {
     }
   }
 
-  const handleReset = () => {
-    reset({
-      username: selectedUser.username,
-      lastName: selectedUser.fullName.split(' ')[1],
-      firstName: selectedUser.fullName.split(' ')[0]
-    })
-  }
-
-  const handleSuspendedClick = () => {
-    return MySwal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert user!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Suspend user!',
-      customClass: {
-        confirmButton: 'btn btn-primary',
-        cancelButton: 'btn btn-outline-danger ms-1'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      if (result.value) {
-        MySwal.fire({
-          icon: 'success',
-          title: 'Suspended!',
-          text: 'User has been suspended.',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      } else if (result.dismiss === MySwal.DismissReason.cancel) {
-        MySwal.fire({
-          title: 'Cancelled',
-          text: 'Cancelled Suspension :)',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      }
-    })
-  }
-
   return (
     <Fragment>
       <Card>
@@ -177,33 +123,8 @@ const UserInfoCard = ({ selectedUser }) => {
               {renderUserImg()}
               <div className='d-flex flex-column align-items-center text-center'>
                 <div className='user-info'>
-                  <h4>{selectedUser !== null ? selectedUser.fullName : 'Eleanor Aguilar'}</h4>
-                  {selectedUser !== null ? (
-                    <Badge color={roleColors[selectedUser.role]} className='text-capitalize'>
-                      {selectedUser.role}
-                    </Badge>
-                  ) : null}
+                  <h4>{selectedUser !== null ? selectedUser.client : 'Eleanor Aguilar'}</h4>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div className='d-flex justify-content-around my-2 pt-75'>
-            <div className='d-flex align-items-start me-2'>
-              <Badge color='light-primary' className='rounded p-75'>
-                <Check className='font-medium-2' />
-              </Badge>
-              <div className='ms-75'>
-                <h4 className='mb-0'>1.23k</h4>
-                <small>Tasks Done</small>
-              </div>
-            </div>
-            <div className='d-flex align-items-start'>
-              <Badge color='light-primary' className='rounded p-75'>
-                <Briefcase className='font-medium-2' />
-              </Badge>
-              <div className='ms-75'>
-                <h4 className='mb-0'>568</h4>
-                <small>Projects Done</small>
               </div>
             </div>
           </div>
@@ -212,12 +133,16 @@ const UserInfoCard = ({ selectedUser }) => {
             {selectedUser !== null ? (
               <ul className='list-unstyled'>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Username:</span>
-                  <span>{selectedUser.username}</span>
+                  <span className='fw-bolder me-25'>DSC ID:</span>
+                  <span>{selectedUser.uniqueId}</span>
                 </li>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Billing Email:</span>
+                  <span className='fw-bolder me-25'>Email:</span>
                   <span>{selectedUser.email}</span>
+                </li>
+                <li className='mb-75'>
+                  <span className='fw-bolder me-25'>Contact:</span>
+                  <span>12345 56789</span>
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Status:</span>
@@ -226,24 +151,12 @@ const UserInfoCard = ({ selectedUser }) => {
                   </Badge>
                 </li>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Role:</span>
-                  <span className='text-capitalize'>{selectedUser.role}</span>
+                  <span className='fw-bolder me-25'>Issued Date:</span>
+                  <span>{selectedUser.issuedDate}</span>
                 </li>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Tax ID:</span>
-                  <span>Tax-{selectedUser.contact.substr(selectedUser.contact.length - 4)}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Contact:</span>
-                  <span>{selectedUser.contact}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Language:</span>
-                  <span>English</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Country:</span>
-                  <span>England</span>
+                  <span className='fw-bolder me-25'>Expiry Date:</span>
+                  <span>{selectedUser.expiryDate}</span>
                 </li>
               </ul>
             ) : null}
@@ -252,8 +165,9 @@ const UserInfoCard = ({ selectedUser }) => {
             <Button color='primary' onClick={() => setShow(true)}>
               Edit
             </Button>
-            <Button className='ms-1' color='danger' outline onClick={handleSuspendedClick}>
-              Suspended
+            <Button className='ms-1' color='danger' outline tag={Link}
+              to='/digital-signature/list'>
+              Cancel
             </Button>
           </div>
         </CardBody>
@@ -335,16 +249,6 @@ const UserInfoCard = ({ selectedUser }) => {
                 />
               </Col>
               <Col md={6} xs={12}>
-                <Label className='form-label' for='tax-id'>
-                  Tax ID
-                </Label>
-                <Input
-                  id='tax-id'
-                  placeholder='Tax-1234'
-                  defaultValue={selectedUser.contact.substr(selectedUser.contact.length - 4)}
-                />
-              </Col>
-              <Col md={6} xs={12}>
                 <Label className='form-label' for='contact'>
                   Contact
                 </Label>
@@ -404,12 +308,10 @@ const UserInfoCard = ({ selectedUser }) => {
                   type='reset'
                   color='secondary'
                   outline
-                  onClick={() => {
-                    handleReset()
-                    setShow(false)
-                  }}
+                  tag={Link}
+                  to='/digital-signature/list'
                 >
-                  Discard
+                  Cancel
                 </Button>
               </Col>
             </Row>

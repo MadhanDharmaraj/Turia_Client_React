@@ -1,4 +1,5 @@
 import Select from "react-select"
+import {Link } from 'react-router-dom'
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -7,6 +8,7 @@ const options = [
   { value: '2', label: 'Strawberry' },
   { value: '3', label: 'Vanilla' }
 ]
+
 // ** Reactstrap Importsz
 import { Row, Col, Card, Label, Button, CardBody } from 'reactstrap'
 
@@ -137,7 +139,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline>
+            <Button color='warning' outline tag={Link} to='/service/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

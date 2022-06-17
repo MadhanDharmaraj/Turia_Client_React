@@ -148,7 +148,15 @@ const AccountTabs = ({ data }) => {
                 <Label className='form-label' for='company'>
                   Business Entity
                 </Label>
-                <Input defaultValue={data.company} id='company' name='company' placeholder='Company Name' />
+                <Select
+                  id='currency'
+                  isClearable={false}
+                  className='react-select'
+                  classNamePrefix='select'
+                  options={currencyOptions}
+                  theme={selectThemeColors}
+                  defaultValue={currencyOptions[0]}
+                />
               </Col>
               <Col sm='6' className='mb-1'>
                 <Label className='form-label' for='currency'>
@@ -165,6 +173,22 @@ const AccountTabs = ({ data }) => {
                 />
               </Col>
 
+              <Col className='my-lg-0 my-1' lg='6' sm='12'>
+                <div className='d-flex flex-column'>
+                  <Label for='switch-primary' className='form-check-label mb-50'>
+                    Is GSTIN Registered?
+                  </Label>
+                  <div className='form-switch form-check-primary'>
+                    <Input type='switch' id='switch-primary' name='primary' defaultChecked />
+                  </div>
+                </div>
+              </Col>
+              <Col sm='6' className='mb-1'>
+                <Label className='form-label' for='gstin'>
+                  GSTIN
+                </Label>
+                <Input id='gstin' name='gstin' placeholder='GSTIN' />
+              </Col>
               <hr className='invoice-spacing my-2' />
               <Col sm='6' className='mb-1'>
                 <Label className='form-label' for='address'>

@@ -5,12 +5,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from 'axios'
 
 export const getAllData = createAsyncThunk('appUsers/getAllData', async () => {
-  const response = await axios.get('/api/users/list/all-data')
+  const response = await axios.get('/api/client/list/all-data')
   return response.data
 })
 
 export const getData = createAsyncThunk('appUsers/getData', async params => {
-  const response = await axios.get('/api/users/list/data', params)
+  const response = await axios.get('/api/client/list/data', params)
   return {
     params,
     data: response.data.users,
@@ -19,7 +19,7 @@ export const getData = createAsyncThunk('appUsers/getData', async params => {
 })
 
 export const getUser = createAsyncThunk('appUsers/getUser', async id => {
-  const response = await axios.get('/api/users/user', { id })
+  const response = await axios.get('/api/client', { id })
   return response.data.user
 })
 
@@ -44,7 +44,7 @@ export const appUsersSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    selectedUser: null
+    selectedClient: null
   },
   reducers: {},
   extraReducers: builder => {
@@ -58,7 +58,8 @@ export const appUsersSlice = createSlice({
         state.total = action.payload.totalPages
       })
       .addCase(getUser.fulfilled, (state, action) => {
-        state.selectedUser = action.payload
+        console.log(action)
+        state.selectedClient = action.payload
       })
   }
 })

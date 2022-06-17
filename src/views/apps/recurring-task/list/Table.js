@@ -154,7 +154,7 @@ const CustomHeader = ({ store, handlePerPage, rowsPerPage, handleFilter, searchT
               </DropdownMenu>
             </UncontrolledDropdown>
 
-            <Button className='add-new-user' color='primary' tag={Link} to='/recurring-task/add'>
+            <Button className='add-new-user' color='primary' tag={Link} to='/task/add'>
               Add Task
             </Button>
           </div>
@@ -341,8 +341,8 @@ const UsersList = () => {
       <Card>
         <CardBody>
           <Row>
-            <Col md='4'>
-              <Label for='role-select'>Role</Label>
+            <Col md='3'>
+              <Label for='role-select'>Client</Label>
               <Select
                 isClearable={false}
                 value={currentRole}
@@ -367,8 +367,8 @@ const UsersList = () => {
                 }}
               />
             </Col>
-            <Col className='my-md-0 my-1' md='4'>
-              <Label for='plan-select'>Plan</Label>
+            <Col className='my-md-0 my-1' md='3'>
+              <Label for='plan-select'>Service</Label>
               <Select
                 theme={selectThemeColors}
                 isClearable={false}
@@ -393,7 +393,33 @@ const UsersList = () => {
                 }}
               />
             </Col>
-            <Col md='4'>
+            <Col md='3'>
+              <Label for='role-select'>Emloyee</Label>
+              <Select
+                isClearable={false}
+                value={currentRole}
+                options={roleOptions}
+                className='react-select'
+                classNamePrefix='select'
+                theme={selectThemeColors}
+                onChange={data => {
+                  setCurrentRole(data)
+                  dispatch(
+                    getData({
+                      sort,
+                      sortColumn,
+                      q: searchTerm,
+                      role: data.value,
+                      page: currentPage,
+                      perPage: rowsPerPage,
+                      status: currentStatus.value,
+                      currentPlan: currentPlan.value
+                    })
+                  )
+                }}
+              />
+            </Col>
+            <Col md='3'>
               <Label for='status-select'>Status</Label>
               <Select
                 theme={selectThemeColors}

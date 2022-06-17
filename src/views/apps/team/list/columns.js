@@ -103,20 +103,20 @@ export const columns = [
     cell: row => renderRole(row)
   },
   {
-    name: 'Plan',
+    name: 'Designation',
     minWidth: '138px',
     sortable: true,
-    sortField: 'currentPlan',
-    selector: row => row.currentPlan,
-    cell: row => <span className='text-capitalize'>{row.currentPlan}</span>
+    sortField: 'designation',
+    selector: row => row.designation,
+    cell: row => <span className='text-capitalize'>{row.designation}</span>
   },
   {
-    name: 'Billing',
+    name: 'Department',
     minWidth: '230px',
     sortable: true,
-    sortField: 'billing',
-    selector: row => row.billing,
-    cell: row => <span className='text-capitalize'>{row.billing}</span>
+    sortField: 'department',
+    selector: row => row.department,
+    cell: row => <span className='text-capitalize'>{row.department}</span>
   },
   {
     name: 'Status',

@@ -71,9 +71,7 @@ const UserInfoCard = ({ selectedUser }) => {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      username: selectedUser.username,
-      lastName: selectedUser.fullName.split(' ')[1],
-      firstName: selectedUser.fullName.split(' ')[0]
+      username: selectedUser.name
     }
   })
 
@@ -95,7 +93,7 @@ const UserInfoCard = ({ selectedUser }) => {
           initials
           color={selectedUser.avatarColor || 'light-primary'}
           className='rounded mt-3 mb-2'
-          content={selectedUser.fullName}
+          content={selectedUser.name}
           contentStyles={{
             borderRadius: 0,
             fontSize: 'calc(48px)',
@@ -230,10 +228,6 @@ const UserInfoCard = ({ selectedUser }) => {
                   <span className='text-capitalize'>{selectedUser.role}</span>
                 </li>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Tax ID:</span>
-                  <span>Tax-{selectedUser.contact.substr(selectedUser.contact.length - 4)}</span>
-                </li>
-                <li className='mb-75'>
                   <span className='fw-bolder me-25'>Contact:</span>
                   <span>{selectedUser.contact}</span>
                 </li>
@@ -332,16 +326,6 @@ const UserInfoCard = ({ selectedUser }) => {
                   options={statusOptions}
                   theme={selectThemeColors}
                   defaultValue={statusOptions[statusOptions.findIndex(i => i.value === selectedUser.status)]}
-                />
-              </Col>
-              <Col md={6} xs={12}>
-                <Label className='form-label' for='tax-id'>
-                  Tax ID
-                </Label>
-                <Input
-                  id='tax-id'
-                  placeholder='Tax-1234'
-                  defaultValue={selectedUser.contact.substr(selectedUser.contact.length - 4)}
                 />
               </Col>
               <Col md={6} xs={12}>

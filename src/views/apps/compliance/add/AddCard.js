@@ -8,7 +8,6 @@ import Repeater from '@components/repeater'
 // ** Third Party Components
 //import axios from 'axios'
 import Flatpickr from 'react-flatpickr'
-import RoleCards from './RoleCards'
 import { SlideDown } from 'react-slidedown'
 import { X, Plus, Hash } from 'react-feather'
 import Select, { components } from 'react-select'
@@ -118,99 +117,44 @@ const AddCard = () => {
         <CardBody className='pb-0'>
           <Row className='row-bill-to invoice-spacing'>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label size="lg" className='col-lg-3 col-sm-12' >First Name</Label>
-              <input className='form-control' size="md" type='text' />
+              <Label size="lg" className='col-lg-3 col-sm-12' >Filing Name</Label>
+              <Controller
+                control={control}
+                name="gstType"
+                render={({ field, value, ref }) => (
+                  <Select
+                    {...register("gstType")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
+                )}
+              />
             </Col>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label className='col-lg-3 col-sm-12'>Last Name</Label>
-              <input className='form-control' size="md" type='text' />
-            </Col>
-          </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Contact No</Label>
-                <input className='form-control' size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
-              </div>
-            </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Email ID</Label>
-                <input className='form-control' size="md" type='text' {...register("businessName", { required: "Business Name Required" })} />
-              </div>
-            </Col>
-          </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Designation</Label>
-                <Controller
-                  control={control}
-                  name="gstType"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("gstType")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
-            </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Role</Label>
-                <Controller
-                  control={control}
-                  name="gstType"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("gstType")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
-            </Col>
-          </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Department</Label>
-                <Controller
-                  control={control}
-                  name="gstType"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("gstType")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
+              <Label size="lg" className='col-lg-3 col-sm-12'>Filing Frequency</Label>
+              <Controller
+                control={control}
+                name="gstType"
+                render={({ field, value, ref }) => (
+                  <Select
+                    {...register("gstType")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
+                )}
+              />
             </Col>
           </Row>
         </CardBody>
         {/* /Header */}
-
-        {/* Product Details */}
-        <CardBody className='invoice-padding'>
-          <RoleCards/>
-        </CardBody>
       </Card>
       <Card>
         <CardBody>
