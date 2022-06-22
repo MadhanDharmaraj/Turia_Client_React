@@ -9,7 +9,7 @@ import { User, Lock, Bookmark, Bell, Link, CheckSquare, Edit2 } from 'react-feat
 
 // ** User Components
 import TaskList from './TaskList'
-import SecurityTab from './SecurityTab'
+import Conversation from './Conversation'
 import Connections from './Connections'
 import BillingPlanTab from './BillingTab'
 import UserTimeline from './UserTimeline'
@@ -50,7 +50,7 @@ const UserTabs = ({ active, toggleTab }) => {
           <TaskList />
         </TabPane>
         <TabPane tabId='2'>
-          <SecurityTab />
+          <Conversation />
         </TabPane>
         <TabPane tabId='3'>
           <BillingPlanTab />

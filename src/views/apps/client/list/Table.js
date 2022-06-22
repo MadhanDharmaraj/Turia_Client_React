@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useState, useEffect } from 'react'
+import { Fragment, useState, useEffect, forwardRef } from 'react'
 import {Link } from 'react-router-dom'
 // ** Invoice List Sidebar
 import Sidebar from './Sidebar'
@@ -168,6 +168,13 @@ const UsersList = () => {
   // ** Store Vars
   const dispatch = useDispatch()
   const store = useSelector(state => state.users)
+
+  // ** Bootstrap Checkbox Component
+const BootstrapCheckbox = forwardRef((props, ref) => (
+  <div className='form-check'>
+    <Input type='checkbox' ref={ref} {...props} />
+  </div>
+))
 
   // ** States
   const [sort, setSort] = useState('desc')
@@ -398,6 +405,7 @@ const UsersList = () => {
             sortServer
             pagination
             responsive
+            selectableRows
             paginationServer
             columns={columns}
             onSort={handleSort}
@@ -405,6 +413,7 @@ const UsersList = () => {
             className='react-dataTable'
             paginationComponent={CustomPagination}
             data={dataToRender()}
+            selectableRowsComponent={BootstrapCheckbox}
             subHeaderComponent={
               <CustomHeader
                 store={store}

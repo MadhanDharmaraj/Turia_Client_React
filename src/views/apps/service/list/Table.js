@@ -1,8 +1,8 @@
 // ** React Imports
-import { Fragment, useState, useEffect } from 'react'
+import { Fragment, useState, useEffect, forwardRef } from 'react'
 
 // ** Invoice List Sidebar
-import {Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 // ** Table Columns
 import { columns } from './columns'
@@ -151,7 +151,7 @@ const CustomHeader = ({ store, handlePerPage, rowsPerPage, handleFilter, searchT
               </DropdownMenu>
             </UncontrolledDropdown>
 
-            <Button className='add-new-user' color='primary'  tag={Link} to='/service/add'>
+            <Button className='add-new-user' color='primary' tag={Link} to='/service/add'>
               Add Service
             </Button>
           </div>
@@ -177,6 +177,12 @@ const UsersList = () => {
   const [currentPlan] = useState({ value: '', label: 'Select Plan' })
   const [currentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
 
+  // ** Bootstrap Checkbox Component
+  const BootstrapCheckbox = forwardRef((props, ref) => (
+    <div className='form-check'>
+      <Input type='checkbox' ref={ref} {...props} />
+    </div>
+  ))
 
   // ** Get data on mount
   useEffect(() => {
@@ -320,6 +326,7 @@ const UsersList = () => {
             sortServer
             pagination
             responsive
+            selectableRows
             paginationServer
             columns={columns}
             onSort={handleSort}
@@ -327,6 +334,7 @@ const UsersList = () => {
             className='react-dataTable'
             paginationComponent={CustomPagination}
             data={dataToRender()}
+            selectableRowsComponent={BootstrapCheckbox}
             subHeaderComponent={
               <CustomHeader
                 store={store}

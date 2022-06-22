@@ -1,6 +1,6 @@
 // ** React Imports
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef } from 'react'
 
 // ** Table Columns
 import { columns } from './columns'
@@ -87,6 +87,13 @@ const InvoiceList = () => {
   const [statusValue, setStatusValue] = useState('')
   const [rowsPerPage, setRowsPerPage] = useState(10)
 
+  // ** Bootstrap Checkbox Component
+  const BootstrapCheckbox = forwardRef((props, ref) => (
+    <div className='form-check'>
+      <Input type='checkbox' ref={ref} {...props} />
+    </div>
+  ))
+  
   useEffect(() => {
     dispatch(
       getData({
@@ -227,12 +234,14 @@ const InvoiceList = () => {
             subHeader={true}
             columns={columns}
             responsive={true}
+            selectableRows
             onSort={handleSort}
             data={dataToRender()}
             sortIcon={<ChevronDown />}
             className='react-dataTable'
             defaultSortField='invoiceId'
             paginationDefaultPage={currentPage}
+            selectableRowsComponent={BootstrapCheckbox}
             paginationComponent={CustomPagination}
             subHeaderComponent={
               <CustomHeader

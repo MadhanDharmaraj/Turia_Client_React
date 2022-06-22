@@ -1,6 +1,6 @@
 // ** React Imports
-import { Fragment, useState, useEffect } from 'react'
-import {Link } from 'react-router-dom'
+import { Fragment, useState, useEffect, forwardRef } from 'react'
+import { Link } from 'react-router-dom'
 // ** Invoice List Sidebar
 import Sidebar from './Sidebar'
 
@@ -180,7 +180,7 @@ const UsersList = () => {
   const [currentPlan, setCurrentPlan] = useState({ value: '', label: 'Select Plan' })
   const [currentStatus, setCurrentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
 
-    // ** Get data on mount
+  // ** Get data on mount
   useEffect(() => {
     dispatch(getAllData())
     dispatch(
@@ -221,6 +221,13 @@ const UsersList = () => {
     { value: 'active', label: 'Active', number: 2 },
     { value: 'inactive', label: 'Inactive', number: 3 }
   ]
+
+  // ** Bootstrap Checkbox Component
+  const BootstrapCheckbox = forwardRef((props, ref) => (
+    <div className='form-check'>
+      <Input type='checkbox' ref={ref} {...props} />
+    </div>
+  ))
 
   // ** Function in get data on page change
   const handlePagination = page => {
@@ -457,6 +464,7 @@ const UsersList = () => {
             sortServer
             pagination
             responsive
+            selectableRows
             paginationServer
             columns={columns}
             onSort={handleSort}
@@ -464,6 +472,7 @@ const UsersList = () => {
             className='react-dataTable'
             paginationComponent={CustomPagination}
             data={dataToRender()}
+            selectableRowsComponent={BootstrapCheckbox}
             subHeaderComponent={
               <CustomHeader
                 store={store}
@@ -477,7 +486,7 @@ const UsersList = () => {
         </div>
       </Card>
 
-     
+
     </Fragment>
   )
 }
