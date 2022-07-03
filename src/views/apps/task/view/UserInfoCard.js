@@ -1,6 +1,6 @@
 // ** React Imports
 import { useState, Fragment } from 'react'
-
+import { Link } from 'react-router-dom'
 // ** Reactstrap Imports
 import { Row, Col, Card, Form, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover } from 'reactstrap'
 
@@ -73,41 +73,6 @@ const UserInfoCard = ({ selectedUser }) => {
     }
   }
   const [popoverOpen, setPopoverOpen] = useState(false)
-
-  const handleSuspendedClick = () => {
-    return MySwal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert user!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Suspend user!',
-      customClass: {
-        confirmButton: 'btn btn-primary',
-        cancelButton: 'btn btn-outline-danger ms-1'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      if (result.value) {
-        MySwal.fire({
-          icon: 'success',
-          title: 'Suspended!',
-          text: 'User has been suspended.',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      } else if (result.dismiss === MySwal.DismissReason.cancel) {
-        MySwal.fire({
-          title: 'Cancelled',
-          text: 'Cancelled Suspension :)',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      }
-    })
-  }
 
   return (
     <Fragment>
@@ -187,7 +152,7 @@ const UserInfoCard = ({ selectedUser }) => {
             <Button color='primary' onClick={() => setShow(true)}>
               Edit
             </Button>
-            <Button className='ms-1' color='danger' outline onClick={handleSuspendedClick}>
+            <Button className='ms-1' color='danger' outline tag={Link} to={`/task/list`}>
               Cancel
             </Button>
           </div>

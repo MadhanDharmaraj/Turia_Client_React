@@ -9,10 +9,10 @@ import { store } from '@store/store'
 import { getUser, deleteUser } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive } from 'react-feather'
+import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive, Eye, Edit } from 'react-feather'
 
 // ** Reactstrap Imports
-import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap'
+import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 
 // ** Renders Client Columns
 const renderClient = row => {
@@ -134,25 +134,24 @@ export const columns = [
     name: 'Actions',
     minWidth: '100px',
     cell: row => (
-      <div className='column-action'>
+      <div className='column-action d-flex align-items-center'>
+        <Col tag={Link} lg={4}
+          to={`/team/view/${row.id}`}
+          onClick={() => store.dispatch(getUser(row.id))}>
+          <Eye
+            className='cursor-pointer mt-0' size={16} />
+        </Col>
+        <Col tag={Link} lg={4}
+          to={`/team/edit/${row.id}`}
+          onClick={() => store.dispatch(getUser(row.id))} >
+          <Edit
+            className='cursor-pointer ms-1 mt-0' size={16} />
+        </Col>
         <UncontrolledDropdown>
           <DropdownToggle tag='div' className='btn btn-sm'>
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem
-              tag={Link}
-              className='w-100'
-              to={`/team/view/${row.id}`}
-              onClick={() => store.dispatch(getUser(row.id))}
-            >
-              <FileText size={14} className='me-50' />
-              <span className='align-middle'>Details</span>
-            </DropdownItem>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <Archive size={14} className='me-50' />
-              <span className='align-middle'>Edit</span>
-            </DropdownItem>
             <DropdownItem
               tag='a'
               href='/'

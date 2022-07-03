@@ -11,7 +11,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 2,
@@ -19,7 +24,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 3,
@@ -27,7 +37,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 4,
@@ -35,7 +50,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 5,
@@ -43,7 +63,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 6,
@@ -51,7 +76,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 7,
@@ -59,7 +89,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 8,
@@ -67,7 +102,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 9,
@@ -75,7 +115,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 10,
@@ -83,7 +128,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 11,
@@ -91,7 +141,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 12,
@@ -99,7 +154,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 13,
@@ -107,7 +167,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 14,
@@ -123,7 +188,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 16,
@@ -131,7 +201,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 17,
@@ -139,7 +214,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 18,
@@ -147,7 +227,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 19,
@@ -155,7 +240,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 20,
@@ -163,7 +253,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 21,
@@ -171,7 +266,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 22,
@@ -179,7 +279,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 23,
@@ -187,7 +292,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 24,
@@ -195,7 +305,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 25,
@@ -203,7 +318,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 26,
@@ -211,7 +331,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 27,
@@ -219,7 +344,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 28,
@@ -227,7 +357,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 29,
@@ -235,7 +370,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'GST - 18%',
+      exemptionReason : '',
+      sacCode : '12345'
     },
     {
       id: 30,
@@ -243,7 +383,12 @@ const data = {
       category: 'Galen Slixby',
       status: 'active',
       avatar: '',
-      avatarColor: 'light-primary'
+      avatarColor: 'light-primary',
+      description: 'Galen Slixby',
+      fee : '1200',
+      taxRate :  'Tax Exempted',
+      exemptionReason : 'No Tax Available',
+      sacCode : '12345'
     }
   ]
 }

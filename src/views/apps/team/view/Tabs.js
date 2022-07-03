@@ -8,13 +8,11 @@ import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
 import { User, Lock, Bookmark, Bell, Link, CheckSquare, Edit2 } from 'react-feather'
 
 // ** User Components
-import InvoiceList from './InvoiceList'
+import Attendance from './Attendance'
 import SecurityTab from './SecurityTab'
-import Connections from './Connections'
-import BillingPlanTab from './BillingTab'
-import UserTimeline from './UserTimeline'
-import Notifications from './Notifications'
-import UserProjectsList from './UserProjectsList'
+import TimeSheet from './TimeSheet'
+import Leave from './Leave'
+import Permissions from './Permissions' 
 
 const UserTabs = ({ active, toggleTab }) => {
   return (
@@ -53,19 +51,19 @@ const UserTabs = ({ active, toggleTab }) => {
       </Nav>
       <TabContent activeTab={active}>
         <TabPane tabId='1'>
-          <InvoiceList />
-        </TabPane>
-        <TabPane tabId='2'>
           <SecurityTab />
         </TabPane>
+        <TabPane tabId='2'>
+          <Permissions />
+        </TabPane>
         <TabPane tabId='3'>
-          <BillingPlanTab />
+          <Attendance />
         </TabPane>
         <TabPane tabId='4'>
-          <Notifications />
+          <TimeSheet />
         </TabPane>
         <TabPane tabId='5'>
-          <Notifications />
+          <Leave />
         </TabPane>
       </TabContent>
     </Fragment>

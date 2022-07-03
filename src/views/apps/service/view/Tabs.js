@@ -9,12 +9,7 @@ import { User, Lock, Bookmark, Bell, Link } from 'react-feather'
 
 // ** User Components
 import Timeline from '@components/timeline'
-import SecurityTab from './SecurityTab'
-import Connections from './Connections'
-import BillingPlanTab from './BillingTab'
-import UserTimeline from './UserTimeline'
-import Notifications from './Notifications'
-import UserProjectsList from './UserProjectsList'
+import Templates from './Templates'
 import { basicData } from './data'
 const UserTabs = ({ active, toggleTab }) => {
   return (
@@ -38,7 +33,7 @@ const UserTabs = ({ active, toggleTab }) => {
         <Timeline data={basicData} />
         </TabPane>
         <TabPane tabId='2'>
-          <SecurityTab />
+          <Templates />
         </TabPane>
       </TabContent>
     </Fragment>

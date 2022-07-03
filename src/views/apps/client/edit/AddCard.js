@@ -1,6 +1,6 @@
 // ** React Imports
 import { Fragment, useState, useEffect } from 'react'
-
+import { Link } from 'react-router-dom'
 // ** Custom Components
 import AddActions from './AddActions'
 import Repeater from '@components/repeater'
@@ -8,7 +8,6 @@ import Repeater from '@components/repeater'
 // ** Third Party Components
 //import axios from 'axios'
 import Flatpickr from 'react-flatpickr'
-import BillingAddress from './BillingAddress'
 import { SlideDown } from 'react-slidedown'
 import { X, Plus, Hash } from 'react-feather'
 import Select, { components } from 'react-select'
@@ -51,22 +50,22 @@ const AddCard = () => {
   //   }
   // ])
   const schema = yup.object().shape({
-    contactPersonName : yup.string().required("Please Enter a Contact Person Name"),
-    businessName : yup.string(),
-    contactNo : yup.string().max(10).min(0, "Invalid Contact No"),
-    email : yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),  
-    gstType : yup.string().required("Please select a GST Type"),
-    gstin : yup.string().required("Please Enter GSTIN No"),
-    placeOfSupply : yup.string().required("Please select Place Of Supply"),
-    contact_info : yup.array().of(
-      yup.object().shape({  
+    contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
+    businessName: yup.string(),
+    contactNo: yup.string().max(10).min(0, "Invalid Contact No"),
+    email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
+    gstType: yup.string().required("Please select a GST Type"),
+    gstin: yup.string().required("Please Enter GSTIN No"),
+    placeOfSupply: yup.string().required("Please select Place Of Supply"),
+    contact_info: yup.array().of(
+      yup.object().shape({
         firstName: yup.string().required("Please Enter A Name"),
         email: yup.string().email().required("Please Enter valid Email")
-      })  
+      })
     )
   })
 
-  const { register, handleSubmit, setValue, control, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       clientType: '2',
@@ -79,8 +78,14 @@ const AddCard = () => {
       placeOfSupply: '',
       currencyId: '',
       contact_info: [],
-      billingAddress : {
-
+      billingAddress: {
+        countryId: '1',
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        useAsBillingAddress: ''
       }
     }
   })
@@ -89,7 +94,7 @@ const AddCard = () => {
   const onSubmit = data => console.log(data)
 
   const addItem = (() => {
-    append({ firstName: '', email: '', contactNo: '', designation: '', isPrimary: ''})
+    append({ firstName: '', email: '', contactNo: '', designation: '', isPrimary: '' })
   })
 
   const removeItem = ((val) => {
@@ -99,10 +104,6 @@ const AddCard = () => {
   useEffect(() => {
     addItem()
   }, [])
-
-  const handleCallback = ((data) => {
-    setValue('billingAddress', data)
-  })
 
   // ** Custom Options Component
   const OptionComponent = ({ data, ...props }) => {
@@ -172,7 +173,7 @@ const AddCard = () => {
             </Col>
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Emiail ID</Label>
+                <Label className='col-lg-3 col-sm-12' size='lg'>Email ID</Label>
                 <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
               </div>
               <p className='text-danger'>{errors.email?.message}</p>
@@ -204,7 +205,7 @@ const AddCard = () => {
                       <CardText className='col-title mb-md-2 mb-0'>Mobile</CardText>
                       <input className='form-control' type='number' placeholder='' {...register(`contact_info.${i}.contactNo`)} />
                       <p className='text-danger'>{errors.contact_info?.[i]?.contactNo?.message}</p>
-                    </Col>    
+                    </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Designation</CardText>
                       <input className='form-control' type='text' placeholder='' {...register(`contact_info.${i}.designation`)} />
@@ -244,17 +245,17 @@ const AddCard = () => {
                 control={control}
                 name="gstType"
                 render={({ field, value, ref }) => (
-                    <Select
-                       {...register("gstType")}
-                        inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                    />
+                  <Select
+                    {...register("gstType")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
                 )}
-            />
+              />
             </Col>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
               <Label className='col-lg-3 col-sm-12' >Place Of Supply</Label>
@@ -262,23 +263,23 @@ const AddCard = () => {
                 control={control}
                 name="placeOfSupply"
                 render={({ field, value, ref }) => (
-                    <Select
-                       {...register("placeOfSupply")}
-                        inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                    />
+                  <Select
+                    {...register("placeOfSupply")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
                 )}
-            />
+              />
             </Col>
           </Row>
           <Row className='row-bill-to invoice-spacing'>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
               <Label className='col-lg-3 col-sm-12'>GST Number</Label>
-              <input className='form-control' size="md" type='text' {...register("gstin")}/>
+              <input className='form-control' size="md" type='text' {...register("gstin")} />
             </Col>
             <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
               <Label className='col-lg-3 col-sm-12'>Currency</Label>
@@ -286,31 +287,101 @@ const AddCard = () => {
                 control={control}
                 name="currencyId"
                 render={({ field, value, ref }) => (
-                    <Select
-                       {...register("currencyId")}
-                        inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                    />
+                  <Select
+                    {...register("currencyId")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
                 )}
-            />
+              />
             </Col>
           </Row>
         </CardBody>
         {/* Invoice Total */}
         <CardBody className=''>
-          <BillingAddress parentCallback = {handleCallback}/>
+          <h4 className='text-primary'>Billing Address</h4>
+          <Row className='row-bill-to invoice-spacing'>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12'>Address Line 1</Label>
+                <input className='form-control' size="md" type='number' {...register("contactNo")} />
+              </div>
+            </Col>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12' size='lg'>Address Line 2</Label>
+                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
+              </div>
+            </Col>
+          </Row>
+          <Row className='row-bill-to invoice-spacing'>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12'>City</Label>
+                <input className='form-control' size="md" type='number' {...register("contactNo")} />
+              </div>
+            </Col>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12' size='lg'>State</Label>
+                <Controller
+                control={control}
+                name="currencyId"
+                render={({ field, value, ref }) => (
+                  <Select
+                    {...register("currencyId")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
+                )}
+              />
+              </div>
+            </Col>
+          </Row>
+          <Row className='row-bill-to invoice-spacing'>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12'>Country</Label>
+                <Controller
+                control={control}
+                name="currencyId"
+                render={({ field, value, ref }) => (
+                  <Select
+                    {...register("currencyId")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
+                )}
+              />
+              </div>
+            </Col>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12' size='lg'>Zip Code</Label>
+                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
+              </div>
+            </Col>
+
+          </Row>
         </CardBody>
-        {/* /Invoice Total */}
 
       </Card>
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline>
+            <Button color='warning' outline tag={Link} to='/client/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

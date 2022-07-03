@@ -9,10 +9,10 @@ import { store } from '@store/store'
 import { getTask, deleteUser } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive } from 'react-feather'
+import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
 
 // ** Reactstrap Imports
-import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap'
+import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 
 // ** Renders Client Columns
 // const renderClient = row => {
@@ -40,12 +40,12 @@ export const columns = [
   {
     name: 'Task ID',
     sortable: true,
-    minWidth: '138px',  
+    minWidth: '138px',
     sortField: 'task_id',
     selector: row => row.task_id,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
-        
+
         <div className='d-flex flex-column'>
           <Link
             to={`/task/view/${row.id}`}
@@ -98,24 +98,29 @@ export const columns = [
     name: 'Actions',
     minWidth: '100px',
     cell: row => (
-      <div className='column-action'>
+      <div className='column-action d-flex align-items-center'>
+        <Col tag={Link} lg={4}
+          to={`/task/view/${row.id}`}
+          onClick={() => store.dispatch(getTask(row.id))} >
+          <Eye className='cursor-pointer mt-0' size={16} />
+        </Col>
+        <Col tag={Link} to={`/task/edit/${row.id}`} lg={4}
+          onClick={() => store.dispatch(getTask(row.id))} >
+          <Edit
+            className='cursor-pointer ms-1 mt-0' size={16} />
+        </Col>
         <UncontrolledDropdown>
           <DropdownToggle tag='div' className='btn btn-sm'>
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem
-              tag={Link}
-              className='w-100'
-              to={`/task/view/${row.id}`}
-              onClick={() => store.dispatch(getTask(row.id))}
-            >
-              <FileText size={14} className='me-50' />
-              <span className='align-middle'>Details</span>
+            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
+              <CheckCircle size={14} className='me-50' />
+              <span className='align-middle'>Mark as Active</span>
             </DropdownItem>
             <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <Archive size={14} className='me-50' />
-              <span className='align-middle'>Edit</span>
+              <XCircle size={14} className='me-50' />
+              <span className='align-middle'>Mark as Inactive</span>
             </DropdownItem>
             <DropdownItem
               tag='a'

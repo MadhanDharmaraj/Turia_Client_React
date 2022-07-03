@@ -8,7 +8,6 @@ import Repeater from '@components/repeater'
 // ** Third Party Components
 //import axios from 'axios'
 import Flatpickr from 'react-flatpickr'
-import BillingAddress from './BillingAddress'
 import { SlideDown } from 'react-slidedown'
 import { X, Plus, Hash } from 'react-feather'
 import Select, { components } from 'react-select'
@@ -25,7 +24,7 @@ const options = [
 
 // ** Reactstrap Imports
 //import { selectThemeColors } from '@utils'
-import { Row, Col, Card, Form, Label, Button, CardBody, CardText, InputGroup, InputGroupText, Input } from 'reactstrap'
+import { Row, Col, Card, Form, Label, Button, CardBody, CardText, InputGroup, InputGroupText, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -37,7 +36,6 @@ const AddCard = () => {
   // ** States
   //const [setValue] = useState({})
   const [setOpen] = useState(false)
-  let billingAddress = {}
   // const [clients, setClients] = useState(null)
   // const [selected, setSelected] = useState(null)
   // const [picker, setPicker] = useState(new Date())
@@ -67,7 +65,7 @@ const AddCard = () => {
     )
   })
 
-  const { register, handleSubmit, setValue, control, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       clientType: '2',
@@ -106,12 +104,6 @@ const AddCard = () => {
   useEffect(() => {
     addItem()
   }, [])
-
-  const handleCallback = ((data) => {
-    billingAddress = data
-    console.log(billingAddress)
-    setValue('billingAddress', data)
-  })
 
   // ** Custom Options Component
   const OptionComponent = ({ data, ...props }) => {
@@ -162,7 +154,7 @@ const AddCard = () => {
                 <Label className='col-lg-3 col-sm-12' >Contact Person Name</Label>
                 <input className='form-control' size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
               </div>
-              <p className='text-danger'>{errors.contactPersonName?.message}</p>
+              {errors.contactPersonName && <FormFeedback className='text-danger'>{errors.contactPersonName?.message}</FormFeedback>}
             </Col>
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
@@ -177,14 +169,14 @@ const AddCard = () => {
                 <Label className='col-lg-3 col-sm-12'>Mobile Number</Label>
                 <input className='form-control' size="md" type='number' {...register("contactNo")} />
               </div>
-              <p className='text-danger'>{errors.contactNo?.message}</p>
+              {errors.contactNo && <FormFeedback className='text-danger'>{errors.contactNo?.message}</FormFeedback> }
             </Col>
             <Col className='my-lg-0 my-1' lg='6' sm='12'>
               <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Emiail ID</Label>
+                <Label className='col-lg-3 col-sm-12' size='lg'>Email ID</Label>
                 <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
               </div>
-              <p className='text-danger'>{errors.email?.message}</p>
+              {errors.email && <FormFeedback className='text-danger'>{errors.email?.message}</FormFeedback> }
             </Col>
           </Row>
         </CardBody>
@@ -202,12 +194,12 @@ const AddCard = () => {
                     <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-50 mb-0'>First Name</CardText>
                       <input name='firstName' type='text' {...register(`contact_info.${i}.firstName`, { required: true })} className='form-control' />
-                      <p className='text-danger'>{errors.contact_info?.[i]?.firstName?.message}</p>
+                      {errors.contact_info?.[i]?.firstName && <FormFeedback className='text-danger'>{errors.contact_info?.[i]?.firstName?.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-2 mb-0'>Email</CardText>
                       <input type='email' {...register(`contact_info.${i}.email`, { required: true })} className='form-control' />
-                      <p className='text-danger'>{errors.contact_info?.[i]?.email?.message}</p>
+                      {errors.contact_info?.[i]?.email && <FormFeedback className='text-danger'>{errors.contact_info?.[i]?.email?.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-2 mb-0'>Mobile</CardText>
@@ -311,61 +303,79 @@ const AddCard = () => {
         </CardBody>
         {/* Invoice Total */}
         <CardBody className=''>
-          <BillingAddress parentCallback={handleCallback} />
-          <Row className='px-2'>
-            <Col xl='7' xs='12'>
-              <Row tag='dl' className='mb-0'>
-                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
-                  Address Line 1:
-                </Col>
-                <Col tag='dd' sm='8' className='mb-1'>
-                  { billingAddress.addressLine1 } 
-                </Col>
-
-                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
-                  Address Line 2:
-                </Col>
-                <Col tag='dd' sm='8' className='mb-1'>
-                { billingAddress.addressLine2 } 
-                </Col>
-
-                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
-                  City:
-                </Col>
-                <Col tag='dd' sm='8' className='mb-1'>
-                { billingAddress.city } 
-                </Col>
-              </Row>
+          <h4 className='text-primary'>Billing Address</h4>
+          <Row className='row-bill-to invoice-spacing'>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12'>Address Line 1</Label>
+                <input className='form-control' size="md" type='number' {...register("contactNo")} />
+              </div>
             </Col>
-            <Col xl='5' xs='12'>
-              <Row tag='dl' className='mb-0'>
-                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
-                  State:
-                </Col>
-                <Col tag='dd' sm='8' className='mb-1'>
-                { billingAddress.state } 
-                </Col>
-
-                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
-                  Zip Code:
-                </Col>
-                <Col tag='dd' sm='8' className='mb-1'>
-                { billingAddress.zipCode } 
-                </Col>
-
-                <Col tag='dt' sm='4' className='fw-bolder mb-1'>
-                  Country:
-                </Col>
-                <Col tag='dd' sm='8' className='mb-1'>
-                { billingAddress.countryId } 
-                </Col>
-
-
-              </Row>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12' size='lg'>Address Line 2</Label>
+                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
+              </div>
             </Col>
           </Row>
+          <Row className='row-bill-to invoice-spacing'>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12'>City</Label>
+                <input className='form-control' size="md" type='number' {...register("contactNo")} />
+              </div>
+            </Col>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12' size='lg'>State</Label>
+                <Controller
+                control={control}
+                name="currencyId"
+                render={({ field, value, ref }) => (
+                  <Select
+                    {...register("currencyId")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
+                )}
+              />
+              </div>
+            </Col>
+          </Row>
+          <Row className='row-bill-to invoice-spacing'>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12'>Country</Label>
+                <Controller
+                control={control}
+                name="currencyId"
+                render={({ field, value, ref }) => (
+                  <Select
+                    {...register("currencyId")}
+                    inputRef={ref}
+                    className="react-select col-lg-9 col-sm-12"
+                    classNamePrefix="addl-class"
+                    options={options}
+                    value={options.find(c => c.value === value)}
+                    onChange={val => field.onChange(val.value)}
+                  />
+                )}
+              />
+              </div>
+            </Col>
+            <Col className='my-lg-0 my-1' lg='6' sm='12'>
+              <div className='d-lg-flex'>
+                <Label className='col-lg-3 col-sm-12' size='lg'>Zip Code</Label>
+                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
+              </div>
+            </Col>
+
+          </Row>
         </CardBody>
-        {/* /Invoice Total */}
 
       </Card>
       <Card>

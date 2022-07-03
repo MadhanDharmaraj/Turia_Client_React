@@ -40,10 +40,10 @@ const ClientView = () => {
   return store.selectedUser !== null && store.selectedUser !== undefined ? (
     <div className='app-user-view'>
       <Row>
-        <Col xl='4' lg='5' xs={{ order: 1 }} md={{ order: 1, size: 5 }}>
+        <Col xl='4' lg='5' xs={{ order: 0 }} md={{ order: 0, size: 5 }} sm={{ order: 0 }}>
           <UserInfoCard selectedUser={store.selectedUser} />
         </Col>
-        <Col xl='8' lg='7' xs={{ order: 0 }} md={{ order: 0, size: 7 }}>
+        <Col xl='8' lg='7' xs={{ order: 1 }} md={{ order: 1, size: 7 }} sm={{ order: 1 }}>
           <UserTabs active={active} toggleTab={toggleTab} />
         </Col>
       </Row>

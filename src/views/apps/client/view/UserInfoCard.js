@@ -1,6 +1,6 @@
 // ** React Imports
 import { useState, Fragment } from 'react'
-
+import { Link } from 'react-router-dom'
 // ** Reactstrap Imports
 import { Card, CardBody, Button, Badge, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap'
 
@@ -30,41 +30,6 @@ const UserInfoCard = ({ selectedUser }) => {
     if (active !== tab) {
       setActive(tab)
     }
-  }
-
-  const handleSuspendedClick = () => {
-    return MySwal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert user!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Suspend user!',
-      customClass: {
-        confirmButton: 'btn btn-primary',
-        cancelButton: 'btn btn-outline-danger ms-1'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      if (result.value) {
-        MySwal.fire({
-          icon: 'success',
-          title: 'Suspended!',
-          text: 'User has been suspended.',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      } else if (result.dismiss === MySwal.DismissReason.cancel) {
-        MySwal.fire({
-          title: 'Cancelled',
-          text: 'Cancelled Suspension :)',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      }
-    })
   }
 
   return (
@@ -130,7 +95,7 @@ const UserInfoCard = ({ selectedUser }) => {
                   <span className='col-6 text-end'>{selectedUser.businessName}</span>
                 </li>
                 <li className='mb-75 row'>
-                  <span className='fw-bolder col-6'>GSTIN Registeer Type:</span>
+                  <span className='fw-bolder col-6'>GSTIN Register Type:</span>
                   <span className='col-6 text-end'>{selectedUser.email}</span>
                 </li>
                 <li className='mb-75 row'>
@@ -138,7 +103,7 @@ const UserInfoCard = ({ selectedUser }) => {
                   <span className='col-6 text-end'>{selectedUser.contactNo}</span>
                 </li> 
                 <li className='mb-75 row'>
-                  <span className='fw-bolder col-6'>Taxsable:</span>
+                  <span className='fw-bolder col-6'>Taxable:</span>
                   <span className='col-6 text-end'>{selectedUser.contactNo}</span>
                 </li>
 
@@ -178,8 +143,8 @@ const UserInfoCard = ({ selectedUser }) => {
             <Button color='primary' onClick={() => setShow(true)}>
               Edit
             </Button>
-            <Button className='ms-1' color='danger' outline onClick={handleSuspendedClick}>
-              Suspended
+            <Button className='ms-1' color='danger' outline  tag={Link} to={`/client/list`}>
+              Cancel
             </Button>
           </div>
         </CardBody>
