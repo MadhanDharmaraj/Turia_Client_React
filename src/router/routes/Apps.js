@@ -215,6 +215,10 @@ const AppRoutes = [
     path: '/client/add/'
   },
   {
+    element: <ClientEdit />,
+    path: '/client/edit/:id'
+  },
+  {
     element: <ServiceList />,
     path: '/service/list'
   },
