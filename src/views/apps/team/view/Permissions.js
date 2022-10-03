@@ -1,6 +1,5 @@
 // ** React Imports
 import { Fragment } from 'react'
-import { Link } from 'react-router-dom'
 
 // ** Reactstrap Imports
 import {
@@ -10,42 +9,26 @@ import {
   Label,
   Input,
   Table,
-  Modal,
-  Button,
-  CardBody,
-  ModalBody,
-  ModalHeader,
-  FormFeedback,
-  UncontrolledTooltip
+  CardBody
 } from 'reactstrap'
 
 // ** Third Party Components
-import { Copy, Info } from 'react-feather'
 import { useForm, Controller } from 'react-hook-form'
-
-// ** Custom Components
-import AvatarGroup from '@components/avatar-group'
-
-// ** FAQ Illustrations
-//import illustration from '@src/assets/images/illustration/faq-illustrations.svg'
 
 // ** Vars
 const rolesArr = [
-  'User Management',
-  'Content Management',
-  'Disputes Management',
-  'Database Management',
-  'Financial Management',
-  'Reporting',
-  'API Control',
-  'Repository Management',
-  'Payroll'
+  'Client',
+  'Service',
+  'Sales',
+  'Task',
+  'Team',
+  'Digital Signature',
+  'Setting',
+  'Attendance',
+  'Leave'
 ]
 
 const RoleCards = () => {
-  // ** States
-  // const [show, setShow] = useState(false)
-  // const [modalType, setModalType] = useState('Add New')
 
   // ** Hooks
   const { 

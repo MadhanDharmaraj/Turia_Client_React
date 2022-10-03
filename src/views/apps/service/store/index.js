@@ -13,32 +13,32 @@ export const getData = createAsyncThunk('appUsers/getData', async params => {
   const response = await axios.get('/api/service/list/data', params)
   return {
     params,
-    data: response.data.users,
+    data: response.data.services,
     totalPages: response.data.total
   }
 })
 
-export const getService = createAsyncThunk('appUsers/getUser', async id => {
+export const getService = createAsyncThunk('appUsers/getService', async id => {
   const response = await axios.get('/api/service', { id })
-  return response.data.user
+  return response.data.service
 })
 
-export const addUser = createAsyncThunk('appUsers/addUser', async (user, { dispatch, getState }) => {
-  await axios.post('/apps/service/add-user', user)
+export const addUser = createAsyncThunk('appUsers/addUser', async (service, { dispatch, getState }) => {
+  await axios.post('/apps/service/add-service', service)
   await dispatch(getData(getState().users.params))
   await dispatch(getAllData())
-  return user
+  return service
 })
 
-export const deleteUser = createAsyncThunk('appUsers/deleteUser', async (id, { dispatch, getState }) => {
+export const deleteUser = createAsyncThunk('appUsers/deleteService', async (id, { dispatch, getState }) => {
   await axios.delete('/apps/service/delete', { id })
   await dispatch(getData(getState().users.params))
   await dispatch(getAllData())
   return id
 })
 
-export const appUsersSlice = createSlice({
-  name: 'appUsers',
+export const appServicesSlice = createSlice({
+  name: 'appServices',
   initialState: {
     data: [],
     total: 1,
@@ -63,4 +63,4 @@ export const appUsersSlice = createSlice({
   }
 })
 
-export default appUsersSlice.reducer
+export default appServicesSlice.reducer

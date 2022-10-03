@@ -1,9 +1,8 @@
 // ** React Imports
 import { Fragment, useState, useEffect, useRef } from 'react'
-
+import { Link } from 'react-router-dom'
 // ** Custom Components
-import AddActions from './AddActions'
-import Repeater from '@components/repeater'
+import classnames from 'classnames'
 
 // ** Third Party Components
 //import axios from 'axios'
@@ -24,7 +23,7 @@ const options = [
 
 // ** Reactstrap Imports
 //import { selectThemeColors } from '@utils'
-import { Row, Col, Card, Form, Label, Button, CardBody, CardText, InputGroup, InputGroupText, Input } from 'reactstrap'
+import { Row, Col, Card, Form, Label, Button, CardBody, CardText, FormFeedback, Input } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -44,11 +43,11 @@ const AddCard = () => {
   const [date, setDate] = useState("")
 
   const schema = yup.object().shape({
-    clientId: yup.string().required("Please select a Client"),
-    serviceId: yup.string().required("Please select a Service"),
+    client_id: yup.string().required("Please select a Client"),
+    service_id: yup.string().required("Please select a Service"),
     assignee: yup.array().min(1, "Please select Assignee"),
-    startDate: yup.date("Please select Start Date"),
-    endDate: yup.date("Please select End Date"),
+    start_date: yup.date("Please select Start Date"),
+    end_date: yup.date("Please select End Date"),
     priority: yup.string().required("Please select a Priority"),
     invoice_items: yup.array().of(
       yup.object().shape({
@@ -63,13 +62,13 @@ const AddCard = () => {
   const { register, handleSubmit, formState: { errors }, control, setValue } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      clientId: '',
-      serviceId: '',
+      client_id: '',
+      service_id: '',
       description: '',
       assignee: [],
       reviewer: [],
-      startDate: new Date(),
-      endDate: new Date(),
+      start_date: new Date(),
+      end_date: new Date(),
       priority: '',
       invoice_items: []
     }
@@ -142,57 +141,76 @@ const AddCard = () => {
         <CardBody className='pb-2 px-2'>
           <Row>
             <div className='col-lg-6 col-sm-12'>
-              <Row className='my-2'>
-                <div className='d-lg-flex'>
-                  <Label className='col-lg-3 col-sm-12' >Client</Label>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='client_id'>
+                  Client
+                </Label>
+                <Col sm='9'>
                   <Controller
-                    className
                     control={control}
-                    rules={{ required: "Please Select Client" }}
-                    name="clientId"
+                    name="client_id"
+                    id="client_id"
                     render={({ field, value, ref }) => (
                       <Select
+                        {...field}
                         inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
+                        className={classnames('react-select', { 'is-invalid': errors.client_id })}
+                        {...field}
+                        classNamePrefix='select'
                         options={options}
-                        value={options.find(c => c.value === value)}
+                        value={options.find(c => { return c.value === value })}
                         onChange={val => field.onChange(val.value)}
                       />
                     )}
+
                   />
-                </div>
-                <p className='text-danger'>{errors.clientId?.message}</p>
-              </Row>
-              <Row className='my-2'>
-                <div className='d-lg-flex'>
-                  <Label className='col-lg-3 col-sm-12' >Service</Label>
-                  <Controller
-                    control={control}
-                    name="serviceId"
-                    rules={{ required: true }}
-                    render={({ field, value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={options.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
-                      />
-                    )}
-                  />
-                </div>
-                <p className='text-danger'>{errors.serviceId?.message}</p>
-              </Row>
-              <Row className='my-2'>
-                <Col>
-                  <div className='d-lg-flex'>
-                    <Label className='col-lg-3 col-sm-12' >Description</Label>
-                    <textarea className='form-control' size="md" {...register("description")}></textarea>
-                  </div>
+                  {errors.client_id && <FormFeedback className='text-danger'>{errors.client_id?.message}</FormFeedback>}
                 </Col>
               </Row>
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='service_id'>
+                  Service
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="service_id"
+                    id="service_id"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.service_id })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+
+                  />
+                  {errors.service_id && <FormFeedback className='text-danger'>{errors.service_id?.message}</FormFeedback>}
+                </Col>
+              </Row>
+
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='description'>
+                  Description
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='description'
+                    name='description'
+                    control={control}
+                    render={({ field }) => <Input type="textarea" invalid={errors.description && true} {...field} />}
+                  />
+                  {errors.description && <FormFeedback>{errors.description.message}</FormFeedback>}
+                </Col>
+              </Row>
+
               <Row className='my-2'>
                 <Col>
                   <div className='d-lg-flex'>
@@ -204,105 +222,126 @@ const AddCard = () => {
               </Row>
             </div>
             <div className='col-lg-6 col-sm-12'>
-              <Row className='my-2'>
-                <div className='d-lg-flex'>
-                  <Label className='col-lg-3 col-sm-12' >Assignee</Label>
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='assignee'>
+                  Assignee
+                </Label>
+                <Col sm='9'>
                   <Controller
                     control={control}
                     name="assignee"
-                    rules={{ required: true }}
-                    render={({ value, ref }) => (
+                    id="assignee"
+                    render={({ field, value, ref }) => (
                       <Select
                         inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
+                        className={classnames('react-select', { 'is-invalid': errors.assignee })}
+                        {...field}
+                        classNamePrefix='select'
                         options={options}
                         isMulti={true}
                         value={value} // set selected values
                         onChange={handleAssigneeChange}
                       />
                     )}
+
                   />
-                </div>
-                <p className='text-danger'>{errors.assignee?.message}</p>
+                  {errors.assignee && <FormFeedback className='text-danger'>{errors.assignee?.message}</FormFeedback>}
+                </Col>
               </Row>
-              <Row className='my-2'>
-                <div className='d-lg-flex'>
-                  <Label className='col-lg-3 col-sm-12' >Reviewer</Label>
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='reviewer'>
+                  Reviewer
+                </Label>
+                <Col sm='9'>
                   <Controller
                     control={control}
                     name="reviewer"
-                    rules={{ required: true }}
-                    render={({ value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        isMulti={true}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={options}
-                        value={value}
-                        onChange={handleReviwerChange}
-                      />
-                    )}
-                  />
-                </div>
-              </Row>
-              <Row className='my-2'>
-                <Col>
-                  <div className='d-lg-flex'>
-                    <Label className='col-lg-3 col-sm-12' >Start Date</Label>
-                    <Controller
-                      value={date}
-                      name="startDate"
-                      control={control}
-                      rules={{ required: true }}
-                      options={{ dateFormat: "d-m-Y" }}
-                      render={({ field, value }) => (
-                        <Flatpickr options={{ dateFormat: "d-m-Y" }} name="startDate" onChange={date => field.onChange(date)} value={value} className='form-control due-date-picker' />
-                      )}
-                    />
-                  </div>
-                  <p className='text-danger'>{errors.startDate?.message}</p>
-                </Col>
-              </Row>
-              <Row className='my-2'>
-                <Col>
-                  <div className='d-lg-flex'>
-                    <Label className='col-lg-3 col-sm-12' >End Date</Label>
-                    <Controller
-                      value={date}
-                      onChange={date => setDate(date)}
-                      name="endDate"
-                      control={control}
-                      rules={{ required: true }}
-                      options={{ dateFormat: "d-m-Y" }}
-                      render={({ field, value }) => (
-                        <Flatpickr options={{ dateFormat: "d-m-Y" }} name="endDate" onChange={date => field.onChange(date)} value={value} className='form-control due-date-picker' />
-                      )}
-                    />
-                  </div>
-                  <p className='text-danger'>{errors.endDate?.message}</p>
-                </Col>
-              </Row>
-              <Row className='my-2'>
-                <div className='d-lg-flex'>
-                  <Label className='col-lg-3 col-sm-12' >Priority</Label>
-                  <Controller
-                    control={control}
-                    name="priority"
+                    id="reviewer"
                     render={({ field, value, ref }) => (
                       <Select
                         inputRef={ref}
-                        className="react-select col-lg-9 col-sm-12"
-                        classNamePrefix="addl-class"
+                        className={classnames('react-select', { 'is-invalid': errors.reviewer })}
+                        {...field}
+                        classNamePrefix='select'
                         options={options}
-                        value={options.find(c => c.value === value)}
+                        isMulti={true}
+                        value={value} // set selected values
+                        onChange={handleReviwerChange}
+                      />
+                    )}
+
+                  />
+                  {errors.assignee && <FormFeedback className='text-danger'>{errors.assignee?.message}</FormFeedback>}
+                </Col>
+              </Row>
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='start_date'>
+                  Start Date
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    value={date}
+                    name="start_date"
+                    control={control}
+                    rules={{ required: true }}
+                    options={{ dateFormat: "d-m-Y" }}
+                    render={({ field, value }) => (
+                      <Flatpickr className="form-control" options={{ dateFormat: "d-m-Y" }} name="start_date" onChange={date => field.onChange(date)} value={value} />
+                    )}
+                  />
+
+                  {errors.start_date && <FormFeedback className='text-danger'>{errors.start_date?.message}</FormFeedback>}
+                </Col>
+              </Row>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='end_date'>
+                  Start Date
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    value={date}
+                    onChange={date => setDate(date)}
+                    name="end_date"
+                    control={control}
+                    rules={{ required: true }}
+                    options={{ dateFormat: "d-m-Y" }}
+                    render={({ field, value }) => (
+                      <Flatpickr className="form-control" options={{ dateFormat: "d-m-Y" }} name="end_date" onChange={date => field.onChange(date)} value={value} />
+                    )}
+                  />
+
+                  {errors.end_date && <FormFeedback className='text-danger'>{errors.end_date?.message}</FormFeedback>}
+                </Col>
+              </Row>
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='priority'>
+                  Priority
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="priority"
+                    id="priority"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.priority })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
                         onChange={val => field.onChange(val.value)}
                       />
                     )}
+
                   />
-                </div>
-                <p className='text-danger'>{errors.priority?.message}</p>
+                  {errors.priority && <FormFeedback className='text-danger'>{errors.priority?.message}</FormFeedback>}
+                </Col>
               </Row>
             </div>
           </Row>
@@ -321,9 +360,9 @@ const AddCard = () => {
 
             <div key={i} className='repeater-wrapper'>
               <Row>
-                <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
-                  <Row className='w-100 pe-lg-0 pe-1 py-2'>
-                    <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-4 col-sm-12'>
+                <Col className='d-lg-flex product-details-border position-relative pe-0 ps-sm-0' sm='12'>
+                  <Row className='w-100 pe-lg-0 py-2 ms-sm-1'>
+                    <Col className='my-lg-0 my-2' lg='4' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
                       <Controller
                         control={control}
@@ -342,7 +381,7 @@ const AddCard = () => {
                       />
                       <p className='text-danger'>{errors.invoice_items?.[i]?.itemId?.message}</p>
                     </Col>
-                    <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
+                    <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
                       <input type='number' {...register(`invoice_items.${i}.sacCode`)} className={`form-control ${errors.invoice_items?.[i]?.sacCode ? 'is-invalid' : ''}`} />
                     </Col>
@@ -394,7 +433,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button color='warning' outline>
+            <Button className='add-new-user' outline color='warning' tag={Link} to='/task/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

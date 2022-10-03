@@ -10,71 +10,36 @@ import {
   Label,
   Input,
   Table,
-  Modal,
-  Button,
-  CardBody,
-  ModalBody,
-  ModalHeader,
-  FormFeedback,
-  UncontrolledTooltip
+  CardBody
 } from 'reactstrap'
-
-// ** Third Party Components
-import { Copy, Info } from 'react-feather'
-import { useForm, Controller } from 'react-hook-form'
-
-// ** Custom Components
-import AvatarGroup from '@components/avatar-group'
-
-// ** FAQ Illustrations
-//import illustration from '@src/assets/images/illustration/faq-illustrations.svg'
 
 // ** Vars
 const rolesArr = [
-  'User Management',
-  'Content Management',
-  'Disputes Management',
-  'Database Management',
-  'Financial Management',
-  'Reporting',
-  'API Control',
-  'Repository Management',
-  'Payroll'
+  'Client',
+  'Service',
+  'Sales',
+  'Task',
+  'Team',
+  'Setting',
+  'Digital Signature',
+  'Attendance',
+  'Leave'
 ]
 
 const RoleCards = () => {
-  // ** States
-  // const [show, setShow] = useState(false)
-  // const [modalType, setModalType] = useState('Add New')
-
-  // ** Hooks
-  const { 
-    setError,
-    handleSubmit
-  } = useForm({ defaultValues: { roleName: '' } })
-
-  const onSubmit = data => {
-    if (data.roleName.length) {
-      setShow(false)
-    } else {
-      setError('roleName', {
-        type: 'manual'
-      })
-    }
-  }
-
-  return (    
-    <Fragment>  
+  
+  return (
+    <Fragment>
       <Card>
         <CardBody className='p-0'>
-          <Row tag='form' onSubmit={handleSubmit(onSubmit)}>
+          <Row >
             <Col xs={12}>
               <h4 className='mt-2 pt-50'>Role Permissions</h4>
               <Table className='table-flush-spacing' responsive>
                 <tbody>
                   {rolesArr.map((role, index) => {
                     return (
-                      
+
                       <tr key={index}>
                         <td className='text-nowrap fw-bolder'>{role}</td>
                         <td>
@@ -103,7 +68,7 @@ const RoleCards = () => {
                                 import
                               </Label>
                             </div>
-                            <div className='form-check'>    
+                            <div className='form-check'>
                               <Input type='checkbox' id={`export-${role}`} />
                               <Label className='form-check-label' for={`export-${role}`}>
                                 Export
@@ -119,7 +84,7 @@ const RoleCards = () => {
             </Col>
           </Row>
         </CardBody>
-        </Card>
+      </Card>
     </Fragment>
   )
 }

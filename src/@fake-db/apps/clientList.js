@@ -4,12 +4,12 @@ import mock from '../mock'
 import { paginateArray } from '../utils'
 
 const data = {
-  users: [
+  clients: [
     {
       id: 1,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -17,9 +17,9 @@ const data = {
     },
     {
       id: 2,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -27,9 +27,9 @@ const data = {
     },
     {
       id: 3,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -37,9 +37,9 @@ const data = {
     },
     {
       id: 4,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -47,9 +47,9 @@ const data = {
     },
     {
       id: 5,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -57,9 +57,9 @@ const data = {
     },
     {
       id: 6,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -67,9 +67,9 @@ const data = {
     },
     {
       id: 7,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -77,9 +77,9 @@ const data = {
     },
     {
       id: 8,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -87,9 +87,9 @@ const data = {
     },
     {
       id: 9,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -97,9 +97,9 @@ const data = {
     },
     {
       id: 10,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -107,9 +107,9 @@ const data = {
     },
     {
       id: 11,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -117,9 +117,9 @@ const data = {
     },
     {
       id: 12,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -127,9 +127,9 @@ const data = {
     },
     {
       id: 13,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -137,9 +137,9 @@ const data = {
     },
     {
       id: 14,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -147,9 +147,9 @@ const data = {
     },
     {
       id: 15,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -157,9 +157,9 @@ const data = {
     },
     {
       id: 16,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -167,9 +167,9 @@ const data = {
     },
     {
       id: 17,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -177,9 +177,9 @@ const data = {
     },
     {
       id: 18,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -187,9 +187,9 @@ const data = {
     },
     {
       id: 19,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -197,9 +197,9 @@ const data = {
     },
     {
       id: 20,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -207,9 +207,9 @@ const data = {
     },
     {
       id: 21,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -217,9 +217,9 @@ const data = {
     },
     {
       id: 22,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -227,9 +227,9 @@ const data = {
     },
     {
       id: 23,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -237,9 +237,9 @@ const data = {
     },
     {
       id: 24,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -247,9 +247,9 @@ const data = {
     },
     {
       id: 25,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -257,9 +257,9 @@ const data = {
     },
     {
       id: 26,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -267,9 +267,9 @@ const data = {
     },
     {
       id: 27,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -277,9 +277,9 @@ const data = {
     },
     {
       id: 28,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -287,9 +287,9 @@ const data = {
     },
     {
       id: 29,
-      name: 'Manual - Credit Card',
+      contact_person_name: 'Manual - Credit Card',
       businessName: 'Galen Slixby',
-      contactNo: '(479) 232-9151',
+      contact_no: '(479) 232-9151',
       email: 'gslixby0@abc.net.au',
       status: 'active',
       avatar: '',
@@ -299,19 +299,19 @@ const data = {
 }
 
 // GET ALL DATA
-mock.onGet('/api/client/list/all-data').reply(200, data.users)
+mock.onGet('/api/client/list/all-data').reply(200, data.clients)
 
-// POST: Add new user
-mock.onPost('/apps/client/add-user').reply(config => {
+// POST: Add new client
+mock.onPost('/apps/client/add-client').reply(config => {
   // Get event from post data
-  const user = JSON.parse(config.data)
-  const highestValue = data.users.reduce((a, b) => (a.id > b.id ? a : b)).id
+  const client = JSON.parse(config.data)
+  const highestValue = data.clients.reduce((a, b) => (a.id > b.id ? a : b)).id
 
-  user.id = highestValue + 1
+  client.id = highestValue + 1
 
-  data.users.push(user)
+  data.clients.push(client)
 
-  return [201, { user }]
+  return [201, { client }]
 })
 
 // GET Updated DATA
@@ -330,18 +330,18 @@ mock.onGet('/api/client/list/data').reply(config => {
   /* eslint-disable  */
   const queryLowered = q.toLowerCase()
 
-  const dataAsc = data.users.sort((a, b) => (a[sortColumn] < b[sortColumn] ? -1 : 1))
+  const dataAsc = data.clients.sort((a, b) => (a[sortColumn] < b[sortColumn] ? -1 : 1))
 
   const dataToFilter = sort === 'asc' ? dataAsc : dataAsc.reverse()
 
   const filteredData = dataToFilter.filter(
-    user =>
-      (user.email.toLowerCase().includes(queryLowered) ||
-        user.fullName.toLowerCase().includes(queryLowered) ||
-        user.billing.toLowerCase().includes(queryLowered)) &&
-      user.role === (role || user.role) &&
-      user.currentPlan === (currentPlan || user.currentPlan) &&
-      user.status === (status || user.status)
+    client =>
+      (client.email.toLowerCase().includes(queryLowered) ||
+        client.fullName.toLowerCase().includes(queryLowered) ||
+        client.billing.toLowerCase().includes(queryLowered)) &&
+      client.role === (role || client.role) &&
+      client.currentPlan === (currentPlan || client.currentPlan) &&
+      client.status === (status || client.status)
   )
   /* eslint-enable  */
 
@@ -349,7 +349,7 @@ mock.onGet('/api/client/list/data').reply(config => {
     200,
     {
       total: filteredData.length,
-      users: paginateArray(filteredData, perPage, page)
+      clients: paginateArray(filteredData, perPage, page)
     }
   ]
 })
@@ -357,20 +357,20 @@ mock.onGet('/api/client/list/data').reply(config => {
 // GET USER
 mock.onGet('/api/client').reply(config => {
   const { id } = config
-  const user = data.users.find(i => i.id === id)
-  return [200, { user }]
+  const client = data.clients.find(i => i.id === id)
+  return [200, { client }]
 })
 
 // DELETE: Deletes User
 mock.onDelete('/apps/client/delete').reply(config => {
-  // Get user id from URL
+  // Get client id from URL
   let userId = config.id
 
   // Convert Id to number
   userId = Number(userId)
 
-  const userIndex = data.users.findIndex(t => t.id === userId)
-  data.users.splice(userIndex, 1)
+  const userIndex = data.clients.findIndex(t => t.id === userId)
+  data.clients.splice(userIndex, 1)
 
   return [200]
 })

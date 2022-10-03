@@ -9,7 +9,7 @@ import { User, Lock, Bookmark, Bell, Link, CheckSquare, Edit2 } from 'react-feat
 
 // ** User Components
 import Attendance from './Attendance'
-import SecurityTab from './SecurityTab'
+import JobInfo from './JobInfo'
 import TimeSheet from './TimeSheet'
 import Leave from './Leave'
 import Permissions from './Permissions' 
@@ -51,7 +51,7 @@ const UserTabs = ({ active, toggleTab }) => {
       </Nav>
       <TabContent activeTab={active}>
         <TabPane tabId='1'>
-          <SecurityTab />
+          <JobInfo />
         </TabPane>
         <TabPane tabId='2'>
           <Permissions />

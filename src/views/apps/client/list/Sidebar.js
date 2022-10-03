@@ -16,7 +16,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { Button, Label, FormText, Form, Input } from 'reactstrap'
 
 // ** Store & Actions
-import { addUser } from '../store'
+import { addClient } from '../store'
 import { useDispatch } from 'react-redux'
 
 const defaultValues = {
@@ -83,7 +83,7 @@ const SidebarNewUsers = ({ open, toggleSidebar }) => {
     if (checkIsValid(data)) {
       toggleSidebar()
       dispatch(
-        addUser({
+        addClient({
           role,
           avatar: '',
           status: 'active',

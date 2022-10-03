@@ -171,17 +171,17 @@ const data = {
 // GET ALL DATA
 mock.onGet('/api/task/list/all-data').reply(200, data.tasks)
 
-// POST: Add new user
-mock.onPost('/apps/task/add-user').reply(config => {
+// POST: Add new task
+mock.onPost('/apps/task/add-task').reply(config => {
   // Get event from post data
-  const user = JSON.parse(config.data)
+  const task = JSON.parse(config.data)
   const highestValue = data.tasks.reduce((a, b) => (a.id > b.id ? a : b)).id
 
-  user.id = highestValue + 1
+  task.id = highestValue + 1
 
-  data.tasks.push(user)
+  data.tasks.push(task)
 
-  return [201, { user }]
+  return [201, { task }]
 })
 
 // GET Updated DATA
@@ -203,7 +203,7 @@ mock.onGet('/api/task/list/data').reply(config => {
   const dataToFilter = sort === 'asc' ? dataAsc : dataAsc.reverse()
 
   const filteredData = dataToFilter.filter(
-    user => user.status === (status || user.status)
+    task => task.status === (status || task.status)
   )
   /* eslint-enable  */
 
@@ -219,20 +219,20 @@ mock.onGet('/api/task/list/data').reply(config => {
 // GET USER
 mock.onGet('/api/task').reply(config => {
   const { id } = config
-  const user = data.tasks.find(i => i.id === id)
-  return [200, { user }]
+  const task = data.tasks.find(i => i.id === id)
+  return [200, { task }]
 })
 
 // DELETE: Deletes User
 mock.onDelete('/apps/task/delete').reply(config => {
-  // Get user id from URL
-  let userId = config.id
+  // Get task id from URL
+  let taskId = config.id
 
   // Convert Id to number
-  userId = Number(userId)
+  taskId = Number(taskId)
 
-  const userIndex = data.tasks.findIndex(t => t.id === userId)
-  data.tasks.splice(userIndex, 1)
+  const taskIndex = data.tasks.findIndex(t => t.id === taskId)
+  data.tasks.splice(taskIndex, 1)
 
   return [200]
 })

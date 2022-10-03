@@ -207,7 +207,7 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
     )
   }, [dispatch, store.data.length, sort, sortColumn, currentPage])
 
-  // ** User filter options
+  // ** Client filter options
   const planOptions = [
     { value: '', label: 'Select Entity' },
     { value: 'basic', label: 'Basic' },

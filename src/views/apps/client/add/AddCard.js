@@ -1,14 +1,15 @@
 // ** React Imports
 import { Fragment, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import classnames from 'classnames'
 // ** Custom Components
-import AddActions from './AddActions'
-import Repeater from '@components/repeater'
 
+import { addClient } from '../store/index'
 // ** Third Party Components
+import { useDispatch } from 'react-redux'
+
+
 //import axios from 'axios'
-import Flatpickr from 'react-flatpickr'
-import { SlideDown } from 'react-slidedown'
 import { X, Plus, Hash } from 'react-feather'
 import Select, { components } from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
@@ -33,68 +34,70 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
 const AddCard = () => {
+
+  const dispatch = useDispatch()
   // ** States
-  //const [setValue] = useState({})
+  const phoneRegExp = /^[0-9\- ]{10,10}$/
+  const zipcodeExp = /^[0-9\- ]{6,6}$/
+
   const [setOpen] = useState(false)
-  // const [clients, setClients] = useState(null)
-  // const [selected, setSelected] = useState(null)
-  // const [picker, setPicker] = useState(new Date())
-  // const [invoiceNumber, setInvoiceNumber] = useState(false)
-  // const [dueDatepicker, setDueDatePicker] = useState(new Date())
-  // const [options, setOptions] = useState([
-  //   {
-  //     value: 'add-new',
-  //     label: 'Add New Customer',
-  //     type: 'button',
-  //     color: 'flat-success'
-  //   }
-  // ])
+
   const schema = yup.object().shape({
-    contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
-    businessName: yup.string(),
-    contactNo: yup.string().max(10).min(0, "Invalid Contact No"),
+    client_type: yup.number(),
+    contact_person_name: yup.string().required("Please Enter a Contact Person Name"),
+    business_name: yup.string().when(["client_type"], { is: (client_type) => client_type === 2, then: yup.string().required("Please Enter Business Name.") }),
+    contact_no: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
     email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
-    gstType: yup.string().required("Please select a GST Type"),
+    business_entity: yup.string().when(["client_type"], { is: (client_type) => client_type === 2, then: yup.string().required("Please Select Business Enity.") }),
+    gst_registration_type: yup.string().required("Please select a GST Type"),
     gstin: yup.string().required("Please Enter GSTIN No"),
-    placeOfSupply: yup.string().required("Please select Place Of Supply"),
+    place_of_supply: yup.string().required("Please select Place Of Supply"),
+    currency_id: yup.string(),
     contact_info: yup.array().of(
       yup.object().shape({
-        firstName: yup.string().required("Please Enter A Name"),
-        email: yup.string().email().required("Please Enter valid Email")
+        first_name: yup.string().required("Please Enter A Name"),
+        email: yup.string().email().required("Please Enter valid Email"),
+        contact_no: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true })
       })
-    )
+    ).min(1, "Please Enter atleast one contact Info"),
+    billing_address: yup.object().shape({
+      zip_code: yup.string().matches(zipcodeExp, { message: 'Please Enter Valid ZipCode', excludeEmptyString: true })
+    })
   })
 
   const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      clientType: '2',
-      contactPersonName: '',
-      businessName: '',
-      contactNo: '',
+      client_type: 2,
+      contact_person_name: '',
+      business_name: '',
+      contact_no: '',
+      business_entity: '',
       email: '',
-      gstType: '',
+      gst_registration_type: '',
       gstin: '',
-      placeOfSupply: '',
-      currencyId: '',
+      place_of_supply: '',
+      currency_id: '',
       contact_info: [],
-      billingAddress: {
-        countryId: '1',
-        addressLine1: '',
-        addressLine2: '',
+      billing_address: {
+        country_id: '1',
+        address_line1: '',
+        address_line2: '',
         city: '',
         state: '',
-        zipCode: '',
-        useAsBillingAddress: ''
+        zip_code: '',
+        use_as_billing_address: ''
       }
     }
   })
 
   const { fields, append, remove } = useFieldArray({ name: 'contact_info', control })
-  const onSubmit = data => console.log(data)
+  const onSubmit = data => {
+    dispatch(addClient(data))
+  }
 
   const addItem = (() => {
-    append({ firstName: '', email: '', contactNo: '', designation: '', isPrimary: '' })
+    append({ first_name: '', email: '', contact_no: '', designation: '', is_primary: '' })
   })
 
   const removeItem = ((val) => {
@@ -125,64 +128,156 @@ const AddCard = () => {
       <Card className='invoice-preview-card'>
         {/* Header */}
         <CardBody className='pb-0'>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label size="lg" className='col-lg-3 col-sm-12' >Client Type</Label>
-              <Col className='my-lg-0 my-2 d-flex' lg='9' sm='9'>
-                <div className='form-check form-check-primary mx-2'>
-                  <input className='form-check-input' type='radio' id='client_type_1' name='clientType' value='2' {...register("clientType")} />
-                  <Label className='form-check-label' for='client_type_1'>
-                    Business
-                  </Label>
-                </div>
-                <div className='form-check form-check-primary mx-2'>
-                  <input className='form-check-input' type='radio' id='client_type_2' name='clientType' value='1' {...register("clientType")} />
-                  <Label className='form-check-label' for='client_type_2'>
-                    Individual
-                  </Label>
-                </div>
-              </Col>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='contact_person_name'>
+                  Client Type
+                </Label>
+                <Col sm='9'>
+                  <div className='form-check form-check-primary form-check-inline'>
+                    <input className='form-check-input' type='radio' id='client_type_1' name='client_type' value='2' {...register("client_type")} />
+                    <Label className='form-check-label' for='client_type_1'>
+                      Business
+                    </Label>
+                  </div>
+                  <div className='form-check form-check-primary form-check-inline'>
+                    <input className='form-check-input' type='radio' id='client_type_2' name='client_type' value='1' {...register("client_type")} />
+                    <Label className='form-check-label' for='client_type_2'>
+                      Individual
+                    </Label>
+                  </div>
+                </Col>
+              </Row>
             </Col>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label className='col-lg-3 col-sm-12'>Unique No</Label>
-              <input className='form-control' size="md" type='text' disabled />
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='unique_identity'>
+                  Unique No
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='unique_identity'
+                    name='unique_identity'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.unique_identity && true} {...field} />}
+                  />
+                  {errors.unique_identity && <FormFeedback>{errors.unique_identity.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Contact Person Name</Label>
-                <input className='form-control' size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
-              </div>
-              {errors.contactPersonName && <FormFeedback className='text-danger'>{errors.contactPersonName?.message}</FormFeedback>}
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='contact_person_name'>
+                  Conatct Person Name
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='contact_person_name'
+                    name='contact_person_name'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.contact_person_name && true} {...field} />}
+                  />
+                  {errors.contact_person_name && <FormFeedback>{errors.contact_person_name.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Business Name</Label>
-                <input className='form-control' size="md" type='text' {...register("businessName", { required: "Business Name Required" })} />
-              </div>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='business_name'>
+                  Business Name
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    id='business_name'
+                    name='business_name'
+                    render={({ field }) => (
+                      <Input type='text' invalid={errors.business_name && true} {...field} />
+                    )}
+                  />
+                  {errors.business_name && <FormFeedback>{errors.business_name.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Mobile Number</Label>
-                <input className='form-control' size="md" type='number' {...register("contactNo")} />
-              </div>
-              {errors.contactNo && <FormFeedback className='text-danger'>{errors.contactNo?.message}</FormFeedback> }
+
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='contact_no'>
+                  Mobile Number
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='contact_no'
+                    name='contact_no'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.contact_no && true} {...field} />}
+                  />
+                  {errors.contact_no && <FormFeedback>{errors.contact_no.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' size='lg'>Email ID</Label>
-                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
-              </div>
-              {errors.email && <FormFeedback className='text-danger'>{errors.email?.message}</FormFeedback> }
+            <Col md='6' className='mb-1'>
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='email'>
+                  Email ID
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    id='email'
+                    name='email'
+                    render={({ field }) => (
+                      <Input type='email' invalid={errors.email && true} {...field} />
+                    )}
+                  />
+                  {errors.email && <FormFeedback>{errors.email.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
+          </Row>
+
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='business_entity'>
+                  Business Entity
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="business_entity"
+                    id="business_entity"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.business_entity })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+
+                  />
+                   { errors.business_entity && <FormFeedback className='text-danger'>{errors.business_entity?.message}</FormFeedback> } 
+                </Col>
+              </Row>
+            </Col>
+
           </Row>
         </CardBody>
         {/* /Header */}
 
         <hr className='invoice-spacing' />
+        {errors.contact_info && <p className='text-danger ms-2'>{errors.contact_info?.message}</p>}
         {/* Product Details */}
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
@@ -193,27 +288,55 @@ const AddCard = () => {
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
                     <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-50 mb-0'>First Name</CardText>
-                      <input name='firstName' type='text' {...register(`contact_info.${i}.firstName`, { required: true })} className='form-control' />
-                      {errors.contact_info?.[i]?.firstName && <FormFeedback className='text-danger'>{errors.contact_info?.[i]?.firstName?.message}</FormFeedback>}
+                      <Controller
+                        control={control}
+                        id='contact_info_first_name'
+                        name={`contact_info.${i}.first_name`}
+                        render={({ field }) => (
+                          <Input type='text' {...register(`contact_info.${i}.first_name`)} invalid={errors.contact_info?.[i]?.first_name && true} {...field} />
+                        )}
+                      />
+                      {errors.contact_info?.[i]?.first_name && <FormFeedback>{errors.contact_info?.[i]?.first_name.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-2 mb-0'>Email</CardText>
-                      <input type='email' {...register(`contact_info.${i}.email`, { required: true })} className='form-control' />
-                      {errors.contact_info?.[i]?.email && <FormFeedback className='text-danger'>{errors.contact_info?.[i]?.email?.message}</FormFeedback>}
+                      <Controller
+                        control={control}
+                        id='contact_info_email'
+                        name={`contact_info.${i}.email`}
+                        render={({ field }) => (
+                          <Input type='email' {...register(`contact_info.${i}.email`)} invalid={errors.contact_info?.[i]?.email && true} {...field} />
+                        )}
+                      />
+                      {errors.contact_info?.[i]?.email && <FormFeedback>{errors.contact_info?.[i]?.email.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-2 mb-0'>Mobile</CardText>
-                      <input className='form-control' type='number' placeholder='' {...register(`contact_info.${i}.contactNo`)} />
-                      <p className='text-danger'>{errors.contact_info?.[i]?.contactNo?.message}</p>
+                      <Controller
+                        control={control}
+                        id='contact_info_contact_no'
+                        name={`contact_info.${i}.contact_no`}
+                        render={({ field }) => (
+                          <Input type='number'  {...register(`contact_info.${i}.conatct_no`)} invalid={errors.contact_info?.[i]?.contact_no && true} {...field} />
+                        )}
+                      />
+                      {errors.contact_info?.[i]?.contact_no && <FormFeedback>{errors.contact_info?.[i]?.contact_no.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Designation</CardText>
-                      <input className='form-control' type='text' placeholder='' {...register(`contact_info.${i}.designation`)} />
+                      <Controller
+                        control={control}
+                        id='contact_info_designation'
+                        name={`contact_info.${i}.designation`}
+                        render={({ field }) => (
+                          <Input type='text'  {...register(`contact_info.${i}.designation`)}  {...field} />
+                        )}
+                      />
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='1' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Primary</CardText>
                       <div className='form-switch form-check-primary'>
-                        <Input type='switch' id='switch-primary' value={true} name='primary' defaultChecked {...register(`contact_info.${i}.isPrimary`)} />
+                        <Input type='switch' id='switch-primary' value={true} name='primary' defaultChecked {...register(`contact_info.${i}.is_primary`)} />
                       </div>
                     </Col>
                   </Row>
@@ -238,145 +361,233 @@ const AddCard = () => {
         <hr className='invoice-spacing' />
         {/* Product Details */}
         <CardBody>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label className='col-lg-3 col-sm-12' >GST Type</Label>
-              <Controller
-                control={control}
-                name="gstType"
-                render={({ field, value, ref }) => (
-                  <Select
-                    {...register("gstType")}
-                    inputRef={ref}
-                    className="react-select col-lg-9 col-sm-12"
-                    classNamePrefix="addl-class"
-                    options={options}
-                    value={options.find(c => c.value === value)}
-                    onChange={val => field.onChange(val.value)}
+
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='gst_registration_type'>
+                  GST Type
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="gst_registration_type"
+                    id="gst_registration_type"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.gst_registration_type })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+
                   />
-                )}
-              />
+                  { errors.gst_registration_type && <FormFeedback className='text-danger'>{errors.gst_registration_type?.message}</FormFeedback> } 
+                </Col>
+              </Row>
             </Col>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label className='col-lg-3 col-sm-12' >Place Of Supply</Label>
-              <Controller
-                control={control}
-                name="placeOfSupply"
-                render={({ field, value, ref }) => (
-                  <Select
-                    {...register("placeOfSupply")}
-                    inputRef={ref}
-                    className="react-select col-lg-9 col-sm-12"
-                    classNamePrefix="addl-class"
-                    options={options}
-                    value={options.find(c => c.value === value)}
-                    onChange={val => field.onChange(val.value)}
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='place_of_supply'>
+                  Place of Supply
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="place_of_supply"
+                    id="place_of_supply"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        inputRef={ref}
+                        name="place_of_supply"
+                        title="Country"
+                        className={classnames('react-select', { 'is-invalid': errors.gst_registration_type })}
+                        {...field}
+                        classNamePrefix='select'
+                        value={options.find(c => c.value === value)}
+                        options={options}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
                   />
-                )}
-              />
+                  { errors.place_of_supply && <FormFeedback className='text-danger'>{errors.place_of_supply?.message}</FormFeedback> } 
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label className='col-lg-3 col-sm-12'>GST Number</Label>
-              <input className='form-control' size="md" type='text' {...register("gstin")} />
-            </Col>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label className='col-lg-3 col-sm-12'>Currency</Label>
-              <Controller
-                control={control}
-                name="currencyId"
-                render={({ field, value, ref }) => (
-                  <Select
-                    {...register("currencyId")}
-                    inputRef={ref}
-                    className="react-select col-lg-9 col-sm-12"
-                    classNamePrefix="addl-class"
-                    options={options}
-                    value={options.find(c => c.value === value)}
-                    onChange={val => field.onChange(val.value)}
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='gstin'>
+                  GSTIN
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='gstin'
+                    name='gstin'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.gstin && true} {...field} />}
                   />
-                )}
-              />
+                  {errors.gstin && <FormFeedback>{errors.gstin.message}</FormFeedback>}
+                </Col>
+              </Row>
+            </Col>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='currency_id'>
+                  Currency
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="currency_id"
+                    id="currency_id"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...register("currency_id")}
+                        inputRef={ref}
+                        className="react-select col-lg-12 col-sm-12"
+                        classNamePrefix="addl-class"
+                        options={options}
+                        value={options.find(c => c.value === value)}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+                  />
+                  {errors.currency_id && <FormFeedback>{errors.currency_id.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
         </CardBody>
         {/* Invoice Total */}
         <CardBody className=''>
           <h4 className='text-primary'>Billing Address</h4>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Address Line 1</Label>
-                <input className='form-control' size="md" type='number' {...register("contactNo")} />
-              </div>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='billing_address_address_line1'>
+                  Address Line1
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='billing_address_address_line1'
+                    name="billing_address.address_line1"
+                    control={control}
+                    render={({ field }) => <Input {...field} />}
+                  />
+                </Col>
+              </Row>
             </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' size='lg'>Address Line 2</Label>
-                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
-              </div>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='billing_address_address_line2'>
+                  Address Line 2
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='billing_address_address_line2'
+                    name="billing_address.address_line2"
+                    control={control}
+                    render={({ field }) => <Input {...field} />}
+                  />
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>City</Label>
-                <input className='form-control' size="md" type='number' {...register("contactNo")} />
-              </div>
-            </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' size='lg'>State</Label>
-                <Controller
-                control={control}
-                name="currencyId"
-                render={({ field, value, ref }) => (
-                  <Select
-                    {...register("currencyId")}
-                    inputRef={ref}
-                    className="react-select col-lg-9 col-sm-12"
-                    classNamePrefix="addl-class"
-                    options={options}
-                    value={options.find(c => c.value === value)}
-                    onChange={val => field.onChange(val.value)}
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='billing_address_city'>
+                  City
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='billing_address_city'
+                    name="billing_address.city"
+                    control={control}
+                    render={({ field }) => <Input  {...field} />}
                   />
-                )}
-              />
-              </div>
+                </Col>
+              </Row>
+            </Col>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='billing_address_state'>
+                  State
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="billing_address.state"
+                    id="billing_address_state"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select')}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+                  />
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Country</Label>
-                <Controller
-                control={control}
-                name="currencyId"
-                render={({ field, value, ref }) => (
-                  <Select
-                    {...register("currencyId")}
-                    inputRef={ref}
-                    className="react-select col-lg-9 col-sm-12"
-                    classNamePrefix="addl-class"
-                    options={options}
-                    value={options.find(c => c.value === value)}
-                    onChange={val => field.onChange(val.value)}
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='billing_address_country'>
+                  Country
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="billing_address.country"
+                    id="billing_address_country"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select')}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
                   />
-                )}
-              />
-              </div>
+                </Col>
+              </Row>
             </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' size='lg'>Zip Code</Label>
-                <input className='form-control' size="md" type='email' {...register("email", { required: "E Mail Required" })} />
-              </div>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='billing_address_zip_code'>
+                  Zip Code
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='billing_address_zip_code'
+                    name="billing_address.zip_code"
+                    control={control}
+                    render={({ field }) => <Input type='number' {...field} />}
+                  />
+                  {errors.billing_address?.zip_code && <FormFeedback className='text-danger'>{errors.billing_address?.zip_code.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
-
           </Row>
         </CardBody>
-
       </Card>
       <Card>
         <CardBody>

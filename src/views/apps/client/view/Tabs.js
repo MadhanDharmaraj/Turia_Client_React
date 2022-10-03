@@ -5,16 +5,12 @@ import { Fragment } from 'react'
 import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
 
 // ** Icons Imports
-import { User, Lock, Bookmark, Bell, Link, CheckSquare, Edit2 } from 'react-feather'
+import { Bell, CheckSquare, Edit2 } from 'react-feather'
 
 // ** User Components
 import TaskList from './TaskList'
 import Conversation from './Conversation'
-import Connections from './Connections'
-import BillingPlanTab from './BillingTab'
-import UserTimeline from './UserTimeline'
 import Notifications from './Notifications'
-import UserProjectsList from './UserProjectsList'
 
 const UserTabs = ({ active, toggleTab }) => {
   return (
@@ -33,13 +29,7 @@ const UserTabs = ({ active, toggleTab }) => {
           </NavLink>
         </NavItem>
         <NavItem>
-          <NavLink active={active === '3'} onClick={() => toggleTab('3')}>
-            <Bookmark className='font-medium-3 me-50' />
-            <span className='fw-bold'>Compliance</span>
-          </NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink active={active === '4'} onClick={() => toggleTab('4')}>
+          <NavLink active={active === '4'} onClick={() => toggleTab('3')}>
             <Bell className='font-medium-3 me-50' />
             <span className='fw-bold'>Licenses</span>
           </NavLink>
@@ -53,9 +43,6 @@ const UserTabs = ({ active, toggleTab }) => {
           <Conversation />
         </TabPane>
         <TabPane tabId='3'>
-          <BillingPlanTab />
-        </TabPane>
-        <TabPane tabId='4'>
           <Notifications />
         </TabPane>
       </TabContent>

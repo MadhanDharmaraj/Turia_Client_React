@@ -1,5 +1,5 @@
 import Select from "react-select"
-import {Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -9,8 +9,10 @@ const options = [
   { value: '3', label: 'Vanilla' }
 ]
 
+import classnames from 'classnames'
+
 // ** Reactstrap Importsz
-import { Row, Col, Card, Label, Button, CardBody } from 'reactstrap'
+import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -22,22 +24,22 @@ const AddCard = () => {
   // ** States
 
   const schema = yup.object().shape({
-    categoryId: yup.string().required("Please select a Category"),
-    name: yup.string().required("Please Enter Name"),
-    taxGroupId: yup.string().required("Please Select Tax Rate"),
-    professionalFee: yup.string().required("Please Enter Professional Fee"),
-    sacCode: yup.string().required("Please Enter SAC Code")
+    category_id: yup.string().required("Please select a Category"),
+    name: yup.string().required("Please Enter Service Name"),
+    tax_group_id: yup.string().required("Please Select Tax Rate"),
+    professional_fee: yup.string().required("Please Enter Professional Fee"),
+    sac_code: yup.string().required("Please Enter SAC Code")
   })
 
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
+  const { handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      categoryId: '',
+      category_id: '',
       name: '',
-      professionalFee: '',
-      sacCode: '',
-      taxGroupId: '',
+      professional_fee: '',
+      sac_code: '',
+      tax_group_id: '',
       description: ''
     }
   })
@@ -52,85 +54,134 @@ const AddCard = () => {
       <Card className='invoice-preview-card'>
         {/* Header */}
         <CardBody className='pb-0'>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Category</Label>
-                <Controller
-                  control={control}
-                  name="categoryId"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("categoryId")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
-              <p className='text-danger'>{errors.categoryId?.message}</p>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='category_id'>
+                  Category
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="category_id"
+                    id="category_id"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.category_id })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+                  />
+                   { errors.category_id && <FormFeedback className='text-danger'>{errors.category_id?.message}</FormFeedback> } 
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Name</Label>
-                <input size="md" type='text' className="form-control" {...register("name", { required: "Please Enter Service Names" })} />
-              </div>
-              <p className='text-danger'>{errors.name?.message}</p>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='name'>
+                  Name
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='name'
+                    name='name'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.name && true} {...field} />}
+                  />
+                  {errors.name && <FormFeedback>{errors.name.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>SAC Code</Label>
-                <input className='form-control' size="md" type='number' {...register("sacCode")} />
-              </div>
-              <p className='text-danger'>{errors.sacCode?.message}</p>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='sac_code'>
+                  SAC Code
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='sac_code'
+                    name='sac_code'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.sac_code && true} {...field} />}
+                  />
+                  {errors.sac_code && <FormFeedback>{errors.sac_code.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Professional Fee</Label>
-                <input className='form-control' size="md" type='number' {...register("professionalFee", { required: "Please Enter Professional Fee" })} />
-              </div>
-              <p className='text-danger'>{errors.professionalFee?.message}</p>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='professional_fee'>
+                  Professional Fee
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='professional_fee'
+                    name='professional_fee'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.professional_fee && true} {...field} />}
+                  />
+                  {errors.professional_fee && <FormFeedback>{errors.professional_fee.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Tax Rate</Label>
-                <Controller
-                  control={control}
-                  name="taxGroupId"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("taxGroupId")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
-              <p className='text-danger'>{errors.taxGroupId?.message}</p>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='tax_group_id'>
+                  Tax Rate
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="tax_group_id"
+                    id="tax_group_id"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.tax_group_id })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+                  />
+                  { errors.tax_group_id && <FormFeedback className='text-danger'>{errors.tax_group_id?.message}</FormFeedback> }
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Description</Label>
-                <textarea className={`form-control ${errors.description ? 'is-invalid' : ''}`} size="md" type='text' {...register("description", { required: "Please Enter Professional Fee" })} ></textarea>
-              </div>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='description'>
+                  Description
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='description'
+                    name='description'
+                    control={control}
+                    render={({ field }) => <Input type="textarea" invalid={errors.description && true} {...field} />}
+                  />
+                  {errors.description && <FormFeedback>{errors.description.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
         </CardBody>

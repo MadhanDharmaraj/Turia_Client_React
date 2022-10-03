@@ -1,20 +1,13 @@
 // ** React Imports
-import { Fragment, useState } from 'react'
 import { Link } from 'react-router-dom'
-// ** Custom Components
-import AddActions from './AddActions'
-import Repeater from '@components/repeater'
-
+import classnames from 'classnames'
 // ** Third Party Components
-//import axios from 'axios'
-import Flatpickr from 'react-flatpickr'
 import RoleCards from './RoleCards'
-import { SlideDown } from 'react-slidedown'
-import { X, Plus, Hash } from 'react-feather'
-import Select, { components } from 'react-select'
+import Select from 'react-select'
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
+
 const options = [
   { value: 'uk', label: 'UK' },
   { value: 'usa', label: 'USA' },
@@ -25,7 +18,7 @@ const options = [
 
 // ** Reactstrap Imports
 //import { selectThemeColors } from '@utils'
-import { Row, Col, Card, Form, Label, Button, CardBody, CardText, InputGroup, InputGroupText, Input } from 'reactstrap'
+import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -34,176 +27,205 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
 const AddCard = () => {
-  // ** States
-  //const [setValue] = useState({})
-  const [setOpen] = useState(false)
 
-  // const [clients, setClients] = useState(null)
-  // const [selected, setSelected] = useState(null)
-  // const [picker, setPicker] = useState(new Date())
-  // const [invoiceNumber, setInvoiceNumber] = useState(false)
-  // const [dueDatepicker, setDueDatePicker] = useState(new Date())
-  // const [options, setOptions] = useState([
-  //   {
-  //     value: 'add-new',
-  //     label: 'Add New Customer',
-  //     type: 'button',
-  //     color: 'flat-success'
-  //   }
-  // ])
+  // ** States
   const schema = yup.object().shape({
-    contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
-    businessName: yup.string(),
-    contactNo: yup.string().max(10).min(0, "Invalid Contact No"),
+    first_name: yup.string().required("Please Enter a First Name"),
+    last_name: yup.string().required("Please Enter a Last Name"),
+    contact_no: yup.string().required("Please Enter a Conatct No").max(10).min(10, "Invalid Contact No"),
     email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
-    gstType: yup.string().required("Please select a GST Type"),
-    gstin: yup.string().required("Please Enter GSTIN No"),
-    placeOfSupply: yup.string().required("Please select Place Of Supply"),
-    contact_info: yup.array().of(
-      yup.object().shape({
-        firstName: yup.string().required("Please Enter A Name"),
-        email: yup.string().email().required("Please Enter valid Email")
-      })
-    )
+    designation_id: yup.string().required("Please Select Designation"),
+    role_id: yup.string().required("Please Select Role"),
+    department_id: yup.string().required("Please Select Department")
   })
 
-  const { register, handleSubmit, control } = useForm({
+  const { handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      clientType: '2',
-      contactPersonName: '',
-      businessName: '',
-      contactNo: '',
+      first_name: '',
+      last_name: '',
+      contact_no: '',
       email: '',
-      gstType: '',
-      gstin: '',
-      placeOfSupply: '',
-      currencyId: '',
-      contact_info: [],
-      billingAddress: {
-        countryId: '1',
-        addressLine1: '',
-        addressLine2: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        useAsBillingAddress: ''
-      }
+      designation_id: '',
+      role_id: '',
+      department_id: '',
+      permissions: []
     }
   })
 
-  //const { fields, append, remove } = useFieldArray({ name: 'contact_info', control })
   const onSubmit = data => console.log(data)
 
 
-  // ** Custom Options Component
-  const OptionComponent = ({ data, ...props }) => {
-    if (data.type === 'button') {
-      return (
-        <Button className='text-start rounded-0 px-50' color={data.color} block onClick={() => setOpen(true)}>
-          <Plus className='font-medium-1 me-50' />
-          <span className='align-middle'>{data.label}</span>
-        </Button>
-      )
-    } else {
-      return <components.Option {...props}> {data.label} </components.Option>
-    }
-  }
-
   return (
 
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} >
       <Card className='invoice-preview-card'>
         {/* Header */}
         <CardBody className='pb-0'>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label size="lg" className='col-lg-3 col-sm-12' >First Name</Label>
-              <input className='form-control' size="md" type='text' />
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='first_name'>
+                  First Name
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='first_name'
+                    name='first_name'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.first_name && true} {...field} />}
+                  />
+                  {errors.first_name && <FormFeedback>{errors.first_name.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
-            <Col className='my-lg-0 my-1 d-lg-flex' lg='6' sm='12'>
-              <Label className='col-lg-3 col-sm-12'>Last Name</Label>
-              <input className='form-control' size="md" type='text' />
-            </Col>
-          </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Contact No</Label>
-                <input className='form-control' size="md" {...register("contactPersonName", { required: "Contact Person Name Required" })} />
-              </div>
-            </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12' >Email ID</Label>
-                <input className='form-control' size="md" type='text' {...register("businessName", { required: "Business Name Required" })} />
-              </div>
-            </Col>
-          </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Designation</Label>
-                <Controller
-                  control={control}
-                  name="gstType"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("gstType")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
-            </Col>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Role</Label>
-                <Controller
-                  control={control}
-                  name="gstType"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("gstType")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='last_name'>
+                  Last Name
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    id='last_name'
+                    name='last_name'
+                    render={({ field }) => (
+                      <Input type='text' invalid={errors.last_name && true} {...field} />
+                    )}
+                  />
+                  {errors.last_name && <FormFeedback>{errors.last_name.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='my-lg-0 my-1' lg='6' sm='12'>
-              <div className='d-lg-flex'>
-                <Label className='col-lg-3 col-sm-12'>Department</Label>
-                <Controller
-                  control={control}
-                  name="gstType"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...register("gstType")}
-                      inputRef={ref}
-                      className="react-select col-lg-9 col-sm-12"
-                      classNamePrefix="addl-class"
-                      options={options}
-                      value={options.find(c => c.value === value)}
-                      onChange={val => field.onChange(val.value)}
-                    />
-                  )}
-                />
-              </div>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='contact_no'>
+                  Conatct No
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    id='contact_no'
+                    name='contact_no'
+                    control={control}
+                    render={({ field }) => <Input invalid={errors.contact_no && true} {...field} />}
+                  />
+                  {errors.contact_no && <FormFeedback>{errors.contact_no.message}</FormFeedback>}
+                </Col>
+              </Row>
+            </Col>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='email'>
+                  Email
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    id='email'
+                    name='email'
+                    render={({ field }) => (
+                      <Input type='email' invalid={errors.email && true} {...field} />
+                    )}
+                  />
+                  {errors.email && <FormFeedback>{errors.email.message}</FormFeedback>}
+                </Col>
+              </Row>
             </Col>
           </Row>
+
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='designation_id'>
+                  Designation
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="designation_id"
+                    id="designation_id"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.designation_id })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+
+                  />
+                  {errors.designation_id && <FormFeedback className='text-danger'>{errors.designation_id?.message}</FormFeedback>}
+                </Col>
+              </Row>
+            </Col>
+
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='role_id'>
+                  Role
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="role_id"
+                    id="role_id"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.role_id })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+
+                  />
+                  {errors.role_id && <FormFeedback className='text-danger'>{errors.role_id?.message}</FormFeedback>}
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <Row>
+            <Col md='6' className='mb-1'>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='department_id'>
+                  Department
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="department_id"
+                    id="department_id"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.department_id })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={options}
+                        value={options.find(c => { return c.value === value })}
+                        onChange={val => field.onChange(val.value)}
+                      />
+                    )}
+
+                  />
+                  {errors.department_id && <FormFeedback className='text-danger'>{errors.department_id?.message}</FormFeedback>}
+                </Col>
+              </Row>
+            </Col>
+
+          </Row>
+
         </CardBody>
         {/* /Header */}
 
@@ -224,7 +246,7 @@ const AddCard = () => {
           </div>
         </CardBody>
       </Card>
-    </form >
+    </form>
   )
 }
 
