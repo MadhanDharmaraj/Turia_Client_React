@@ -298,8 +298,34 @@ const data = {
   ]
 }
 
+const clientList = [
+  {
+    label : 'Turia',
+    value : 1
+  },
+  {
+    label : 'IndiaStartup',
+    value : 2
+  },
+  {
+    label : 'True Minds',
+    value : 3
+  },
+  {
+    label : 'TCS',
+    value : 5
+  },
+  {
+    label : 'Kreiger Info',
+    value : 5
+  }
+]
+
 // GET ALL DATA
 mock.onGet('/api/client/list/all-data').reply(200, data.clients)
+
+// GET DropDown DATA
+mock.onGet('/api/client/dropdown').reply(200, clientList)
 
 // POST: Add new client
 mock.onPost('/apps/client/add-client').reply(config => {

@@ -5,24 +5,15 @@ import { Link } from 'react-router-dom'
 import classnames from 'classnames'
 
 // ** Third Party Components
-//import axios from 'axios'
+import axios from 'axios'
 import Flatpickr from 'react-flatpickr'
-import { SlideDown } from 'react-slidedown'
-import { X, Plus, Hash } from 'react-feather'
+import { X, Plus } from 'react-feather'
 import Select, { components } from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-const options = [
-  { value: 'uk', label: 'UK' },
-  { value: 'usa', label: 'USA' },
-  { value: 'france', label: 'France' },
-  { value: 'russia', label: 'Russia' },
-  { value: 'canada', label: 'Canada' }
-]
 
 // ** Reactstrap Imports
-//import { selectThemeColors } from '@utils'
 import { Row, Col, Card, Form, Label, Button, CardBody, CardText, FormFeedback, Input } from 'reactstrap'
 
 // ** Styles
@@ -31,15 +22,11 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
-// ** Deletes form
-
 const AddCard = () => {
   // ** States
 
   const inputRef = useRef(null)
   const [setOpen] = useState(false)
-  // const [clients, setClients] = useState(null)
-  // const [selected, setSelected] = useState(null)
   const [date, setDate] = useState("")
 
   const schema = yup.object().shape({
@@ -78,6 +65,12 @@ const AddCard = () => {
     }
   })
 
+  const [clientOptions, setClientOptions] = useState([])
+  const [serviceOptions, setServiceOptions] = useState([])
+  const [priorityOptions, setPriorityOptions] = useState([])
+  const [userOptions, setUserOptions] = useState([])
+  const [taxGroupOptions, setTaxGroupOptions] = useState([])
+
   const { fields, append, remove } = useFieldArray({ name: 'invoice_items', control })
   const onSubmit = data => console.log(data)
 
@@ -88,6 +81,20 @@ const AddCard = () => {
   const removeItem = ((val) => {
     remove(val)
   })
+
+  useEffect(() => {
+    // ** Get Clients
+    axios.get('/api/task/utilities').then(response => {
+      const arr = response.data
+      setClientOptions(arr.clients)
+      setServiceOptions(arr.services)
+      setPriorityOptions(arr.priority)
+      setUserOptions(arr.users)
+      setTaxGroupOptions(arr.tax_group)
+    })
+
+
+  }, [])
 
   useEffect(() => {
     addItem()
@@ -161,8 +168,8 @@ const AddCard = () => {
                         className={classnames('react-select', { 'is-invalid': errors.client_id })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
-                        value={options.find(c => { return c.value === value })}
+                        options={clientOptions}
+                        value={clientOptions.find(c => { return c.value === value })}
                         onChange={val => field.onChange(val.value)}
                       />
                     )}
@@ -188,8 +195,8 @@ const AddCard = () => {
                         className={classnames('react-select', { 'is-invalid': errors.service_id })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
-                        value={options.find(c => { return c.value === value })}
+                        options={serviceOptions}
+                        value={serviceOptions.find(c => { return c.value === value })}
                         onChange={val => field.onChange(val.value)}
                       />
                     )}
@@ -241,7 +248,7 @@ const AddCard = () => {
                         className={classnames('react-select', { 'is-invalid': errors.assignee })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
+                        options={userOptions}
                         isMulti={true}
                         value={value} // set selected values
                         onChange={handleAssigneeChange}
@@ -268,7 +275,7 @@ const AddCard = () => {
                         className={classnames('react-select', { 'is-invalid': errors.reviewer })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
+                        options={userOptions}
                         isMulti={true}
                         value={value} // set selected values
                         onChange={handleReviwerChange}
@@ -337,8 +344,8 @@ const AddCard = () => {
                         className={classnames('react-select', { 'is-invalid': errors.priority })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
-                        value={options.find(c => { return c.value === value })}
+                        options={priorityOptions}
+                        value={priorityOptions.find(c => { return c.value === value })}
                         onChange={val => field.onChange(val.value)}
                       />
                     )}
@@ -376,9 +383,9 @@ const AddCard = () => {
                           <Select
                             inputRef={ref}
                             className={classnames('react-select', { 'is-invalid': errors.invoice_items?.[i]?.item_id })}
-                            classNamePrefix="addl-class"
-                            options={options}
-                            value={options.find(c => c.value === value)}
+                            classNamePrefix='select'
+                            options={serviceOptions}
+                            value={serviceOptions.find(c => c.value === value)}
                             onChange={val => field.onChange(val.value)}
                           />
                         )}
@@ -417,9 +424,9 @@ const AddCard = () => {
                           <Select
                             inputRef={ref}
                             className={classnames('react-select', { 'is-invalid': errors.invoice_items?.[i]?.tax_group_id })}
-                            classNamePrefix="addl-class"
-                            options={options}
-                            value={options.find(c => c.value === value)}
+                            classNamePrefix='select'
+                            options={taxGroupOptions}
+                            value={taxGroupOptions.find(c => c.value === value)}
                             onChange={val => field.onChange(val.value)}
                           />
                         )}

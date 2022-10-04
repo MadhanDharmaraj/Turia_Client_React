@@ -1,5 +1,5 @@
 // ** React Imports
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import classnames from 'classnames'
 // ** Third Party Components
@@ -20,14 +20,7 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
-
-const clientOptions = [
-  { value: 'uk', label: 'UK' },
-  { value: 'usa', label: 'USA' },
-  { value: 'france', label: 'France' },
-  { value: 'russia', label: 'Russia' },
-  { value: 'canada', label: 'Canada' }
-]
+import axios from 'axios'
 
 const AddCard = () => {
 
@@ -56,22 +49,19 @@ const AddCard = () => {
   })
 
   //const [date, setDate] = useState("")
-  //const [clientOptions, setClientOptions] = useState([])
+  const [clientOptions, setClientOptions] = useState([])
   const { fields, append, remove } = useFieldArray({ name: 'dsc_lists', control })
   const onSubmit = data => console.log(data)
 
 
-  // useEffect(() => {
-  //   // ** Get Clients
-  //   axios.get('/api/invoice/clients').then(response => {
-  //     const arr = response.data
-  //     response.data.map(item => arr.push({ value: item.name, label: item.name }))
-  //     setClientOptions([...arr])
-  //     //setClients(response.data)
-  //   })
+  useEffect(() => {
+    // ** Get Clients
+    axios.get('/api/client/dropdown').then(response => {
+      const arr = response.data
+      setClientOptions(arr)
+    })
 
-
-  // }, [])
+  }, [])
 
   const addItem = (() => {
     append({ name: '', email: '', contact_no: '', issued_date: '', expiry_date: '', password: '' })
