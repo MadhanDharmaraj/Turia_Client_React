@@ -44,7 +44,7 @@ export const appServicesSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    selectedUser: null
+    selectedService: null
   },
   reducers: {},
   extraReducers: builder => {
@@ -57,8 +57,8 @@ export const appServicesSlice = createSlice({
         state.params = action.payload.params
         state.total = action.payload.totalPages
       })
-      .addCase(getUser.fulfilled, (state, action) => {
-        state.selectedUser = action.payload
+      .addCase(getService.fulfilled, (state, action) => {
+        state.selectedService = action.payload
       })
   }
 })

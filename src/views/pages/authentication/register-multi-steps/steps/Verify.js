@@ -3,53 +3,33 @@ import { Fragment } from 'react'
 
 // ** Third Party Components
 import classnames from 'classnames'
-import Cleave from 'cleave.js/react'
-import { useForm, Controller } from 'react-hook-form'
 import { ChevronLeft, ChevronRight } from 'react-feather'
-
+import * as yup from 'yup'
+import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
 // ** Reactstrap Imports
-import { Form, Label, Input, Row, Col, Button, InputGroup, InputGroupText, FormFeedback } from 'reactstrap'
-
-// ** Card Images
-// import jcbCC from '@src/assets/images/icons/payments/jcb-cc.png'
-// import amexCC from '@src/assets/images/icons/payments/amex-cc.png'
-// import uatpCC from '@src/assets/images/icons/payments/uatp-cc.png'
-// import visaCC from '@src/assets/images/icons/payments/visa-cc.png'
-// import dinersCC from '@src/assets/images/icons/payments/diners-cc.png'
-// import maestroCC from '@src/assets/images/icons/payments/maestro-cc.png'
-// import discoverCC from '@src/assets/images/icons/payments/discover-cc.png'
-// import mastercardCC from '@src/assets/images/icons/payments/mastercard-cc.png'
-
-// const cardsObj = {
-//   jcb: jcbCC,
-//   uatp: uatpCC,
-//   visa: visaCC,
-//   amex: amexCC,
-//   diners: dinersCC,
-//   maestro: maestroCC,
-//   discover: discoverCC,
-//   mastercard: mastercardCC
-// }
+import { Form, Label, Input, Row, Col, Button, FormFeedback } from 'reactstrap'
 
 const Verify = ({ stepper }) => {
   // ** States
+  const codeRegExp = /^[0-9\- ]{4,4}$/
+  const VerifySchema = yup.object().shape({
+    verifyCode: yup.string().required('Please Enter Verify Code').matches(codeRegExp, { message: 'Please Enter Valid verify Code', excludeEmptyString: true })
+  })
 
   const {
     control,
-    setError,
     handleSubmit,
     formState: { errors }
   } = useForm({
-    defaultValues: { cardNumber: '' }
+    defaultValues: { verifyCode: '' },
+    resolver: yupResolver(VerifySchema)
   })
 
   const onSubmit = data => {
-    if (data.cardNumber && data.cardNumber.length > 0) {
+    if (data.verifyCode && data.verifyCode.length > 0) {
+      console.log(data)
       stepper.next()
-    } else {
-      setError('cardNumber', {
-        type: 'manual'
-      })
     }
   }
 
@@ -60,27 +40,26 @@ const Verify = ({ stepper }) => {
         {/* <span>Select plan as per your requirement.</span> */}
       </div>
       <Form onSubmit={handleSubmit(onSubmit)}>
-        
+
         <Row className='gx-2 mb-1'>
           <Col sm={12} className='mb-1'>
             <Label className='form-label' for='credit-card'>
               Verification Code
             </Label>
-            <InputGroup className='input-group-merge'>
-              <Controller
-                name='cardNumber'
-                control={control}
-                render={({ field }) => (
-                  <Cleave
-                    {...field}
-                    id='credit-card'
-                    placeholder='1356'
-                    className={classnames('form-control', { 'is-invalid': errors.cardNumber })}
-                  />
-                )}
-              />
-            </InputGroup>
-            {errors.cardNumber && <FormFeedback className='d-block'>Please enter a valid card number</FormFeedback>}
+            <Controller
+              name='verifyCode'
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type='number'
+                  id='credit-card'
+                  placeholder='1356'
+                  className={classnames('form-control', { 'is-invalid': errors.verifyCode })}
+                />
+              )}
+            />
+            {errors.verifyCode && <FormFeedback>{errors.verifyCode?.message} </FormFeedback>}
           </Col>
         </Row>
         <div className='d-flex justify-content-between mt-2'>

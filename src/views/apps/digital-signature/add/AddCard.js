@@ -67,9 +67,11 @@ const AddCard = () => {
     append({ name: '', email: '', contact_no: '', issued_date: '', expiry_date: '', password: '' })
   })
 
-  const removeItem = ((val) => {
-    remove(val)
-  })
+  const removeItem = e => {
+    remove()
+    e.preventDefault()
+    e.target.closest('.repeater-wrapper').remove()
+  }
 
   useEffect(() => {
     addItem()
@@ -193,7 +195,7 @@ const AddCard = () => {
 
                   </Row>
                   <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={() => removeItem(i)} />
+                    <X size={18} className='cursor-pointer' onClick={removeItem} />
                   </div>
                 </Col>
               </Row>

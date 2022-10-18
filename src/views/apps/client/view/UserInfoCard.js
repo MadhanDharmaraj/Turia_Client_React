@@ -20,7 +20,7 @@ const statusColors = {
 
 const MySwal = withReactContent(Swal)
 
-const UserInfoCard = ({ selectedUser }) => {
+const UserInfoCard = ({ selectedClient }) => {
   // ** State
   const [setShow] = useState(false)
 
@@ -38,29 +38,29 @@ const UserInfoCard = ({ selectedUser }) => {
         <CardBody>
           <h4 className='fw-bolder border-bottom pb-50 mb-1'>Basic Details</h4>
           <div className='info-container'>
-            {selectedUser !== null ? (
+            {selectedClient !== null ? (
               <ul className='list-unstyled'>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Name:</span>
-                  <span className='col-6 text-end'>{selectedUser.name}</span>
+                  <span className='col-6 text-end'>{selectedClient.name}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Business Name:</span>
-                  <span className='col-6 text-end'>{selectedUser.businessName}</span>
+                  <span className='col-6 text-end'>{selectedClient.businessName}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Email:</span>
-                  <span className='col-6 text-end'>{selectedUser.email}</span>
+                  <span className='col-6 text-end'>{selectedClient.email}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Contact:</span>
-                  <span className='col-6 text-end'>{selectedUser.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Status:</span>
                   <span className='col-6 text-end'>
-                    <Badge className='text-capitalize' color={statusColors[selectedUser.status]}>
-                      {selectedUser.status}
+                    <Badge className='text-capitalize' color={statusColors[selectedClient.status]}>
+                      {selectedClient.status}
                     </Badge>
                   </span>
                 </li>
@@ -88,23 +88,23 @@ const UserInfoCard = ({ selectedUser }) => {
               <ul className='list-unstyled'>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Currency:</span>
-                  <span className='col-6 text-end'>{selectedUser.name}</span>
+                  <span className='col-6 text-end'>{selectedClient.name}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Place of Supply:</span>
-                  <span className='col-6 text-end'>{selectedUser.businessName}</span>
+                  <span className='col-6 text-end'>{selectedClient.businessName}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>GSTIN Register Type:</span>
-                  <span className='col-6 text-end'>{selectedUser.email}</span>
+                  <span className='col-6 text-end'>{selectedClient.email}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>GSTIN:</span>
-                  <span className='col-6 text-end'>{selectedUser.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
                 </li> 
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Taxable:</span>
-                  <span className='col-6 text-end'>{selectedUser.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
                 </li>
 
               </ul>
@@ -113,27 +113,27 @@ const UserInfoCard = ({ selectedUser }) => {
               <ul className='list-unstyled'>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Address Line 1:</span>
-                  <span className='col-6 text-end'>{selectedUser.name}</span>
+                  <span className='col-6 text-end'>{selectedClient.name}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Address Line 2:</span>
-                  <span className='col-6 text-end'>{selectedUser.businessName}</span>
+                  <span className='col-6 text-end'>{selectedClient.businessName}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>City:</span>
-                  <span className='col-6 text-end'>{selectedUser.email}</span>
+                  <span className='col-6 text-end'>{selectedClient.email}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>State:</span>
-                  <span className='col-6 text-end'>{selectedUser.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Country:</span>
-                  <span className='col-6 text-end'>{selectedUser.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Zip Code:</span>
-                  <span className='col-6 text-end'>{selectedUser.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
                 </li>
               </ul>
             </TabPane>

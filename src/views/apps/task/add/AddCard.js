@@ -70,6 +70,7 @@ const AddCard = () => {
   const [priorityOptions, setPriorityOptions] = useState([])
   const [userOptions, setUserOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
+  const [invoiceFlag, setinvoiceFlag] = useState(true)
 
   const { fields, append, remove } = useFieldArray({ name: 'invoice_items', control })
   const onSubmit = data => console.log(data)
@@ -360,12 +361,13 @@ const AddCard = () => {
         <hr className='invoice-spacing' />
         <Row className='px-1'>
           <div className='form-check form-check-primary mx-2'>
-            <input className='form-check-input' type='checkbox' id='client_type_2' name='invoiceFlag' value={true} {...register("invoiceFlag")} />
-            <Label className='form-check-label' for='client_type_2'>
+            <Input className='form-check-input' defaultChecked type='checkbox' id='invoice_flag' name='invoice_flag' value={true} {...register("invoice_flag")} onChange={ () => setinvoiceFlag(!invoiceFlag)} />
+            <Label className='form-check-label' for='invoice_flag'>
               Create Proposal for this Task
             </Label>
           </div>
         </Row>
+
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
 

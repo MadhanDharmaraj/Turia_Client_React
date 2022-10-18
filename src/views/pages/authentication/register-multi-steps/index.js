@@ -13,7 +13,7 @@ import { Home, User, CheckCircle } from 'react-feather'
 
 // ** Steps
 import Verify from './steps/Verify'
-import PersonalInfo from './steps/PersonalInfo'
+import Organization from './steps/Organization'
 import AccountDetails from './steps/AccountDetails'
 
 // ** Styles
@@ -46,7 +46,7 @@ const RegisterMultiSteps = () => {
       title: 'Organization',
       subtitle: 'Create Organization',
       icon: <Home size={18} />,
-      content: <PersonalInfo stepper={stepper} />
+      content: <Organization stepper={stepper} />
     }
   ]
 

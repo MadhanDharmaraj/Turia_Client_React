@@ -132,16 +132,17 @@ const AddCard = () => {
     }
   })
 
-  const { fields, append, remove } = useFieldArray({ name: 'invoice_items', control })
+  const { fields, append } = useFieldArray({ name: 'invoice_items', control })
   const onSubmit = data => console.log(data)
 
   const addItem = (() => {
     append({ itemId: '', sacCode: '', price: 0, taxGroupId: '', subTotal: 0, taxPrice: 0 })
   })
 
-  const removeItem = ((val) => {
-    remove(val)
-  })
+  const removeItem = e => {
+    e.preventDefault()
+    e.target.closest('.repeater-wrapper').remove()
+  }
 
   useEffect(() => {
     addItem()
@@ -376,7 +377,7 @@ const AddCard = () => {
                       </Col>
                     </Row>
                     <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                      <X size={18} className='cursor-pointer' onClick={() => removeItem(i)} />
+                      <X size={18} className='cursor-pointer' onClick={removeItem} />
                     </div>
                   </Col>
                 </Row>

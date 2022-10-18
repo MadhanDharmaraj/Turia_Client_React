@@ -4,13 +4,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 // ** Axios Imports
 import axios from 'axios'
 
-export const getAllData = createAsyncThunk('appClients/getAllData', async () => {
-  const response = await axios.get('/api/client/list/all-data')
-  return response.data
-})
+const api_url = process.env.REACT_APP_API_URL
 
 export const getData = createAsyncThunk('appUsers/getData', async params => {
-  const response = await axios.get('/api/client/list/data', params)
+  const response = await axios.post(`${api_url}/clients/list`, params)
   return {
     params,
     data: response.data.clients,
@@ -24,7 +21,7 @@ export const getClient = createAsyncThunk('appUsers/getUser', async id => {
 })
 
 export const addClient = createAsyncThunk('appClients/addUser', async (client, { dispatch, getState }) => {
-  await axios.post('/apps/clients/add-client', client)
+  await axios.post(`${api_url}/clients/create`, client)
   await dispatch(getData(getState().clients.params))
   await dispatch(getAllData())
   return client
@@ -37,7 +34,7 @@ export const deleteClient = createAsyncThunk('appClients/deleteUser', async (id,
   return id
 })
 
-export const appUsersSlice = createSlice({
+export const appServicesSlice = createSlice({
   name: 'appClients',
   initialState: {
     data: [],
@@ -49,19 +46,15 @@ export const appUsersSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(getAllData.fulfilled, (state, action) => {
-        state.allData = action.payload
-      })
       .addCase(getData.fulfilled, (state, action) => {
         state.data = action.payload.data
         state.params = action.payload.params
         state.total = action.payload.totalPages
       })
-      .addCase(getUser.fulfilled, (state, action) => {
-        console.log(action)
+      .addCase(getClient.fulfilled, (state, action) => {
         state.selectedClient = action.payload
       })
   }
 })
 
-export default appUsersSlice.reducer
+export default appServicesSlice.reducer

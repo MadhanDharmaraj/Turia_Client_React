@@ -8,7 +8,7 @@ import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
 import { User, Lock, Bookmark, Bell, Link } from 'react-feather'
 
 // ** User Components
-import Timeline from '@components/timeline'
+import Checklist from './CheckList'
 import Templates from './Templates'
 import { basicData } from './data'
 const UserTabs = ({ active, toggleTab }) => {
@@ -30,7 +30,7 @@ const UserTabs = ({ active, toggleTab }) => {
       </Nav>
       <TabContent activeTab={active}>
         <TabPane tabId='1'>
-        <Timeline data={basicData} />
+        <Checklist data={basicData} />
         </TabPane>
         <TabPane tabId='2'>
           <Templates />

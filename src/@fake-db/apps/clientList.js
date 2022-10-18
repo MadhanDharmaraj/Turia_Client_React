@@ -321,11 +321,108 @@ const clientList = [
   }
 ]
 
+const utilities = {
+  country: [
+    {
+      label: 'India',
+      value: 1
+    },
+    {
+      label: 'Pakistan',
+      value: 2
+    },
+    {
+      label: 'UAE',
+      value: 3
+    },
+    {
+      label: 'Australia',
+      value: 5
+    },
+    {
+      label: 'Canada',
+      value: 5
+    }
+  ],
+  state: [
+    {
+      label: 'Tamil Nadu',
+      value: 1
+    },
+    {
+      label: 'Karnataka',
+      value: 2
+    },
+    {
+      label: 'Kerala',
+      value: 3
+    },
+    {
+      label: 'Andhra',
+      value: 5
+    },
+    {
+      label: 'Delhi',
+      value: 5
+    }
+  ],
+  gst_registration_type: [
+    {
+      label: 'Overseas',
+      value: 1
+    },
+    {
+      label: 'GST Registered',
+      value: 2
+    },
+    {
+      label: 'GST Non Registered',
+      value: 3
+    }
+  ],
+  currency: [
+    {
+      label: 'INR',
+      value: 1
+    },
+    {
+      label: 'DLR',
+      value: 2
+    },
+    {
+      label: 'EUR',
+      value: 3
+    }
+  ],
+  business_entities: [
+    {
+      label: 'Partnership Firm',
+      value: 1
+    },
+    {
+      label: 'Limited Liability Partnership',
+      value: 2
+    },
+    {
+      label: 'Private Limite Company',
+      value: 3
+    },
+    {
+      label: 'public Limited Company',
+      value: 4
+    }
+  ]
+
+}
+
 // GET ALL DATA
 mock.onGet('/api/client/list/all-data').reply(200, data.clients)
 
 // GET DropDown DATA
 mock.onGet('/api/client/dropdown').reply(200, clientList)
+
+// GET DropDown DATA
+mock.onGet('/api/clients/utilities').reply(200, utilities)
 
 // POST: Add new client
 mock.onPost('/apps/client/add-client').reply(config => {

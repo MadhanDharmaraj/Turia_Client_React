@@ -18,7 +18,7 @@ import '@styles/react/apps/app-users.scss'
 
 const ClientView = () => {
   // ** Store Vars
-  const store = useSelector(state => state.users)
+  const store = useSelector(state => state.client)
   const dispatch = useDispatch()
 
   // ** Hooks
@@ -37,11 +37,11 @@ const ClientView = () => {
     }
   }
 
-  return store.selectedUser !== null && store.selectedUser !== undefined ? (
+  return store.selectedClient !== null && store.selectedClient !== undefined ? (
     <div className='app-user-view'>
       <Row>
         <Col xl='4' lg='5' xs={{ order: 0 }} md={{ order: 0, size: 5 }} sm={{ order: 0 }}>
-          <UserInfoCard selectedUser={store.selectedUser} />
+          <UserInfoCard selectedClient={store.selectedClient} />
         </Col>
         <Col xl='8' lg='7' xs={{ order: 1 }} md={{ order: 1, size: 7 }} sm={{ order: 1 }}>
           <UserTabs active={active} toggleTab={toggleTab} />

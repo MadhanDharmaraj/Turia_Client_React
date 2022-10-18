@@ -8,7 +8,7 @@ import Sidebar from './Sidebar'
 import { columns } from './columns'
 
 // ** Store & Actions
-import { getAllData, getData } from '../store'
+import { getData } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 
 // ** Third Party Components
@@ -192,7 +192,6 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
   console.log(toggleSidebar)
   // ** Get data on mount
   useEffect(() => {
-    dispatch(getAllData())
     dispatch(
       getData({
         sort,
