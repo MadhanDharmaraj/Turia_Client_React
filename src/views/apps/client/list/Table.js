@@ -1,21 +1,22 @@
 // ** React Imports
 import { Fragment, useState, useEffect, forwardRef } from 'react'
-import {Link } from 'react-router-dom'
-// ** Invoice List Sidebar
-import Sidebar from './Sidebar'
+import { Link } from 'react-router-dom'
 
 // ** Table Columns
 import { columns } from './columns'
+import UILoader from '@components/ui-loader'
+import Spinner from '@components/spinner/Loading-spinner'
 
 // ** Store & Actions
 import { getData } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
+import axios from '../../../../configs/axios/axiosConfig'
 
 // ** Third Party Components
 import Select from 'react-select'
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { ChevronDown, Share, Printer, FileText, File, Grid, Copy } from 'react-feather'
+import { ChevronDown } from 'react-feather'
 
 // ** Utils
 import { selectThemeColors } from '@utils'
@@ -28,13 +29,7 @@ import {
   Input,
   Label,
   Button,
-  CardBody,
-  CardTitle,
-  CardHeader,
-  DropdownMenu,
-  DropdownItem,
-  DropdownToggle,
-  UncontrolledDropdown
+  CardBody
 } from 'reactstrap'
 
 // ** Styles
@@ -42,50 +37,8 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 
 // ** Table Header
-const CustomHeader = ({ store, handlePerPage, rowsPerPage, handleFilter, searchTerm }) => {
-  // ** Converts table to CSV
-  function convertArrayOfObjectsToCSV(array) {
-    let result
+const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) => {
 
-    const columnDelimiter = ','
-    const lineDelimiter = '\n'
-    const keys = Object.keys(store.data[0])
-
-    result = ''
-    result += keys.join(columnDelimiter)
-    result += lineDelimiter
-
-    array.forEach(item => {
-      let ctr = 0
-      keys.forEach(key => {
-        if (ctr > 0) result += columnDelimiter
-
-        result += item[key]
-
-        ctr++
-      })
-      result += lineDelimiter
-    })
-
-    return result
-  }
-
-  // ** Downloads CSV
-  function downloadCSV(array) {
-    const link = document.createElement('a')
-    let csv = convertArrayOfObjectsToCSV(array)
-    if (csv === null) return
-
-    const filename = 'export.csv'
-
-    if (!csv.match(/^data:text\/csv/i)) {
-      csv = `data:text/csv;charset=utf-8,${csv}`
-    }
-
-    link.setAttribute('href', encodeURI(csv))
-    link.setAttribute('download', filename)
-    link.click()
-  }
   return (
     <div className='invoice-list-table-header w-100 me-1 ms-50 mt-2 mb-75'>
       <Row>
@@ -125,35 +78,6 @@ const CustomHeader = ({ store, handlePerPage, rowsPerPage, handleFilter, searchT
           </div>
 
           <div className='d-flex align-items-center table-header-actions'>
-            <UncontrolledDropdown className='me-1'>
-              <DropdownToggle color='secondary' caret outline>
-                <Share className='font-small-4 me-50' />
-                <span className='align-middle'>Export</span>
-              </DropdownToggle>
-              <DropdownMenu>
-                <DropdownItem className='w-100'>
-                  <Printer className='font-small-4 me-50' />
-                  <span className='align-middle'>Print</span>
-                </DropdownItem>
-                <DropdownItem className='w-100' onClick={() => downloadCSV(store.data)}>
-                  <FileText className='font-small-4 me-50' />
-                  <span className='align-middle'>CSV</span>
-                </DropdownItem>
-                <DropdownItem className='w-100'>
-                  <Grid className='font-small-4 me-50' />
-                  <span className='align-middle'>Excel</span>
-                </DropdownItem>
-                <DropdownItem className='w-100'>
-                  <File className='font-small-4 me-50' />
-                  <span className='align-middle'>PDF</span>
-                </DropdownItem>
-                <DropdownItem className='w-100'>
-                  <Copy className='font-small-4 me-50' />
-                  <span className='align-middle'>Copy</span>
-                </DropdownItem>
-              </DropdownMenu>
-            </UncontrolledDropdown>
-
             <Button color='primary' tag={Link} to='/client/add'>
               Add Client
             </Button>
@@ -170,11 +94,19 @@ const UsersList = () => {
   const store = useSelector(state => state.users)
 
   // ** Bootstrap Checkbox Component
-const BootstrapCheckbox = forwardRef((props, ref) => (
-  <div className='form-check'>
-    <Input type='checkbox' ref={ref} {...props} />
-  </div>
-))
+  const BootstrapCheckbox = forwardRef((props, ref) => (
+    <div className='form-check'>
+      <Input type='checkbox' ref={ref} {...props} />
+    </div>
+  ))
+  const [block, setBlock] = useState(false)
+  const Loader = () => {
+    return (
+      <Fragment>
+        <Spinner />
+      </Fragment>
+    )
+  }
 
   // ** States
   const [sort, setSort] = useState('desc')
@@ -182,95 +114,96 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState('id')
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [currentRole] = useState({ value: '', label: 'Select Role' })
-  const [currentPlan, setCurrentPlan] = useState({ value: '', label: 'Select Plan' })
-  const [currentStatus, setCurrentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
+  const [businessEntity, setBusinessEntity] = useState({id: '', name: 'Select Entity'})
+  const [currentStatus, setCurrentStatus] = useState({ id: 1, name: 'Active' })
 
-  // ** Function to toggle sidebar
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
-  console.log(toggleSidebar)
+  // ** Client filter options
+  const [businessEntityOptions, setBusinessEntityOptions] = useState([])
+  const statusOptions = [
+    { id: '', name: 'Select Status'},
+    { id: 1, name: 'Active' },
+    { id: 2, name: 'Inactive'}
+  ]
+
+  const getBusinessEntity = () => {
+    axios.post(`/businessentities/list`).then(response => {
+      const arr = response.data.businessentities
+      setBusinessEntityOptions(arr)
+
+    })
+  }
+
   // ** Get data on mount
-  useEffect(() => {
-    dispatch(
+  useEffect(async () => {
+    getBusinessEntity()
+    setBlock(true)
+    await dispatch(
       getData({
         sort,
         sortColumn,
         q: searchTerm,
         page: currentPage,
         perPage: rowsPerPage,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        status: currentStatus.id,
+        businessEntityId: businessEntity.id
       })
     )
+    setBlock(false)
   }, [dispatch, store.data.length, sort, sortColumn, currentPage])
 
-  // ** Client filter options
-  const planOptions = [
-    { value: '', label: 'Select Entity' },
-    { value: 'basic', label: 'Basic' },
-    { value: 'company', label: 'Company' },
-    { value: 'enterprise', label: 'Enterprise' },
-    { value: 'team', label: 'Team' }
-  ]
-
-  const statusOptions = [
-    { value: '', label: 'Select Status', number: 0 },
-    { value: 'active', label: 'Active', number: 1 },
-    { value: 'inactive', label: 'Inactive', number: 2 }
-  ]
-
   // ** Function in get data on page change
-  const handlePagination = page => {
-    dispatch(
+  const handlePagination = async page => {
+    setBlock(true)
+    await dispatch(
       getData({
         sort,
         sortColumn,
         q: searchTerm,
         perPage: rowsPerPage,
         page: page.selected + 1,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        status: currentStatus.id,
+        businessEntityId: businessEntity.id
       })
     )
+    setBlock(false)
     setCurrentPage(page.selected + 1)
   }
 
   // ** Function in get data on rows per page
-  const handlePerPage = e => {
+  const handlePerPage = async e => {
     const value = parseInt(e.currentTarget.value)
-    dispatch(
+    setBlock(true)
+    await dispatch(
       getData({
         sort,
         sortColumn,
         q: searchTerm,
         perPage: value,
         page: currentPage,
-        role: currentRole.value,
-        currentPlan: currentPlan.value,
-        status: currentStatus.value
+        businessEntityId: businessEntity.id,
+        status: currentStatus.id
       })
     )
+    setBlock(false)
     setRowsPerPage(value)
   }
 
   // ** Function in get data on search query change
-  const handleFilter = val => {
+  const handleFilter = async val => {
     setSearchTerm(val)
-    dispatch(
+    setBlock(true)
+    await dispatch(
       getData({
         sort,
         q: val,
         sortColumn,
         page: currentPage,
         perPage: rowsPerPage,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        status: currentStatus.id,
+        businessEntityId: businessEntity.id
       })
     )
+    setBlock(false)
   }
 
   // ** Custom Pagination
@@ -299,9 +232,8 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
   // ** Table data to render
   const dataToRender = () => {
     const filters = {
-      role: currentRole.value,
-      currentPlan: currentPlan.value,
-      status: currentStatus.value,
+      businessEntityId: businessEntity.id,
+      status: currentStatus.id,
       q: searchTerm
     }
 
@@ -328,9 +260,8 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
         q: searchTerm,
         page: currentPage,
         perPage: rowsPerPage,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        status: currentStatus.id,
+        businessEntityId: businessEntity.id
       })
     )
   }
@@ -349,20 +280,23 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
                 classNamePrefix='select'
                 options={statusOptions}
                 value={currentStatus}
-                onChange={data => {
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+                onChange={async data => {
                   setCurrentStatus(data)
-                  dispatch(
+                  setBlock(true)
+                  await dispatch(
                     getData({
                       sort,
                       sortColumn,
                       q: searchTerm,
                       page: currentPage,
-                      status: data.value,
                       perPage: rowsPerPage,
-                      role: currentRole.value,
-                      currentPlan: currentPlan.value
+                      businessEntityId: businessEntity.id,
+                      status: data.id
                     })
                   )
+                  setBlock(false)
                 }}
               />
             </Col>
@@ -373,22 +307,25 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
                 isClearable={false}
                 className='react-select'
                 classNamePrefix='select'
-                options={planOptions}
-                value={currentPlan}
-                onChange={data => {
-                  setCurrentPlan(data)
-                  dispatch(
+                options={businessEntityOptions}
+                value={businessEntity}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+                onChange={async data => {
+                  setBusinessEntity(data)
+                  setBlock(true)
+                  await dispatch(
                     getData({
                       sort,
                       sortColumn,
                       q: searchTerm,
                       page: currentPage,
                       perPage: rowsPerPage,
-                      role: currentRole.value,
-                      currentPlan: data.value,
-                      status: currentStatus.value
+                      businessEntityId: data.id,
+                      status: currentStatus.id
                     })
                   )
+                  setBlock(false)
                 }}
               />
             </Col>
@@ -398,36 +335,36 @@ const BootstrapCheckbox = forwardRef((props, ref) => (
 
       <Card className='overflow-hidden'>
         <div className='react-dataTable'>
-          <DataTable
-            noHeader
-            subHeader
-            sortServer
-            pagination
-            responsive
-            selectableRows
-            paginationServer
-            columns={columns}
-            onSort={handleSort}
-            sortIcon={<ChevronDown />}
-            className='react-dataTable'
-            paginationComponent={CustomPagination}
-            data={dataToRender()}
-            selectableRowsComponent={BootstrapCheckbox}
-            subHeaderComponent={
-              <CustomHeader
-                store={store}
-                searchTerm={searchTerm}
-                rowsPerPage={rowsPerPage}
-                handleFilter={handleFilter}
-                handlePerPage={handlePerPage}
-                toggleSidebar={toggleSidebar}
-              />
-            }
-          />
+          <UILoader blocking={block} loader={<Loader />}>
+            <DataTable
+              noHeader
+              subHeader
+              sortServer
+              pagination
+              responsive
+              selectableRows
+              paginationServer
+              columns={columns}
+              onSort={handleSort}
+              sortIcon={<ChevronDown />}
+              className='react-dataTable'
+              paginationComponent={CustomPagination}
+              data={dataToRender()}
+              selectableRowsComponent={BootstrapCheckbox}
+              subHeaderComponent={
+                <CustomHeader
+                  store={store}
+                  searchTerm={searchTerm}
+                  rowsPerPage={rowsPerPage}
+                  handleFilter={handleFilter}
+                  handlePerPage={handlePerPage}
+                />
+              }
+            />
+          </UILoader>
         </div>
       </Card>
 
-      <Sidebar open={sidebarOpen} toggleSidebar={toggleSidebar} />
     </Fragment>
   )
 }

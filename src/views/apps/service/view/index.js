@@ -52,7 +52,7 @@ const ServiceView = () => {
     <Alert color='danger'>
       <h4 className='alert-heading'>Service not found</h4>
       <div className='alert-body'>
-        Service with id: {id} doesn't exist. Check list of all Service: <Link to='/apps/user/list'>Service List</Link>
+        Service with id: {id} doesn't exist. Check list of all Service: <Link to='/services/list'>Service List</Link>
       </div>
     </Alert>
   )

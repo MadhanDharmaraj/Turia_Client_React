@@ -1,23 +1,19 @@
 // ** React Imports
-import { Fragment, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import classnames from 'classnames'
-// ** Custom Components
-
-import { addClient } from '../store/index'
-// ** Third Party Components
 import { useDispatch } from 'react-redux'
+// ** Custom Components
+import { updateClient, addContactInfo, getClient, getConatctInfo } from '../store'
+import axios from '../../../../configs/axios/axiosConfig'
 
-
-import axios from 'axios'
 import { X, Plus, Hash } from 'react-feather'
-import Select, { components } from 'react-select'
+import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 
 // ** Reactstrap Imports
-//import { selectThemeColors } from '@utils'
 import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
@@ -26,22 +22,27 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
-const AddCard = () => {
+const EditCard = () => {
 
-  const dispatch = useDispatch()
   // ** States
   const phoneRegExp = /^[0-9\- ]{10,10}$/
   const zipcodeExp = /^[0-9\- ]{6,6}$/
+  const navigate = useNavigate({})
 
+  const dispatch = useDispatch()
   const [businessEntityOptions, setBusinessEntityOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
   const [countryOptions, setCountryOptions] = useState([])
   const [currencyOptions, setCurrencyOptions] = useState([])
   const [gstRegistrationTypeOptions, setGstRegistrationTypeOptions] = useState([])
   const [clientType, setClientType] = useState(2)
+  const [clientInfo, setClientInfo] = useState([])
+  const [contactId, setConatctId] = useState(null)
+  const [clientDetails, setClientDetails] = useState({})
 
   const schema = yup.object().shape({
     clientType: yup.number(),
+    uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when(["clientType"], { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
     contactNumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
@@ -51,23 +52,24 @@ const AddCard = () => {
     gstin: yup.string().required("Please Enter GSTIN No"),
     placeOfSupply: yup.string().required("Please select Place Of Supply"),
     currency: yup.string(),
+    billingAddressZip: yup.string().matches(zipcodeExp, { message: 'Zip Code is not valid', excludeEmptyString: true }),
     contact_info: yup.array().of(
       yup.object().shape({
-        first_name: yup.string().required("Please Enter A Name"),
+        firstName: yup.string().required("Please Enter A Name"),
         email: yup.string().email().required("Please Enter valid Email"),
         contactNumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true })
       })
-    ).min(1, "Please Enter atleast one contact Info"),
-    billing_address: yup.object().shape({
-      zip_code: yup.string().matches(zipcodeExp, { message: 'Please Enter Valid ZipCode', excludeEmptyString: true })
-    })
+    ).min(1, "Please Enter atleast one contact Info")
+
   })
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       clientType: 2,
+      uniqueIdentity: '',
       contactPersonName: '',
+      organization: 1,
       name: '',
       contactNumber: '',
       businessEntity: '',
@@ -75,27 +77,40 @@ const AddCard = () => {
       gstRegistrationType: '',
       gstin: '',
       placeOfSupply: '',
-      currency: '',
+      currency: 1,
       contact_info: [],
-      billing_address: {
-        country: '1',
-        address_line1: '',
-        address_line2: '',
-        city: '',
-        state: '',
-        zip_code: '',
-        use_as_billing_address: ''
-      }
+      billingAddressLine1: '',
+      billingAddressLine2: '',
+      billingAddressCountry: '',
+      billingAddressState: '',
+      billingAddressZip: '',
+      billingAddressCity: ''
     }
   })
-
+  const { id } = useParams()
   const { fields, append } = useFieldArray({ name: 'contact_info', control })
-  const onSubmit = data => {
-    dispatch(addClient(data))
+
+  const saveContactInfo = () => {
+    if (clientInfo.length > 0) {
+      dispatch(addContactInfo(clientInfo))
+      navigate(`/client/view/${contactId}`)
+    }
+  }
+
+  const onSubmit = async (data) => {
+
+    const temp = data.contact_info
+    setClientInfo(predata => ([...predata, ...temp]))
+    delete data.contact_info
+    const id =  clientDetails.id
+    await dispatch(updateClient({data, id}))
+
+    saveContactInfo()
+
   }
 
   const addItem = (() => {
-    append({ first_name: '', email: '', contactNumber: '', designation: '', is_primary: '' })
+    append({ firstName: '', email: '', contactNumber: '', designation: '', is_primary: '' })
   })
 
   const removeItem = e => {
@@ -103,37 +118,100 @@ const AddCard = () => {
     e.target.closest('.repeater-wrapper').remove()
   }
 
-  useEffect(() => {
-    // ** Get Clients
-    axios.get('/api/clients/utilities').then(response => {
+  const getBusineessEntity = () => {
+    axios.post('/businessentities/list').then(response => {
       const arr = response.data
-      setCountryOptions(arr.country)
-      setCurrencyOptions(arr.currency)
-      setGstRegistrationTypeOptions(arr.gst_registration_type)
-      setBusinessEntityOptions(arr.business_entities)
-      setStateOptions(arr.state)
+      setBusinessEntityOptions(arr.businessentities)
     })
+  }
 
+  const getCountries = () => {
+    axios.post('/countries/list').then(response => {
+      const arr = response.data
+      setCountryOptions(arr.countries)
+    })
+  }
 
-  }, [])
+  const getStates = () => {
+    axios.post('/states/list').then(response => {
+      const arr = response.data
+      setStateOptions(arr.states)
+    })
+  }
+
+  const getCurrency = () => {
+    axios.post('/currencies/list').then(response => {
+      const arr = response.data
+      setCurrencyOptions(arr.currencies)
+    })
+  }
+
+  const getGSTRegType = () => {
+    axios.post('/gstregistrationtypes/list').then(response => {
+      const arr = response.data
+      setGstRegistrationTypeOptions(arr.gstregistrationtypes)
+    })
+  }
+
+  const getClientInfo = async () => {
+
+    await dispatch(getConatctInfo(contactId))
+    
+  }
+
+  const getClientData = async () => {
+    const client = await dispatch(getClient(id))
+
+    setClientDetails(client.payload)
+
+  }
 
   useEffect(() => {
-    addItem()
-  }, [])
 
-  // ** Custom Options Component
-  const OptionComponent = ({ data, ...props }) => {
-    if (data.type === 'button') {
-      return (
-        <Button className='text-start rounded-0 px-50' color={data.color} block onClick={() => setOpen(true)}>
-          <Plus className='font-medium-1 me-50' />
-          <span className='align-middle'>{data.label}</span>
-        </Button>
-      )
-    } else {
-      return <components.Option {...props}> {data.label} </components.Option>
+    if (Object.keys(clientDetails).length > 0) {
+      reset({
+        clientType: 1,
+        uniqueIdentity: clientDetails.uniqueidentity,
+        contactPersonName: clientDetails.contactpersonname,
+        organization: clientDetails.organizationid,
+        name: clientDetails.name,
+        contactNumber: clientDetails.contactnumber,
+        businessEntity: clientDetails.businessentityid,
+        email: clientDetails.email,
+        gstRegistrationType: clientDetails.gstregistrationtypeid,
+        gstin: clientDetails.gstin,
+        placeOfSupply: clientDetails.placeofsupplyid,
+        currency: clientDetails.currencyid,
+        billingAddressLine1: clientDetails.billingaddressline1,
+        billingAddressLine2: clientDetails.billingaddressline2,
+        billingAddressCountry: clientDetails.billingaddresscountry,
+        billingAddressState: clientDetails.billingaddressstate,
+        billingAddressZip: clientDetails.billingaddresszip,
+        billingAddressCity: clientDetails.billingaddresscity
+      })
+
+      setConatctId(clientDetails.id)
+      addItem()
     }
-  }
+
+    if (contactId !== null) {
+      getClientInfo()
+    }
+
+  }, [contactId, clientDetails])
+
+  useEffect(() => {
+    getBusineessEntity()
+    getCountries()
+    getCurrency()
+    getGSTRegType()
+    getStates()
+
+    getClientData()
+
+    addItem()
+
+  }, [])
 
   return (
 
@@ -149,13 +227,21 @@ const AddCard = () => {
                 </Label>
                 <Col sm='9'>
                   <div className='form-check form-check-primary form-check-inline'>
-                    <Input type='radio' id='clientType_1' name='clientType' defaultChecked value='2' {...register("clientType")} onChange={() => setClientType(2)} />
+                    <Controller
+                      name='clientType'
+                      control={control}
+                      render={({ field }) => <Input type='radio' id='clientType_1' defaultChecked value={2} {...field} onChange={() => setClientType(2)} />}
+                    />
                     <Label className='form-check-label' for='clientType_1'>
                       Business
                     </Label>
                   </div>
                   <div className='form-check form-check-primary form-check-inline'>
-                    <Input type='radio' id='clientType_2' name='clientType' value='1' {...register("clientType")} onChange={() => setClientType(1)} />
+                    <Controller
+                      name='clientType'
+                      control={control}
+                      render={({ field }) => <Input id='clientType_2' type='radio' value={1} {...field} onChange={() => setClientType(1)} />}
+                    />
                     <Label className='form-check-label' for='clientType_2'>
                       Individual
                     </Label>
@@ -165,17 +251,17 @@ const AddCard = () => {
             </Col>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='unique_identity'>
+                <Label sm='3' size='lg' className='form-label' for='uniqueIdentity'>
                   Unique No
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='unique_identity'
-                    name='unique_identity'
+                    id='uniqueIdentity'
+                    name='uniqueIdentity'
                     control={control}
-                    render={({ field }) => <Input invalid={errors.unique_identity && true} {...field} />}
+                    render={({ field }) => <Input invalid={errors.uniqueIdentity && true} {...field} />}
                   />
-                  {errors.unique_identity && <FormFeedback>{errors.unique_identity.message}</FormFeedback>}
+                  {errors.uniqueIdentity && <FormFeedback>{errors.uniqueIdentity.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
@@ -216,8 +302,8 @@ const AddCard = () => {
                 </Col>
               </Row>
             </Col>
-          </Row>
 
+          </Row>
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
@@ -270,14 +356,15 @@ const AddCard = () => {
                       id="businessEntity"
                       render={({ field, value, ref }) => (
                         <Select
-                          {...field}
                           inputRef={ref}
                           className={classnames('react-select', { 'is-invalid': errors.businessEntity })}
                           {...field}
                           classNamePrefix='select'
                           options={businessEntityOptions}
-                          value={businessEntityOptions.find(c => { return c.value === value })}
-                          onChange={val => field.onChange(val.value)}
+                          value={businessEntityOptions.find(c => { return c.id === value })}
+                          onChange={val => field.onChange(val.id)}
+                          getOptionLabel={(option) => option.name}
+                          getOptionValue={(option) => option.id}
                         />
                       )}
 
@@ -305,13 +392,13 @@ const AddCard = () => {
                       <CardText className='col-title mb-md-50 mb-0'>First Name</CardText>
                       <Controller
                         control={control}
-                        id='contact_info_first_name'
-                        name={`contact_info.${i}.first_name`}
+                        id='contact_info_firstName'
+                        name={`contact_info.${i}.firstName`}
                         render={({ field }) => (
-                          <Input type='text' {...register(`contact_info.${i}.first_name`)} invalid={errors.contact_info?.[i]?.first_name && true} {...field} />
+                          <Input type='text' {...register(`contact_info.${i}.firstName`)} invalid={errors.contact_info?.[i]?.firstName && true} {...field} />
                         )}
                       />
-                      {errors.contact_info?.[i]?.first_name && <FormFeedback>{errors.contact_info?.[i]?.first_name.message}</FormFeedback>}
+                      {errors.contact_info?.[i]?.firstName && <FormFeedback>{errors.contact_info?.[i]?.firstName.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-3 col-sm-12'>
                       <CardText className='col-title mb-md-2 mb-0'>Email</CardText>
@@ -332,7 +419,7 @@ const AddCard = () => {
                         id='contact_info_contactNumber'
                         name={`contact_info.${i}.contactNumber`}
                         render={({ field }) => (
-                          <Input type='number'  {...register(`contact_info.${i}.conatct_no`)} invalid={errors.contact_info?.[i]?.contactNumber && true} {...field} />
+                          <Input type='number'  {...register(`contact_info.${i}.contactNumber`)} invalid={errors.contact_info?.[i]?.contactNumber && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.contactNumber && <FormFeedback>{errors.contact_info?.[i]?.contactNumber.message}</FormFeedback>}
@@ -344,7 +431,7 @@ const AddCard = () => {
                         id='contact_info_designation'
                         name={`contact_info.${i}.designation`}
                         render={({ field }) => (
-                          <Input type='text'  {...register(`contact_info.${i}.designation`)}  {...field} />
+                          <Input type='text' {...field} {...register(`contact_info.${i}.designation`)} />
                         )}
                       />
                     </Col>
@@ -390,14 +477,15 @@ const AddCard = () => {
                     id="gstRegistrationType"
                     render={({ field, value, ref }) => (
                       <Select
-                        {...field}
                         inputRef={ref}
                         className={classnames('react-select', { 'is-invalid': errors.gstRegistrationType })}
                         {...field}
                         classNamePrefix='select'
                         options={gstRegistrationTypeOptions}
-                        value={gstRegistrationTypeOptions.find(c => { return c.value === value })}
-                        onChange={val => field.onChange(val.value)}
+                        value={gstRegistrationTypeOptions.find(c => { return c.id === value })}
+                        onChange={val => field.onChange(val.id)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
                       />
                     )}
 
@@ -424,9 +512,12 @@ const AddCard = () => {
                         className={classnames('react-select', { 'is-invalid': errors.gstRegistrationType })}
                         {...field}
                         classNamePrefix='select'
-                        value={stateOptions.find(c => c.value === value)}
+                        aria-label='name'
+                        value={stateOptions.find(c => c.id === value)}
                         options={stateOptions}
-                        onChange={val => field.onChange(val.value)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
+                        onChange={val => field.onChange(val.id)}
                       />
                     )}
                   />
@@ -469,8 +560,10 @@ const AddCard = () => {
                         className="react-select col-lg-12 col-sm-12"
                         classNamePrefix="addl-class"
                         options={currencyOptions}
-                        value={currencyOptions.find(c => c.value === value)}
-                        onChange={val => field.onChange(val.value)}
+                        value={currencyOptions.find(c => c.id === value)}
+                        onChange={val => field.onChange(val.id)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
                       />
                     )}
                   />
@@ -486,13 +579,13 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billing_address_address_line1'>
+                <Label sm='3' size='lg' className='form-label' for='billingAddress_addressline1'>
                   Address Line1
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='billing_address_address_line1'
-                    name="billing_address.address_line1"
+                    id='billingAddress_addressline1'
+                    name="billingAddressLine1"
                     control={control}
                     render={({ field }) => <Input {...field} />}
                   />
@@ -501,13 +594,13 @@ const AddCard = () => {
             </Col>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billing_address_address_line2'>
+                <Label sm='3' size='lg' className='form-label' for='billingAddress_addressline2'>
                   Address Line 2
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='billing_address_address_line2'
-                    name="billing_address.address_line2"
+                    id='billingAddress_addressline2'
+                    name="billingAddressLine2"
                     control={control}
                     render={({ field }) => <Input {...field} />}
                   />
@@ -518,13 +611,13 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billing_address_city'>
+                <Label sm='3' size='lg' className='form-label' for='billingAddress_city'>
                   City
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='billing_address_city'
-                    name="billing_address.city"
+                    id='billingAddress_city'
+                    name="billingAddressCity"
                     control={control}
                     render={({ field }) => <Input  {...field} />}
                   />
@@ -533,24 +626,25 @@ const AddCard = () => {
             </Col>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billing_address_state'>
+                <Label sm='3' size='lg' className='form-label' for='billingAddressState'>
                   State
                 </Label>
                 <Col sm='9'>
                   <Controller
                     control={control}
-                    name="billing_address.state"
-                    id="billing_address_state"
+                    name="billingAddressState"
+                    id="billingAddressState"
                     render={({ field, value, ref }) => (
                       <Select
-                        {...field}
                         inputRef={ref}
                         className={classnames('react-select')}
                         {...field}
                         classNamePrefix='select'
                         options={stateOptions}
-                        value={stateOptions.find(c => { return c.value === value })}
-                        onChange={val => field.onChange(val.value)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
+                        value={stateOptions.find(c => { return c.id === value })}
+                        onChange={val => field.onChange(val.id)}
                       />
                     )}
                   />
@@ -561,24 +655,25 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billing_address_country'>
+                <Label sm='3' size='lg' className='form-label' for='billingAddressCountry'>
                   Country
                 </Label>
                 <Col sm='9'>
                   <Controller
                     control={control}
-                    name="billing_address.country"
-                    id="billing_address_country"
+                    name="billingAddressCountry"
+                    id="billingAddressCountry"
                     render={({ field, value, ref }) => (
                       <Select
-                        {...field}
                         inputRef={ref}
                         className={classnames('react-select')}
                         {...field}
                         classNamePrefix='select'
                         options={countryOptions}
-                        value={countryOptions.find(c => { return c.value === value })}
-                        onChange={val => field.onChange(val.value)}
+                        value={countryOptions.find(c => { return c.id === value })}
+                        onChange={val => field.onChange(val.id)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
                       />
                     )}
                   />
@@ -587,17 +682,17 @@ const AddCard = () => {
             </Col>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billing_address_zip_code'>
+                <Label sm='3' size='lg' className='form-label' for='billingAddress_zipcode'>
                   Zip Code
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='billing_address_zip_code'
-                    name="billing_address.zip_code"
+                    id='billingAddress_zipcode'
+                    name='billingAddressZip'
                     control={control}
-                    render={({ field }) => <Input type='number' {...field} />}
+                    render={({ field }) => <Input type='text' invalid={errors.billingAddressZip && true} {...field} />}
                   />
-                  {errors.billing_address?.zip_code && <FormFeedback className='text-danger'>{errors.billing_address?.zip_code.message}</FormFeedback>}
+                  {errors.billingAddressZip && <FormFeedback>{errors.billingAddressZip.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
@@ -620,4 +715,4 @@ const AddCard = () => {
   )
 }
 
-export default AddCard
+export default EditCard

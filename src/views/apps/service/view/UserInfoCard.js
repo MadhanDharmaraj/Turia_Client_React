@@ -10,49 +10,46 @@ import Avatar from '@components/avatar'
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
 
-const statusColors = {
-  active: 'light-success',
-  pending: 'light-warning',
-  inactive: 'light-secondary'
-}
+
+const statusColors = [
+  '',
+  'light-primary',
+  'light-warning'
+]
+
+const statusArr = [
+  '',
+  "Active",
+  "In Active"
+
+]
 
 const UserInfoCard = ({ selectedService }) => {
 
   // ** render user img
   const renderUserImg = () => {
-    if (selectedService !== null && selectedService.avatar.length) {
-      return (
-        <img
-          height='110'
-          width='110'
-          alt='user-avatar'
-          src={selectedService.avatar}
-          className='img-fluid rounded mt-3 mb-2'
-        />
-      )
-    } else {
-      return (
-        <Avatar
-          initials
-          color={selectedService.avatarColor || 'light-primary'}
-          className='rounded mt-3 mb-2'
-          content={selectedService.name}
-          contentStyles={{
-            borderRadius: 0,
-            fontSize: 'calc(48px)',
-            width: '100%',
-            height: '100%'
-          }}
-          style={{
-            height: '110px',
-            width: '110px'
-          }}
-        />
-      )
-    }
+
+    return (
+      <Avatar
+        initials
+        color={statusColors[selectedService.status]}
+        className='rounded mt-3 mb-2'
+        content={selectedService.name}
+        contentStyles={{
+          borderRadius: 0,
+          fontSize: 'calc(48px)',
+          width: '100%',
+          height: '100%'
+        }}
+        style={{
+          height: '110px',
+          width: '110px'
+        }}
+      />
+    )
   }
 
-  
+
   return (
     <Fragment>
       <Card>
@@ -71,36 +68,35 @@ const UserInfoCard = ({ selectedService }) => {
           <div className='info-container'>
             {selectedService !== null ? (
               <ul className='list-unstyled'>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Category:</span>
-                  <span>{selectedService.category}</span>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>Category:</span>
+                  <span className='col-6 text-end'>{selectedService.categoriesname}</span>
                 </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Description:</span>
-                  <span>{selectedService.description}</span>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>Description:</span>
+                  <span className='col-6 text-end'>{selectedService.description}</span>
                 </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Status:</span>
-                  <Badge className='text-capitalize' color={statusColors[selectedService.status]}>
-                    {selectedService.status}
-                  </Badge>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>SAC Code:</span>
+                  <span className='col-6 text-end'>{selectedService.hsncode}</span>
                 </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>SAC Code:</span>
-                  <span className='text-capitalize'>{selectedService.sacCode}</span>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>Fee:</span>
+                  <span className='col-6 text-end'>{selectedService.sellingprice}</span>
                 </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Fee:</span>
-                  <span>{selectedService.fee}</span>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>Tax Rate:</span>
+                  <span className='col-6 text-end'>{selectedService.taxgroupid}</span>
                 </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Tax Rate:</span>
-                  <span>{selectedService.taxRate}</span>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>Status:</span>
+                  <span className='col-6 text-end'>
+                    <Badge className='text-capitalize' color={statusColors[selectedService.status]}>
+                      {statusArr[selectedService.status]}
+                    </Badge>
+                  </span>
                 </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Exemption Reason:</span>
-                  <span>{selectedService.exemptionReason}</span>
-                </li>
+
               </ul>
             ) : null}
           </div>
@@ -114,7 +110,7 @@ const UserInfoCard = ({ selectedService }) => {
           </div>
         </CardBody>
       </Card>
-      
+
     </Fragment>
   )
 }

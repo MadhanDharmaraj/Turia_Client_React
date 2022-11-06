@@ -12,18 +12,22 @@ import withReactContent from 'sweetalert2-react-content'
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
 
-const statusColors = {
-  active: 'light-success',
-  pending: 'light-warning',
-  inactive: 'light-secondary'
-}
+const statusColors = [
+  '',
+  'light-primary',
+  'light-warning'
+]
 
+const statusArr = [
+  '',
+  "Active",
+  "In Active"
+
+]
 const MySwal = withReactContent(Swal)
 
 const UserInfoCard = ({ selectedClient }) => {
   // ** State
-  const [setShow] = useState(false)
-
   const [active, setActive] = useState('1')
 
   const toggleTab = tab => {
@@ -42,11 +46,11 @@ const UserInfoCard = ({ selectedClient }) => {
               <ul className='list-unstyled'>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Name:</span>
-                  <span className='col-6 text-end'>{selectedClient.name}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactpersonname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Business Name:</span>
-                  <span className='col-6 text-end'>{selectedClient.businessName}</span>
+                  <span className='col-6 text-end'>{selectedClient.name}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Email:</span>
@@ -54,13 +58,17 @@ const UserInfoCard = ({ selectedClient }) => {
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Contact:</span>
-                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.contactnumber}</span>
+                </li>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>Business Entity:</span>
+                  <span className='col-6 text-end'>{selectedClient.businessentitiesname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Status:</span>
                   <span className='col-6 text-end'>
                     <Badge className='text-capitalize' color={statusColors[selectedClient.status]}>
-                      {selectedClient.status}
+                      {statusArr[selectedClient.status]}
                     </Badge>
                   </span>
                 </li>
@@ -92,55 +100,50 @@ const UserInfoCard = ({ selectedClient }) => {
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Place of Supply:</span>
-                  <span className='col-6 text-end'>{selectedClient.businessName}</span>
+                  <span className='col-6 text-end'>{selectedClient.placeofsupplyname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>GSTIN Register Type:</span>
-                  <span className='col-6 text-end'>{selectedClient.email}</span>
+                  <span className='col-6 text-end'>{selectedClient.gstregistrationtypesname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>GSTIN:</span>
-                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.gstin}</span>
                 </li> 
-                <li className='mb-75 row'>
-                  <span className='fw-bolder col-6'>Taxable:</span>
-                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
-                </li>
-
               </ul>
             </TabPane>
             <TabPane tabId='2'>
               <ul className='list-unstyled'>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Address Line 1:</span>
-                  <span className='col-6 text-end'>{selectedClient.name}</span>
+                  <span className='col-6 text-end'>{selectedClient.billingaddressline1}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Address Line 2:</span>
-                  <span className='col-6 text-end'>{selectedClient.businessName}</span>
+                  <span className='col-6 text-end'>{selectedClient.billingaddressline2}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>City:</span>
-                  <span className='col-6 text-end'>{selectedClient.email}</span>
+                  <span className='col-6 text-end'>{selectedClient.billingaddresscity}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>State:</span>
-                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.billingaddressstatesname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Country:</span>
-                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.billingaddresscountriesname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Zip Code:</span>
-                  <span className='col-6 text-end'>{selectedClient.contactNo}</span>
+                  <span className='col-6 text-end'>{selectedClient.billingaddresszip}</span>
                 </li>
               </ul>
             </TabPane>
           </TabContent>
 
           <div className='d-flex justify-content-center pt-2'>
-            <Button color='primary' onClick={() => setShow(true)}>
+            <Button color='primary' tag={Link} to={`/client/edit/${selectedClient.id}`}>
               Edit
             </Button>
             <Button className='ms-1' color='danger' outline  tag={Link} to={`/client/list`}>

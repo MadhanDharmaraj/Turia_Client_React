@@ -6,45 +6,46 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getClient, deleteClient } from '../store'
+import { getClient, deleteClient, updateStatus } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive, Eye, XCircle, CheckCircle, Edit } from 'react-feather'
+import { MoreVertical, Trash2, Eye, XCircle, CheckCircle, Edit } from 'react-feather'
 
 // ** Reactstrap Imports
-import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Button, Row, Col } from 'reactstrap'
+import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 
 // ** Renders Client Columns
 const renderClient = row => {
-  if (row.avatar.length) {
-    return <Avatar className='me-1' img={row.avatar} width='32' height='32' />
-  } else {
-    return (
-      <Avatar
-        initials
-        className='me-1'
-        color={row.avatarColor || 'light-primary'}
-        content={row.fullName || 'John Doe'}
-      />
-    )
-  }
+  return (
+    <Avatar
+      initials
+      className='me-1'
+      color={'light-primary'}
+      content={row.name}
+    />
+  )
 }
 
-// ** Renders Role Columns
+const statusObj = [
+  '',
+  'light-primary',
+  'light-warning'
+]
 
-const statusObj = {
-  pending: 'light-warning',
-  active: 'light-success',
-  inactive: 'light-secondary'
-}
+const statusArr = [
+  '',
+  "Active",
+  "In Active"
+  
+]
 
 export const columns = [
   {
     name: 'Client',
     sortable: true,
     minWidth: '300px',
-    sortField: 'name',
-    selector: row => row.contact_person_name,
+    sortField: 'email',
+    selector: row => row.contactpersonname,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
         {renderClient(row)}
@@ -54,7 +55,7 @@ export const columns = [
             className='user_name text-truncate text-body'
             onClick={() => store.dispatch(getClient(row.id))}
           >
-            <span className='fw-bolder'>{row.contact_person_name}</span>
+            <span className='fw-bolder'>{row.contactpersonname}</span>
           </Link>
           <small className='text-truncate text-muted mb-0'>{row.email}</small>
         </div>
@@ -65,27 +66,27 @@ export const columns = [
     name: 'Business Name',
     minWidth: '230px',
     sortable: true,
-    sortField: 'businessName',
-    selector: row => row.businessName,
-    cell: row => <span className='text-capitalize'>{row.businessName}</span>
+    sortField: 'name',
+    selector: row => row.name,
+    cell: row => <span className='text-capitalize'>{row.name}</span>
   },
   {
     name: 'Contact',
     minWidth: '138px',
     sortable: true,
-    sortField: 'contact_no',
-    selector: row => row.contact_no,
-    cell: row => <span className='text-capitalize'>{row.contact_no}</span>
+    sortField: 'contactnumber',
+    selector: row => row.contactnumber,
+    cell: row => <span className='text-capitalize'>{row.contactnumber}</span>
   },
   {
     name: 'Status',
     minWidth: '138px',
     sortable: true,
     sortField: 'status',
-    selector: row => row.status,
+    selector: row => statusArr[row.status],
     cell: row => (
       <Badge className='text-capitalize' color={statusObj[row.status]} pill>
-        {row.status}
+        {statusArr[row.status]}
       </Badge>
     )
   },
@@ -109,14 +110,30 @@ export const columns = [
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <CheckCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Active</span>
-            </DropdownItem>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <XCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Inactive</span>
-            </DropdownItem>
+            {row.status === 2 && (
+              <DropdownItem tag='a' href='/' className='w-100' onClick={e => {
+                e.preventDefault()
+                const id = row.id
+                const status = 1
+                const obj = { id, status }
+                store.dispatch(updateStatus(obj))
+              }}>
+                <CheckCircle size={14} className='me-50' />
+                <span className='align-middle'>Mark as Active</span>
+              </DropdownItem>)
+            }
+            {row.status === 1 && (
+              <DropdownItem tag='a' href='/' className='w-100' onClick={e => {
+                e.preventDefault()
+                const id = row.id
+                const status = 2
+                const obj = { id, status }
+                store.dispatch(updateStatus(obj))
+              }}>
+                <XCircle size={14} className='me-50' />
+                <span className='align-middle'>Mark as Inactive</span>
+              </DropdownItem>)
+            }
             <DropdownItem
               tag='a'
               href='/'

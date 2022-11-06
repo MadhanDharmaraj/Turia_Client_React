@@ -2,39 +2,45 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
-import axios from 'axios'
+import axios from '../../../../configs/axios/axiosConfig'
 
-export const getAllData = createAsyncThunk('appUsers/getAllData', async () => {
-  const response = await axios.get('/api/service/list/all-data')
-  return response.data
-})
-
-export const getData = createAsyncThunk('appUsers/getData', async params => {
-  const response = await axios.get('/api/service/list/data', params)
+export const getData = createAsyncThunk('appServices/getData', async params => {
+  const response = await axios.post('/services/list', params)
   return {
     params,
-    data: response.data.services,
-    totalPages: response.data.total
+    data: response.data.services.services,
+    totalPages: response.data.services.total
   }
 })
 
-export const getService = createAsyncThunk('appUsers/getService', async id => {
-  const response = await axios.get('/api/service', { id })
-  return response.data.service
+export const getService = createAsyncThunk('appServices/getService', async id => {
+  const response = await axios.post('/services/get', { id })
+  return response.data.services
 })
 
-export const addUser = createAsyncThunk('appUsers/addUser', async (service, { dispatch, getState }) => {
-  await axios.post('/apps/service/add-service', service)
+export const addService = createAsyncThunk('appServices/addService', async (service, { dispatch, getState }) => {
+  await axios.post('/services/create', service)
   await dispatch(getData(getState().users.params))
-  await dispatch(getAllData())
   return service
 })
 
-export const deleteUser = createAsyncThunk('appUsers/deleteService', async (id, { dispatch, getState }) => {
-  await axios.delete('/apps/service/delete', { id })
+export const updateService = createAsyncThunk('appServices/addService', async (service, { }) => {
+  const response = await axios.post(`/Services/update`, service)
+  return { service: response.data.services }
+})
+
+export const deleteService = createAsyncThunk('appServices/deleteService', async (id, { dispatch, getState }) => {
+  await axios.post('/services/delete', { id })
   await dispatch(getData(getState().users.params))
-  await dispatch(getAllData())
   return id
+})
+
+export const updateStatus = createAsyncThunk('appServices/updateStatus', async (data, { dispatch, getState }) => {
+  await axios.post(`/services/statusupdate`, data)
+  console.log(getState().service)
+  await dispatch(getData(getState().Service.service))
+  return ''
+
 })
 
 export const appServicesSlice = createSlice({
@@ -49,9 +55,6 @@ export const appServicesSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(getAllData.fulfilled, (state, action) => {
-        state.allData = action.payload
-      })
       .addCase(getData.fulfilled, (state, action) => {
         state.data = action.payload.data
         state.params = action.payload.params

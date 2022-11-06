@@ -1,27 +1,5 @@
 // ** React Imports
-import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
-
-// ** Custom Components
-import Avatar from '@components/avatar'
-
-// ** Reactstrap Imports
-import { UncontrolledTooltip } from 'reactstrap'
-
-// ** Third Party Components
-import {
-  Eye,
-  Send,
-  Edit,
-  Save,
-  Info,
-  PieChart,
-  Download,
-  TrendingUp,
-  CheckCircle,
-  ArrowDownCircle,
-  User
-} from 'react-feather'
 
 // ** Table columns
 export const columns = [
@@ -34,7 +12,7 @@ export const columns = [
     cell: row => <Link className='fw-bolder' to={`/task/view/${row.id}`}>{row.task_id}</Link>
   },
   {
-    name: 'Client',
+    name: 'Name',
     minWidth: '180px',
     sortable: true,
     sortField: 'invoiceStatus',
@@ -43,7 +21,7 @@ export const columns = [
   },
 
   {
-    name: 'Service',
+    name: 'Email',
     sortable: true,
     minWidth: '180px',
     sortField: 'total',
@@ -51,7 +29,7 @@ export const columns = [
     cell: row => <span>{row.task || 0}</span>
   },
   {
-    name: 'Priority',
+    name: 'Conatct',
     sortable: true,
     minWidth: '135px',
     sortField: 'total',
@@ -59,16 +37,11 @@ export const columns = [
     cell: row => <span>{row.priority || 0}</span>
   },
   {
-    name: 'Status',
+    name: 'Designation',
     sortable: true,
     minWidth: '120px',
     sortField: 'total',
     selector: row => row.status,
     cell: row => <span>{row.status || 0}</span>
-  },
-  {
-    minWidth: '127px',
-    name: 'End Date',
-    cell: row => row.endDate
   }
 ]

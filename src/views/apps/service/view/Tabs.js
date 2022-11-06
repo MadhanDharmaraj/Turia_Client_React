@@ -5,12 +5,11 @@ import { Fragment } from 'react'
 import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
 
 // ** Icons Imports
-import { User, Lock, Bookmark, Bell, Link } from 'react-feather'
+import { User, Lock } from 'react-feather'
 
 // ** User Components
 import Checklist from './CheckList'
 import Templates from './Templates'
-import { basicData } from './data'
 const UserTabs = ({ active, toggleTab }) => {
   return (
     <Fragment>
@@ -30,7 +29,7 @@ const UserTabs = ({ active, toggleTab }) => {
       </Nav>
       <TabContent activeTab={active}>
         <TabPane tabId='1'>
-        <Checklist data={basicData} />
+        <Checklist />
         </TabPane>
         <TabPane tabId='2'>
           <Templates />

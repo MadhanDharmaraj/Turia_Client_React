@@ -6,36 +6,37 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getService, deleteUser } from '../store'
+import { getService, deleteService, updateStatus } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
+import { MoreVertical, Trash2, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
 
 // ** Reactstrap Imports
-import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Row, Col } from 'reactstrap'
+import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 
 // ** Renders Client Columns
-const renderClient = row => {
-  if (row.avatar.length) {
-    return <Avatar className='me-1' img={row.avatar} width='32' height='32' />
-  } else {
-    return (
-      <Avatar
-        initials
-        className='me-1'
-        color={row.avatarColor || 'light-primary'}
-        content={row.name || 'John Doe'}
-      />
-    )
-  }
+const renderService = row => {
+  <Avatar
+    initials
+    className='me-1'
+    color={row.avatarColor || 'light-primary'}
+    content={row.name || 'John Doe'}
+  />
 }
 
 
-const statusObj = {
-  pending: 'light-warning',
-  active: 'light-success',
-  inactive: 'light-secondary'
-}
+const statusObj = [
+  '',
+  'light-primary',
+  'light-warning'
+]
+
+const statusArr = [
+  '',
+  "Active",
+  "In Active"
+
+]
 
 export const columns = [
   {
@@ -46,7 +47,7 @@ export const columns = [
     selector: row => row.name,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
-        {renderClient(row)}
+        {renderService(row)}
         <div className='d-flex flex-column'>
           <Link
             to={`/service/view/${row.id}`}
@@ -64,8 +65,8 @@ export const columns = [
     sortable: true,
     minWidth: '172px',
     sortField: 'role',
-    selector: row => row.category,
-    cell: row => <span className='text-capitalize'>{row.category}</span>
+    selector: row => row.categoriesname,
+    cell: row => <span className='text-capitalize'>{row.categoriesname}</span>
   },
   {
     name: 'Status',
@@ -75,7 +76,7 @@ export const columns = [
     selector: row => row.status,
     cell: row => (
       <Badge className='text-capitalize' color={statusObj[row.status]} pill>
-        {row.status}
+        {statusArr[row.status]}
       </Badge>
     )
   },
@@ -98,22 +99,38 @@ export const columns = [
           <DropdownToggle tag='div' className='btn btn-sm'>
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
+
           <DropdownMenu>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <CheckCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Active</span>
-            </DropdownItem>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <XCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Inactive</span>
-            </DropdownItem>
+            {row.status === 2 && (
+              <DropdownItem tag='a' href='/' className='w-100' onClick={e => {
+                e.preventDefault()
+                const id = row.id
+                const status = 1
+                const obj = { id, status }
+                store.dispatch(updateStatus(obj))
+              }}>
+                <CheckCircle size={14} className='me-50' />
+                <span className='align-middle'>Mark as Active</span>
+              </DropdownItem>)
+            }
+            {row.status === 1 && (
+              <DropdownItem tag='a' href='/' className='w-100' onClick={e => {
+                e.preventDefault()
+                const id = row.id
+                const status = 2
+                const obj = { id, status }
+                store.dispatch(updateStatus(obj))
+              }}>
+                <XCircle size={14} className='me-50' />
+                <span className='align-middle'>Mark as Inactive</span>
+              </DropdownItem>)}
             <DropdownItem
               tag='a'
               href='/'
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteUser(row.id))
+                store.dispatch(deleteService(row.id))
               }}
             >
               <Trash2 size={14} className='me-50' />
