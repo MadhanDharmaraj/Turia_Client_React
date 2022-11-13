@@ -354,14 +354,14 @@ const EditCard = () => {
                       control={control}
                       name="businessEntity"
                       id="businessEntity"
-                      render={({ field, value, ref }) => (
+                      render={({ field, ref }) => (
                         <Select
                           inputRef={ref}
                           className={classnames('react-select', { 'is-invalid': errors.businessEntity })}
                           {...field}
                           classNamePrefix='select'
                           options={businessEntityOptions}
-                          value={businessEntityOptions.find(c => { return c.id === value })}
+                          value={businessEntityOptions.find(c => c.id === field.value)}
                           onChange={val => field.onChange(val.id)}
                           getOptionLabel={(option) => option.name}
                           getOptionValue={(option) => option.id}

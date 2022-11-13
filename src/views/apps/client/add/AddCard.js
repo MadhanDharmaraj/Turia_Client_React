@@ -681,3 +681,21 @@ const AddCard = () => {
 }
 
 export default AddCard
+
+/*
+Code Smell:
+DRY -> Donot Repeat Yourself -> Duplication avoiding.
+Refactoring - MUST
+Always try for Less Code
+
+React - Snapshot Testing
+React Dev Tools
+Redux Dev Tools
+
+1. React Components -> Mount -> Unit Test (or) React Snapshot
+2. Redux -> Independent Unit Testing
+     -> Reducers.
+     -> Fire actions into this reducer.
+     -> Check reducer state change.
+     -> axios can be mocked
+*/
