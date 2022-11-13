@@ -1,5 +1,5 @@
 // ** Invoice Add Components
-import AddCard from './AddCard'
+import EditCard from './EditCard'
 
 // ** Reactstrap Imports
 import { Row, Col } from 'reactstrap'
@@ -8,16 +8,16 @@ import { Row, Col } from 'reactstrap'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
-const ClientAdd = () => {
+const ClientEdit = () => {
   return (
     <div className='invoice-add-wrapper'>
       <Row className='invoice-add'>
         <Col xl={12} md={12} sm={12}>
-          <AddCard />
+          <EditCard />
         </Col>
       </Row>
     </div>
   )
 }
 
-export default ClientAdd
+export default ClientEdit
