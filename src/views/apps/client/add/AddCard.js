@@ -156,6 +156,25 @@ const AddCard = () => {
     })
   }
 
+  const getRow = (fieldLabel, fieldName) => {
+    return (
+      <Row className='mb-1'>
+      <Label sm='3' size='lg' className='form-label' for={fieldName}>
+        {fieldLabel}
+      </Label>
+      <Col sm='9'>
+        <Controller
+          id={fieldName}
+          name={fieldName}
+          control={control}
+          render={({ field }) => <Input invalid={errors[fieldName] && true} {...field} />}
+        />
+        {errors[fieldName] && <FormFeedback>{errors[fieldName].message}</FormFeedback>}
+      </Col>
+    </Row>
+    )
+  }
+
   useEffect(() => {
     getBusineessEntity()
     getCountries()
@@ -207,38 +226,12 @@ const AddCard = () => {
               </Row>
             </Col>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='uniqueIdentity'>
-                  Unique No
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='uniqueIdentity'
-                    name='uniqueIdentity'
-                    control={control}
-                    render={({ field }) => <Input invalid={errors.uniqueIdentity && true} {...field} />}
-                  />
-                  {errors.uniqueIdentity && <FormFeedback>{errors.uniqueIdentity.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getRow('Unique No', 'uniqueIdentity')}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='contactPersonName'>
-                  Conatct Person Name
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='contactPersonName'
-                    name='contactPersonName'
-                    control={control}
-                    render={({ field }) => <Input invalid={errors.contactPersonName && true} {...field} />}
-                  />
-                  {errors.contactPersonName && <FormFeedback>{errors.contactPersonName.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getRow('Contact Person Name', 'contactPersonName')}
             </Col>
 
             <Col md='6' className='mb-1'>
