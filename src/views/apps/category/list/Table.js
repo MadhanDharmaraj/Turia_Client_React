@@ -1,9 +1,6 @@
 // ** React Imports
 import { Fragment, useState, useEffect, forwardRef } from 'react'
 
-// ** Invoice List Sidebar
-import { Link } from 'react-router-dom'
-
 // ** Table Columns
 import { columns } from './columns'
 
@@ -14,8 +11,9 @@ import { useDispatch, useSelector } from 'react-redux'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { CheckCircle, ChevronDown, Trash, XCircle } from 'react-feather'
+import { ChevronDown, Trash } from 'react-feather'
 
+import CategoryAdd from '../add/AddCard'
 // ** Reactstrap Imports
 import {
   Row,
@@ -33,6 +31,12 @@ import '@styles/react/libs/tables/react-dataTable-component.scss'
 // ** Table Header
 const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm, selectedIds }) => {
   // ** Converts table to CSV
+  const [addCategoryFlag, setAddCategoryFlag] = useState(false)
+
+  const handleCallback = (() => {
+    setAddCategoryFlag(false)
+  })
+
 
   return (
     <div className='invoice-list-table-header w-100 me-1 ms-50 mt-2 mb-75'>
@@ -82,20 +86,22 @@ const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm, se
           </div>
 
           <div className='d-flex align-items-center table-header-actions'>
-            <Button className='add-new-user' color='primary' tag={Link} to='/service/add'>
-              Add Service
+            <Button className='add-new-user' color='primary' onClick={() => { setAddCategoryFlag(!addCategoryFlag) }}>
+              Add Category
             </Button>
           </div>
         </Col>
       </Row>
+      <CategoryAdd addCategoryFlag={addCategoryFlag} parentCallback={handleCallback} />
     </div>
   )
 }
 
-const ServicesList = () => {
+const CategoriesList = () => {
   // ** Store Vars
   const dispatch = useDispatch()
-  const store = useSelector(state => state.service)
+  const store = useSelector(state => state.category)
+
 
   // ** States
   const [sort, setSort] = useState('desc')
@@ -270,4 +276,4 @@ const ServicesList = () => {
   )
 }
 
-export default ServicesList
+export default CategoriesList

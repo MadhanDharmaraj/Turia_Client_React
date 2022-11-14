@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 
 // ** Custom Components
 import Avatar from '@components/avatar'
-
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 // ** Store & Actions
 import { store } from '@store/store'
 import { getService, deleteService, updateStatus } from '../store'
@@ -13,17 +14,45 @@ import { MoreVertical, Trash2, Eye, Edit, CheckCircle, XCircle } from 'react-fea
 
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
-
+const MySwal = withReactContent(Swal)
 // ** Renders Client Columns
 const renderService = row => {
-  <Avatar
+  return (<Avatar
     initials
     className='me-1'
-    color={row.avatarColor || 'light-primary'}
-    content={row.name || 'John Doe'}
+    color='light-primary'
+    content={row.name}
   />
+  )
 }
 
+const deleteServicefun = (id) => {
+
+  return MySwal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    customClass: {
+      confirmButton: 'btn btn-primary',
+      cancelButton: 'btn btn-outline-danger ms-1'
+    },
+    buttonsStyling: false
+  }).then(async (result) => {
+    if (result.value) {
+      await store.dispatch(deleteService(id))
+      MySwal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Service has been deleted.',
+        customClass: {
+          confirmButton: 'btn btn-success'
+        }
+      })
+    }
+  })
+}
 
 const statusObj = [
   '',
@@ -130,7 +159,7 @@ export const columns = [
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteService(row.id))
+                deleteServicefun(row.id)
               }}
             >
               <Trash2 size={14} className='me-50' />

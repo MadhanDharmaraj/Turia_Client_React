@@ -2,7 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
-import axios from '../../../../configs/axios/axiosConfig'
+import axios from '@src/configs/axios/axiosConfig'
 
 export const getData = createAsyncThunk('appServices/getData', async params => {
   const response = await axios.post('/services/list', params)

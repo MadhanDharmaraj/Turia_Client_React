@@ -2,7 +2,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
-import axios from '../../../../configs/axios/axiosConfig'
+import axios from '@src/configs/axios/axiosConfig'
+
 
 export const getData = createAsyncThunk('appUsers/getData', async params => {
   const response = await axios.post(`/clients/list`, params)
@@ -18,12 +19,16 @@ export const getClient = createAsyncThunk('appClients/getClient', async id => {
   return response.data.clients
 })
 
-export const addClient = createAsyncThunk('appClients/addClient', async (client, { }) => {
-  const response = await axios.post(`/clients/create`, client)
-  return { client: response.data.clients }
+export const addClient = createAsyncThunk('appClients/addClient', async (client, { rejectWithValue }) => {
+  try {
+    const response = await axios.post(`/clients/create`, client)
+    return { client: response.data.clients }
+  } catch (ex) {
+    return rejectWithValue(getExceptionPayload(ex))
+  }
 })
 
-export const updateClient = createAsyncThunk('appClients/addClient', async (client, { }) => {
+export const updateClient = createAsyncThunk('appClients/updateClient', async (client, { }) => {
   const response = await axios.post(`/clients/update`, client)
   return { client: response.data.clients }
 })
@@ -33,9 +38,9 @@ export const addContactInfo = createAsyncThunk('appClients/addClientInfo', async
   return { clientInfos: response.data.clients }
 })
 
-export const getConatctInfo = createAsyncThunk('appClients/getClientInfo', async (id) => {
-  const response = await axios.post(`/conatctinformation/list`, { id })
-  return { clientInfos: response.data.clients }
+export const getConatctInfo = createAsyncThunk('appClients/getClientInfo', async (contactid) => {
+  const response = await axios.post(`/contactinformation/list`, { contactid })
+  return { clientInfos: response.data.contactinformation }
 })
 
 export const deleteClient = createAsyncThunk('appClients/deleteClient', async (id, { dispatch, getState }) => {
@@ -60,7 +65,8 @@ export const appClientsSlice = createSlice({
     params: {},
     allData: [],
     selectedClient: null,
-    clientId: null
+    clientId: null,
+    clientInformations: []
   },
   reducers: {},
   extraReducers: builder => {
@@ -69,6 +75,9 @@ export const appClientsSlice = createSlice({
         state.data = action.payload.data
         state.params = action.payload.params
         state.total = action.payload.totalPages
+      })
+      .addCase(getConatctInfo.fulfilled, (state, action) => {
+        state.clientInformations = action.payload.clientInfos
       })
       .addCase(addClient.fulfilled, (state, action) => {
         state.clientId = action.payload.client.id

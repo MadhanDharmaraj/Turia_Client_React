@@ -10,7 +10,7 @@ import useJwt from '@src/auth/jwt/useJwt'
 import toast from 'react-hot-toast'
 import { useDispatch } from 'react-redux'
 import { useForm, Controller } from 'react-hook-form'
-import { Facebook, Twitter, Mail, GitHub, HelpCircle, Coffee, X } from 'react-feather'
+import { Coffee, X } from 'react-feather'
 
 // ** Actions
 import { handleLogin } from '@store/authentication'
@@ -26,12 +26,12 @@ import InputPasswordToggle from '@components/input-password-toggle'
 import { getHomeRouteForLoggedInUser } from '@utils'
 
 // ** Reactstrap Imports
-import { Row, Col, Form, Input, Label, Alert, Button, CardText, CardTitle, UncontrolledTooltip } from 'reactstrap'
+import { Row, Col, Form, Input, Label, Button, CardText, CardTitle } from 'reactstrap'
 
 // ** Styles
 import '@styles/react/pages/page-authentication.scss'
 
-const ToastContent = ({ t, name, role }) => {
+const ToastContent = ({ t, name}) => {
   return (
     <div className='d-flex'>
       <div className='me-1'>
@@ -42,7 +42,7 @@ const ToastContent = ({ t, name, role }) => {
           <h6>{name}</h6>
           <X size={12} className='cursor-pointer' onClick={() => toast.dismiss(t.id)} />
         </div>
-        <span>You have successfully logged in as an {role} user to Vuexy. Now you can start to explore. Enjoy!</span>
+        <span>You have successfully logged in as an  user to Vuexy. Now you can start to explore. Enjoy!</span>
       </div>
     </div>
   )
@@ -78,7 +78,7 @@ const Login = () => {
           ability.update(res.data.userData.ability)
           navigate(getHomeRouteForLoggedInUser(data.role))
           toast(t => (
-            <ToastContent t={t} role={data.role || 'admin'} name={data.fullName || data.username || 'John Doe'} />
+            <ToastContent t={t} name={data.fullName || data.username || 'John Doe'} />
           ))
         })
         .catch(err => console.log(err))

@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 
 // ** Third Party Components
 import * as yup from 'yup'
@@ -7,6 +7,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { ChevronLeft, ChevronRight } from 'react-feather'
 
+import { register, generateCode } from '../store/index'
+import { useDispatch, useSelector } from 'react-redux'
 // ** Reactstrap Imports
 import { Form, Label, Input, Row, Col, Button, FormFeedback } from 'reactstrap'
 
@@ -15,16 +17,24 @@ import InputPasswordToggle from '@components/input-password-toggle'
 
 const defaultValues = {
   email: '',
-  username: '',
+  name: '',
   password: '',
   confirmPassword: ''
 }
 
 const AccountDetails = ({ stepper }) => {
+
+  const dispatch = useDispatch()
+  const passwordRegx = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
+
+  const store = useSelector(state => state.register)
   const SignupSchema = yup.object().shape({
-    username: yup.string().required(),
+    name: yup.string().required(),
     email: yup.string().email().required(),
-    password: yup.string().required(),
+    password: yup.string().required().matches(
+      passwordRegx,
+      "Password must Contain 8 Characters, One Uppercase, One Lowercase, One Number and one special case Character"
+    ),
     confirmPassword: yup
       .string()
       .required()
@@ -32,7 +42,6 @@ const AccountDetails = ({ stepper }) => {
   })
 
   // ** Hooks
-
   const {
     control,
     handleSubmit,
@@ -42,32 +51,48 @@ const AccountDetails = ({ stepper }) => {
     resolver: yupResolver(SignupSchema)
   })
 
-  const onSubmit = data => {
-    if (Object.values(data).every(field => field.length > 0)) {
-      console.log(data)
+  const generateVerifyCode = async (useremail) => {
+    if (useremail !== null) {
+      const obj = { email: useremail }
+      await dispatch(generateCode(obj))
       stepper.next()
     }
   }
+
+  const onSubmit = async data => {
+    if (Object.values(data).every(field => field.length > 0)) {
+      await dispatch(register(data))
+    }
+  }
+
+  useEffect(async () => {
+    if (store.loginUser !== null) {
+      generateVerifyCode(store.loginUser.email)
+    }
+    if (store.loginError !== null) {
+      errors.email = store.loginError.email
+    }
+  }, [dispatch, store.loginUser, store.loginError])
 
   return (
     <Fragment>
       <div className='content-header mb-2'>
         <h2 className='fw-bolder mb-75'>Account Information</h2>
-        <span>Enter your username password details</span>
+        <span>Enter your name password details</span>
       </div>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Row>
           <Col md='6' className='mb-1'>
-            <Label className='form-label' for='username'>
+            <Label className='form-label' for='name'>
               Username
             </Label>
             <Controller
-              id='username'
-              name='username'
+              id='name'
+              name='name'
               control={control}
-              render={({ field }) => <Input placeholder='johndoe' invalid={errors.username && true} {...field} />}
+              render={({ field }) => <Input placeholder='johndoe' invalid={errors.name && true} {...field} />}
             />
-            {errors.username && <FormFeedback>{errors.username.message}</FormFeedback>}
+            {errors.name && <FormFeedback>{errors.name.message}</FormFeedback>}
           </Col>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for={`email`}>

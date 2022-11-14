@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 
 // ** Third Party Components
 import classnames from 'classnames'
@@ -7,14 +7,21 @@ import { ChevronLeft, ChevronRight } from 'react-feather'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+
+import { verfiyCode } from '../store/index'
+
 // ** Reactstrap Imports
 import { Form, Label, Input, Row, Col, Button, FormFeedback } from 'reactstrap'
+import { useDispatch, useSelector } from 'react-redux'
 
 const Verify = ({ stepper }) => {
   // ** States
   const codeRegExp = /^[0-9\- ]{4,4}$/
+  const dispatch = useDispatch()
+  const store = useSelector(state => state.register)
   const VerifySchema = yup.object().shape({
-    verifyCode: yup.string().required('Please Enter Verify Code').matches(codeRegExp, { message: 'Please Enter Valid verify Code', excludeEmptyString: true })
+    emailCode: yup.string().required('Please Enter Verify Code').matches(codeRegExp, { message: 'Please Enter Valid verify Code', excludeEmptyString: true })
+    //acceptTermsAndCondition: yup.boolean().oneOf([true], 'Please Accept terms and Condition')
   })
 
   const {
@@ -22,16 +29,22 @@ const Verify = ({ stepper }) => {
     handleSubmit,
     formState: { errors }
   } = useForm({
-    defaultValues: { verifyCode: '' },
+    defaultValues: { emailCode: '', acceptTermsAndCondition: true },
     resolver: yupResolver(VerifySchema)
   })
 
-  const onSubmit = data => {
-    if (data.verifyCode && data.verifyCode.length > 0) {
-      console.log(data)
-      stepper.next()
+  const onSubmit = async data => {
+    if (data.emailCode && data.emailCode.length > 0) {
+      data.email = store.loginUser.email
+      await dispatch(verfiyCode(data))
     }
   }
+
+  useState(() => {
+    if (store.verifyprocess) {
+      stepper.next()
+    }
+  }, [store.verifyprocess])
 
   return (
     <Fragment>
@@ -47,7 +60,7 @@ const Verify = ({ stepper }) => {
               Verification Code
             </Label>
             <Controller
-              name='verifyCode'
+              name='emailCode'
               control={control}
               render={({ field }) => (
                 <Input
@@ -55,11 +68,37 @@ const Verify = ({ stepper }) => {
                   type='number'
                   id='credit-card'
                   placeholder='1356'
-                  className={classnames('form-control', { 'is-invalid': errors.verifyCode })}
+                  className={classnames('form-control', { 'is-invalid': errors.emailCode })}
                 />
               )}
             />
-            {errors.verifyCode && <FormFeedback>{errors.verifyCode?.message} </FormFeedback>}
+            {errors.emailCode && <FormFeedback>{errors.emailCode?.message} </FormFeedback>}
+          </Col>
+          <Col sm={12} className='mb-1 '>
+            <div className='form-check form-check-inline'>
+              <Controller
+                name='acceptTermsAndCondition'
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    type='checkbox'
+                    defaultChecked={true}
+                    name='acceptTermsAndCondition'
+                    id='acceptTermsAndCondition'
+
+                  />
+                )}
+              />
+              <Label for='credit-card' className={classnames('form-label', { 'text-danger': errors.emailCode })}>
+                I would like to receive updates, tips and
+                offers about <a href="#">Turia's products &amp; services</a>
+              </Label>
+              <Label className={classnames('form-label', { 'text-danger': errors.emailCode })}>
+                <p>By choosing <b>Next</b> you agree to <b>Turia's <a href="https://www.turia.in/terms">Terms of Use</a>, <a href="https://www.turia.in/privacy">Privacy</a> and <a href="https://www.turia.in/privacy">Data Protection Policies</a>.</b></p>
+              </Label>
+            </div>
+
           </Col>
         </Row>
         <div className='d-flex justify-content-between mt-2'>

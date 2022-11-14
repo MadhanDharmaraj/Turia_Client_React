@@ -35,6 +35,9 @@ const ServiceView = lazy(() => import('../../views/apps/service/view'))
 const ServiceAdd = lazy(() => import('../../views/apps/service/add'))
 const ServiceEdit = lazy(() => import('../../views/apps/service/edit'))
 
+const CategoryList = lazy(() => import('../../views/apps/category/list'))
+const CategoryView = lazy(() => import('../../views/apps/category/view'))
+
 const TaskList = lazy(() => import('../../views/apps/task/list'))
 const TaskView = lazy(() => import('../../views/apps/task/view'))
 const TaskAdd = lazy(() => import('../../views/apps/task/add'))
@@ -233,6 +236,14 @@ const AppRoutes = [
   {
     element: <ServiceEdit />,
     path: '/service/edit/:id'
+  },
+  {
+    element: <CategoryList />,
+    path: '/category/list'
+  },
+  {
+    element: <CategoryView />,
+    path: '/category/view/:id'
   },
   {
     element: <TaskList />,

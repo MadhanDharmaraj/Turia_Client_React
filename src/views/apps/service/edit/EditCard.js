@@ -1,10 +1,10 @@
 import Select from "react-select"
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch } from "react-redux"
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { addService } from '../store'
+import { updateService, getService } from '../store'
 import axios from '@src/configs/axios/axiosConfig'
 import classnames from 'classnames'
 
@@ -18,12 +18,16 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from "react"
 
-const AddCard = () => {
+const EditCard = () => {
+
+  const { id } = useParams()
+
   // ** States
   const navigate = useNavigate({})
   const dispatch = useDispatch()
   const [categoryOptions, setCateoryOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
+  const [serviceDetails, setServiceDetails] = useState([])
 
   const schema = yup.object().shape({
     categoryId: yup.string().required("Please select a Category"),
@@ -34,7 +38,7 @@ const AddCard = () => {
   })
 
 
-  const { handleSubmit, control, formState: { errors } } = useForm({
+  const { handleSubmit, control, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
       organizationId: 1,
@@ -62,14 +66,37 @@ const AddCard = () => {
     })
   }
 
+  const getServiceData = async () => {
+    const service = await dispatch(getService(id))
+    setServiceDetails(service.payload)
+
+  }
+
+  useEffect(() => {
+
+    if (Object.keys(serviceDetails).length > 0) {
+      reset({
+        categoryId: serviceDetails.categoryid,
+        name: serviceDetails.name,
+        organizationId: serviceDetails.organizationid,
+        sellingPrice: serviceDetails.sellingprice,
+        sacCode: serviceDetails.saccode,
+        taxgroupid: serviceDetails.taxgroupid,
+        description: serviceDetails.description
+      })
+    }
+
+  }, [serviceDetails])
+
   useEffect(() => {
     getTaxGroups()
     getCategories()
 
+    getServiceData()
   }, [])
 
   const onSubmit = async (data) => {
-    const datatemp = await dispatch(addService(data))
+    const datatemp = await dispatch(updateService({ data, id }))
     const seviceId = datatemp.payload.services.id
     navigate(`/service/view/${seviceId}`)
   }
@@ -195,4 +222,4 @@ const AddCard = () => {
   )
 }
 
-export default AddCard
+export default EditCard

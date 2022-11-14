@@ -4,7 +4,7 @@ import mock from '../mock'
 import { paginateArray } from '../utils'
 
 const data = {
-  users: [
+  digitalsignatures: [
     {
       id: 1,
       uniqueId : '#DSC00001',
@@ -185,7 +185,7 @@ const data = {
 }
 
 // GET ALL DATA
-mock.onGet('/api/digital-signature/list/all-data').reply(200, data.users)
+mock.onGet('/digital-signature/list').reply(200, data)
 
 // POST: Add new user
 mock.onPost('/apps/digital-signature/add-user').reply(config => {

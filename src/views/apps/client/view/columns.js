@@ -1,47 +1,39 @@
-// ** React Imports
-import { Link } from 'react-router-dom'
-
 // ** Table columns
 export const columns = [
   {
     name: '#',
-    sortable: true,
-    sortField: 'id',
+    sortable: false,
     minWidth: '80px',
-    selector: row => row.task_id,
-    cell: row => <Link className='fw-bolder' to={`/task/view/${row.id}`}>{row.task_id}</Link>
+    selector: row => row.id,
+    cell: row =>  <span>{row.id || 0}</span>
   },
   {
     name: 'Name',
     minWidth: '180px',
-    sortable: true,
-    sortField: 'invoiceStatus',
-    selector: row => row.client,
-    cell: row =>  <span>{row.client || 0}</span>
+    sortable: false,
+    selector: row => row.name,
+    cell: row =>  <span>{row.name || 0}</span>
   },
 
   {
     name: 'Email',
-    sortable: true,
+    sortable: false,
     minWidth: '180px',
-    sortField: 'total',
-    selector: row => row.task,
-    cell: row => <span>{row.task || 0}</span>
+    selector: row => row.email,
+    cell: row => <span>{row.email || 0}</span>
   },
   {
-    name: 'Conatct',
-    sortable: true,
+    name: 'Contact',
+    sortable: false,
     minWidth: '135px',
-    sortField: 'total',
-    selector: row => row.priority,
-    cell: row => <span>{row.priority || 0}</span>
+    selector: row => row.contactNumber,
+    cell: row => <span>{row.contactNumber || 0}</span>
   },
   {
     name: 'Designation',
-    sortable: true,
+    sortable: false,
     minWidth: '120px',
-    sortField: 'total',
-    selector: row => row.status,
-    cell: row => <span>{row.status || 0}</span>
+    selector: row => row.designation,
+    cell: row => <span>{row.designation || 0}</span>
   }
 ]

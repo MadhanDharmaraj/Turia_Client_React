@@ -1,11 +1,24 @@
-import {  ShoppingCart } from 'react-feather'
+import {  ShoppingCart, Circle } from 'react-feather'
 
 export default [
   {
-    id: 'service',
-    title: 'Service',
+    id: 'services',
+    title: 'Services',
     icon: <ShoppingCart />,
-    navLink: '/service/list'
-
+    children: [
+      {
+        id: 'service',
+        title: 'Service',
+        icon: <Circle />,
+        navLink: '/service/list'
+      },
+      {
+        id: 'cartegory',
+        title: 'Category',
+        icon: <Circle />,
+        navLink: '/category/list' 
+      }
+    ]
   }
+
 ]

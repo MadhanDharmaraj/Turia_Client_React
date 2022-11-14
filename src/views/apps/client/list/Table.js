@@ -16,7 +16,7 @@ import axios from '../../../../configs/axios/axiosConfig'
 import Select from 'react-select'
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
-import { ChevronDown } from 'react-feather'
+import { CheckCircle, ChevronDown, Trash, XCircle } from 'react-feather'
 
 // ** Utils
 import { selectThemeColors } from '@utils'
@@ -29,7 +29,8 @@ import {
   Input,
   Label,
   Button,
-  CardBody
+  CardBody,
+  UncontrolledTooltip
 } from 'reactstrap'
 
 // ** Styles
@@ -37,7 +38,7 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 
 // ** Table Header
-const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) => {
+const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm, selectedIds }) => {
 
   return (
     <div className='invoice-list-table-header w-100 me-1 ms-50 mt-2 mb-75'>
@@ -58,8 +59,25 @@ const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) 
               <option value='50'>50</option>
             </Input>
             <label htmlFor='rows-per-page'>Entries</label>
+            {selectedIds.length > 0 && (
+              <div>
+                <Button.Ripple className='btn-icon rounded-circle ms-1' color='danger' id="delete_btn">
+                  <Trash size={16} />
+                </Button.Ripple>
+                <UncontrolledTooltip target='delete_btn'>Delete</UncontrolledTooltip>
+                <Button.Ripple className='btn-icon rounded-circle ms-1' color='success' id="markas_active_btn">
+                  <CheckCircle size={16} />
+                </Button.Ripple>
+                <UncontrolledTooltip target='markas_active_btn'>Mark as Active</UncontrolledTooltip>
+                <Button.Ripple className='btn-icon rounded-circle ms-1' color='warning' id="markas_inactive_btn">
+                  <XCircle size={16} />
+                </Button.Ripple>
+                <UncontrolledTooltip target='markas_inactive_btn'>Mark as Inactive</UncontrolledTooltip>
+              </div>
+            )}
           </div>
         </Col>
+
         <Col
           xl='6'
           className='d-flex align-items-sm-center justify-content-xl-end justify-content-start flex-xl-nowrap flex-wrap flex-sm-row flex-column pe-xl-1 p-0 mt-xl-0 mt-1'
@@ -91,7 +109,7 @@ const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) 
 const UsersList = () => {
   // ** Store Vars
   const dispatch = useDispatch()
-  const store = useSelector(state => state.users)
+  const store = useSelector(state => state.client)
 
   // ** Bootstrap Checkbox Component
   const BootstrapCheckbox = forwardRef((props, ref) => (
@@ -114,15 +132,15 @@ const UsersList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState('id')
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [businessEntity, setBusinessEntity] = useState({id: '', name: 'Select Entity'})
+  const [businessEntity, setBusinessEntity] = useState({ id: '', name: 'Select Entity' })
   const [currentStatus, setCurrentStatus] = useState({ id: 1, name: 'Active' })
 
   // ** Client filter options
   const [businessEntityOptions, setBusinessEntityOptions] = useState([])
   const statusOptions = [
-    { id: '', name: 'Select Status'},
+    { id: '', name: 'Select Status' },
     { id: 1, name: 'Active' },
-    { id: 2, name: 'Inactive'}
+    { id: 2, name: 'Inactive' }
   ]
 
   const getBusinessEntity = () => {
@@ -265,6 +283,14 @@ const UsersList = () => {
       })
     )
   }
+  const [selectedIds, setSelectedIds] = useState([])
+  const handleChange = (state) => {
+    const temp = []
+    state.selectedRows.forEach((obj) => {
+      temp.push(obj.id)
+    })
+    setSelectedIds(temp)
+  }
 
   return (
     <Fragment>
@@ -351,8 +377,10 @@ const UsersList = () => {
               paginationComponent={CustomPagination}
               data={dataToRender()}
               selectableRowsComponent={BootstrapCheckbox}
+              onSelectedRowsChange={handleChange}
               subHeaderComponent={
                 <CustomHeader
+                  selectedIds={selectedIds}
                   store={store}
                   searchTerm={searchTerm}
                   rowsPerPage={rowsPerPage}

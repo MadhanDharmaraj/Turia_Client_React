@@ -1,6 +1,6 @@
 // ** React Imports
-import { useState, useEffect } from 'react'
-
+import { useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 // ** Table Columns
 import { columns } from './columns'
 
@@ -21,56 +21,21 @@ import { useDispatch, useSelector } from 'react-redux'
 import '@styles/react/apps/app-invoice.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 
-const ConatctInfo = (selectedClient) => {
+const ConatctInfo = () => {
   // ** Store Vars
   const dispatch = useDispatch()
-  const store = useSelector(state => state.task)
-
-  // ** States
-  const [value] = useState('')
-  const [rowsPerPage] = useState(6)
-  const [currentPage] = useState(1)
-  const [statusValue] = useState('')
-
+  const store = useSelector(state => state.client.clientInformations)
+  const {id}  = useParams()
   useEffect(() => {
-    dispatch(getConatctInfo(selectedClient.id))
+    dispatch(getConatctInfo(id))
     
   }, [])
 
   const dataToRender = () => {
-    const filters = {
-      status: statusValue,
-      q: value
-    }
-
-    const isFiltered = Object.keys(filters).some(function (k) {
-      return filters[k].length > 0
-    })
-
-    if (store.data.length > 0) {
-      return store.data.slice(0, rowsPerPage)
-    } else if (store.data.length === 0 && isFiltered) {
-      return []
-    } else {
-      return store.allData.slice(0, rowsPerPage)
-    }
+  
+    return store
   }
 
-  const handleSort = (column, sortDirection) => {
-    setSort(sortDirection)
-    setSortColumn(column.sortField)
-    dispatch(
-      getData({
-        q: value,
-        page: currentPage,
-        sort: sortDirection,
-        status: statusValue,
-        perPage: rowsPerPage,
-        sortColumn: column.sortField
-      })
-    )
-  }
-  console.log()
   return (
     <div className='invoice-list-wrapper'>
       <Card>
@@ -81,7 +46,6 @@ const ConatctInfo = (selectedClient) => {
             sortServer
             columns={columns}
             responsive={true}
-            onSort={handleSort}
             data={dataToRender()}
             sortIcon={<ChevronDown />}
             className='react-dataTable'

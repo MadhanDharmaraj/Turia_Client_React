@@ -66,27 +66,7 @@ const AddCard = () => {
 
   const { register, handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      clientType: 2,
-      uniqueIdentity: '',
-      contactPersonName: '',
-      organization: 1,
-      name: '',
-      contactNumber: '',
-      businessEntity: '',
-      email: '',
-      gstRegistrationType: '',
-      gstin: '',
-      placeOfSupply: '',
-      currency: '',
-      contact_info: [],
-      billingAddressLine1: '',
-      billingAddressLine2: '',
-      billingAddressCountry: '',
-      billingAddressState: '',
-      billingAddressZip: '',
-      billingAddressCity: ''
-    }
+    defaultValues: schema.cast()
   })
 
   const { fields, append } = useFieldArray({ name: 'contact_info', control })
@@ -113,7 +93,7 @@ const AddCard = () => {
   }
 
   const addItem = (() => {
-    append({ organizationId : 1, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: '' })
+    append({ organizationId: 1, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: true })
   })
 
   const removeItem = e => {
@@ -159,19 +139,53 @@ const AddCard = () => {
   const getRow = (fieldLabel, fieldName) => {
     return (
       <Row className='mb-1'>
-      <Label sm='3' size='lg' className='form-label' for={fieldName}>
-        {fieldLabel}
-      </Label>
-      <Col sm='9'>
-        <Controller
-          id={fieldName}
-          name={fieldName}
-          control={control}
-          render={({ field }) => <Input invalid={errors[fieldName] && true} {...field} />}
-        />
-        {errors[fieldName] && <FormFeedback>{errors[fieldName].message}</FormFeedback>}
-      </Col>
-    </Row>
+        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+          {fieldLabel}
+        </Label>
+        <Col sm='9'>
+          <Controller
+            id={fieldName}
+            name={fieldName}
+            control={control}
+            render={({ field }) => <Input invalid={errors[fieldName] && true} {...field} />}
+          />
+          {errors[fieldName] && <FormFeedback>{errors[fieldName].message}</FormFeedback>}
+        </Col>
+      </Row>
+    )
+  }
+
+  const getSelectRow = (fieldLabel, fieldName, options) => {
+    return (
+
+      <Row className='mb-1'>
+        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+          {fieldLabel}
+        </Label>
+        <Col sm='9'>
+          <Controller
+            control={control}
+            name={fieldName}
+            id={fieldName}
+            render={({ field, ref }) => (
+              <Select
+                inputRef={ref}
+                className={classnames('react-select', { 'is-invalid': errors[fieldName] })}
+                {...field}
+                classNamePrefix='select'
+                options={options}
+                value={options.find(c => { return c.id === field.value })}
+                onChange={val => field.onChange(val.id)}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+              />
+            )}
+
+          />
+          {errors[fieldName] && <FormFeedback className='text-danger'>{errors[fieldName]?.message}</FormFeedback>}
+        </Col>
+      </Row>
+
     )
   }
 
@@ -229,99 +243,29 @@ const AddCard = () => {
               {getRow('Unique No', 'uniqueIdentity')}
             </Col>
           </Row>
+
           <Row>
             <Col md='6' className='mb-1'>
               {getRow('Contact Person Name', 'contactPersonName')}
             </Col>
-
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='name'>
-                  Business Name
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    control={control}
-                    id='name'
-                    name='name'
-                    render={({ field }) => (
-                      <Input type='text' invalid={errors.name && true} {...field} />
-                    )}
-                  />
-                  {errors.name && <FormFeedback>{errors.name.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getRow('Business Name', 'name')}
             </Col>
-
           </Row>
+
           <Row>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='contactNumber'>
-                  Mobile Number
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='contactNumber'
-                    name='contactNumber'
-                    control={control}
-                    render={({ field }) => <Input invalid={errors.contactNumber && true} {...field} />}
-                  />
-                  {errors.contactNumber && <FormFeedback>{errors.contactNumber.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getRow('Mobile Number', 'contactNumber')}
             </Col>
             <Col md='6' className='mb-1'>
-
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='email'>
-                  Email ID
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    control={control}
-                    id='email'
-                    name='email'
-                    render={({ field }) => (
-                      <Input type='email' invalid={errors.email && true} {...field} />
-                    )}
-                  />
-                  {errors.email && <FormFeedback>{errors.email.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getRow('Email ID', 'email')}
             </Col>
           </Row>
 
           {clientType === 2 && (
             <Row>
               <Col md='6' className='mb-1'>
-                <Row className='mb-1'>
-                  <Label sm='3' size='lg' className='form-label' for='businessEntity'>
-                    Business Entity
-                  </Label>
-                  <Col sm='9'>
-                    <Controller
-                      control={control}
-                      name="businessEntity"
-                      id="businessEntity"
-                      render={({ field, value, ref }) => (
-                        <Select
-                          inputRef={ref}
-                          className={classnames('react-select', { 'is-invalid': errors.businessEntity })}
-                          {...field}
-                          classNamePrefix='select'
-                          options={businessEntityOptions}
-                          value={businessEntityOptions.find(c => { return c.id === value })}
-                          onChange={val => field.onChange(val.id)}
-                          getOptionLabel={(option) => option.name}
-                          getOptionValue={(option) => option.id}
-                        />
-                      )}
-
-                    />
-                    {errors.businessEntity && <FormFeedback className='text-danger'>{errors.businessEntity?.message}</FormFeedback>}
-                  </Col>
-                </Row>
+                {getSelectRow('Business Entity', 'businessEntity', businessEntityOptions)}
               </Col>
             </Row>
           )}
@@ -424,110 +368,19 @@ const AddCard = () => {
 
           <Row>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='gstRegistrationType'>
-                  GST Type
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    control={control}
-                    name="gstRegistrationType"
-                    id="gstRegistrationType"
-                    render={({ field, value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        className={classnames('react-select', { 'is-invalid': errors.gstRegistrationType })}
-                        {...field}
-                        classNamePrefix='select'
-                        options={gstRegistrationTypeOptions}
-                        value={gstRegistrationTypeOptions.find(c => { return c.id === value })}
-                        onChange={val => field.onChange(val.id)}
-                        getOptionLabel={(option) => option.name}
-                        getOptionValue={(option) => option.id}
-                      />
-                    )}
-
-                  />
-                  {errors.gstRegistrationType && <FormFeedback className='text-danger'>{errors.gstRegistrationType?.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getSelectRow('GST Type', 'gstRegistrationType', gstRegistrationTypeOptions)}
             </Col>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='placeOfSupply'>
-                  Place of Supply
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    control={control}
-                    name="placeOfSupply"
-                    id="placeOfSupply"
-                    render={({ field, value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        name="placeOfSupply"
-                        title="Country"
-                        className={classnames('react-select', { 'is-invalid': errors.gstRegistrationType })}
-                        {...field}
-                        classNamePrefix='select'
-                        aria-label='name'
-                        value={stateOptions.find(c => c.id === value)}
-                        options={stateOptions}
-                        getOptionLabel={(option) => option.name}
-                        getOptionValue={(option) => option.id}
-                        onChange={val => field.onChange(val.id)}
-                      />
-                    )}
-                  />
-                  {errors.placeOfSupply && <FormFeedback className='text-danger'>{errors.placeOfSupply?.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getSelectRow('Place of Supply', 'placeOfSupply', stateOptions)}
             </Col>
           </Row>
+
           <Row>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='gstin'>
-                  GSTIN
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='gstin'
-                    name='gstin'
-                    control={control}
-                    render={({ field }) => <Input invalid={errors.gstin && true} {...field} />}
-                  />
-                  {errors.gstin && <FormFeedback>{errors.gstin.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getRow('GSTIN', 'gstin')}
             </Col>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='currency'>
-                  Currency
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    control={control}
-                    name="currency"
-                    id="currency"
-                    render={({ field, value, ref }) => (
-                      <Select
-                        {...register("currency")}
-                        inputRef={ref}
-                        className="react-select col-lg-12 col-sm-12"
-                        classNamePrefix="addl-class"
-                        options={currencyOptions}
-                        value={currencyOptions.find(c => c.id === value)}
-                        onChange={val => field.onChange(val.id)}
-                        getOptionLabel={(option) => option.name}
-                        getOptionValue={(option) => option.id}
-                      />
-                    )}
-                  />
-                  {errors.currency && <FormFeedback>{errors.currency.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getSelectRow('Currency', 'currency', currencyOptions)}
             </Col>
           </Row>
         </CardBody>
@@ -536,123 +389,28 @@ const AddCard = () => {
           <h4 className='text-primary'>Billing Address</h4>
           <Row>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billingAddress_addressline1'>
-                  Address Line1
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='billingAddress_addressline1'
-                    name="billingAddressLine1"
-                    control={control}
-                    render={({ field }) => <Input {...field} />}
-                  />
-                </Col>
-              </Row>
+              {getRow('Address Line1', 'billingAddressLine1')}
             </Col>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billingAddress_addressline2'>
-                  Address Line 2
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='billingAddress_addressline2'
-                    name="billingAddressLine2"
-                    control={control}
-                    render={({ field }) => <Input {...field} />}
-                  />
-                </Col>
-              </Row>
+              {getRow('Address Line2', 'billingAddressLine2')}
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md='6' className='mb-1'>
+              {getRow('City', 'billingAddressCity')}
+            </Col>
+            <Col md='6' className='mb-1'>
+              {getSelectRow('State', 'billingAddressState', stateOptions)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billingAddress_city'>
-                  City
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='billingAddress_city'
-                    name="billingAddressCity"
-                    control={control}
-                    render={({ field }) => <Input  {...field} />}
-                  />
-                </Col>
-              </Row>
+              {getSelectRow('Country', 'billingAddressCountry', countryOptions)}
             </Col>
             <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billingAddressState'>
-                  State
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    control={control}
-                    name="billingAddressState"
-                    id="billingAddressState"
-                    render={({ field, value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        className={classnames('react-select')}
-                        {...field}
-                        classNamePrefix='select'
-                        options={stateOptions}
-                        getOptionLabel={(option) => option.name}
-                        getOptionValue={(option) => option.id}
-                        value={stateOptions.find(c => { return c.id === value })}
-                        onChange={val => field.onChange(val.id)}
-                      />
-                    )}
-                  />
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-          <Row>
-            <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billingAddressCountry'>
-                  Country
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    control={control}
-                    name="billingAddressCountry"
-                    id="billingAddressCountry"
-                    render={({ field, value, ref }) => (
-                      <Select
-                        inputRef={ref}
-                        className={classnames('react-select')}
-                        {...field}
-                        classNamePrefix='select'
-                        options={countryOptions}
-                        value={countryOptions.find(c => { return c.id === value })}
-                        onChange={val => field.onChange(val.id)}
-                        getOptionLabel={(option) => option.name}
-                        getOptionValue={(option) => option.id}
-                      />
-                    )}
-                  />
-                </Col>
-              </Row>
-            </Col>
-            <Col md='6' className='mb-1'>
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='billingAddress_zipcode'>
-                  Zip Code
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    id='billingAddress_zipcode'
-                    name='billingAddressZip'
-                    control={control}
-                    render={({ field }) => <Input type='text' invalid={errors.billingAddressZip && true} {...field} />}
-                  />
-                  {errors.billingAddressZip && <FormFeedback>{errors.billingAddressZip.message}</FormFeedback>}
-                </Col>
-              </Row>
+              {getRow('Zip Code', 'billingAddressZip')}
+
             </Col>
           </Row>
         </CardBody>
@@ -674,21 +432,3 @@ const AddCard = () => {
 }
 
 export default AddCard
-
-/*
-Code Smell:
-DRY -> Donot Repeat Yourself -> Duplication avoiding.
-Refactoring - MUST
-Always try for Less Code
-
-React - Snapshot Testing
-React Dev Tools
-Redux Dev Tools
-
-1. React Components -> Mount -> Unit Test (or) React Snapshot
-2. Redux -> Independent Unit Testing
-     -> Reducers.
-     -> Fire actions into this reducer.
-     -> Check reducer state change.
-     -> axios can be mocked
-*/
