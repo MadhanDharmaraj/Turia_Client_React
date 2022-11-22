@@ -1,83 +1,171 @@
 // ** React Imports
-import { Fragment } from 'react'
-
+import { Fragment, useEffect, useState } from 'react'
+import Avatar from '@components/avatar'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import Select from 'react-select'
-import { ChevronLeft, Check } from 'react-feather'
+import { ChevronLeft, Check, Coffee, X } from 'react-feather'
 import classnames from 'classnames'
-// ** Reactstrap Imports
-import { Form, Label, Input, Row, Col, Button, FormFeedback } from 'reactstrap'
-const stateOptions = [
-  { value: '1', label: 'Chocolate' },
-  { value: '2', label: 'Strawberry' },
-  { value: '3', label: 'Vanilla' }
-]
+import axios from '@src/configs/axios/axiosConfig'
+import { getHomeRouteForLoggedInUser } from '@utils'
+import { createOrganization } from '../store/index'
+import toast from 'react-hot-toast'
+import { Label, Input, Row, Col, Button, FormFeedback } from 'reactstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+
+const ToastContent = ({ t, name }) => {
+  return (
+    <div className='d-flex'>
+      <div className='me-1'>
+        <Avatar size='sm' color='success' icon={<Coffee size={12} />} />
+      </div>
+      <div className='d-flex flex-column'>
+        <div className='d-flex justify-content-between'>
+          <h6>{name}</h6>
+          <X size={12} className='cursor-pointer' onClick={() => toast.dismiss(t.id)} />
+        </div>
+        <span>You have successfully logged in as an user to Vuexy. Now you can start to explore. Enjoy!</span>
+      </div>
+    </div>
+  )
+}
 
 const Organization = ({ stepper }) => {
 
-  // ** Hooks
-  const defaultValues = {
-    businessName: '',
-    businessEmail: '',
-    contactNo: '',
-    businessType: '',
-    businessEntity: '',
-    isGstRegistered: '',
-    gstin: '',
-    addressLine1: '',
-    addressLine2: '',
-    stateId: '',
-    city: '',
-    zipCode: '',
-    country: ''
-  }
-
+  const dispatch = useDispatch()
+  const navigate = useNavigate({})
+  const [businessEntityIdOptions, setBusinessEntityIdOptions] = useState([])
+  const [stateOptions, setStateOptions] = useState([])
+  const [countryOptions, setCountryOptions] = useState([])
+  const store = useSelector(state => state.register)
   const phoneRegExp = /^[0-9\- ]{10,10}$/
-  const zipcodeRegExp = /^[0-9\- ]{6,6}$/
+  const pinzipcodeRegExp = /^[0-9\- ]{6,6}$/
 
   const OrganizationSchema = yup.object().shape({
-    businessName: yup.string().required(),
-    businessEmail: yup.string().email().required(),
-    contactNo: yup.string().required().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
-    businessEntity: yup.string().required(),
-    businessType: yup.string().required(),
-    isGstRegistered: yup.boolean().required(),
-    gstin: yup.string().required(),
-    addressLine1: yup.string().required(),
-    addressLine2: yup.string().required(),
-    country: yup.string().required(),
-    state: yup.string().required(),
-    zipCode: yup.string().required().matches(zipcodeRegExp, { message: 'Zip Code is not valid', excludeEmptyString: true }),
-    city: yup.string().required()
+
+    name: yup.string().required('Please Enter Business Name'),
+    businessEmail: yup.string().email().required('Please Enter Business Email'),
+    contactNo: yup.string().required('Please Enter Contact Number').matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
+    businessEntityId: yup.string().required('Please Select Business Entity'),
+    businessTypeId: yup.string().required('Please Select Business Type'),
+    isGstRegistered: yup.boolean(),
+    gstin: yup.string().required('Please Enter GSTIN'),
+    addressLine1: yup.string().required('Please Enter Address Line 1'),
+    addressLine2: yup.string().required('Please Enter Area, Street, Sector, Village'),
+    countryId: yup.string().required('Please Select CountryId'),
+    stateId: yup.string().required('Please Select State'),
+    pinZipCode: yup.string().required('Please Enter Postal Code').matches(pinzipcodeRegExp, { message: 'Postal Code is not valid', excludeEmptyString: true }),
+    city: yup.string().required('Please Enter City')
   })
 
   const {
     control,
-    setError,
     handleSubmit,
     formState: { errors }
   } = useForm({
-    defaultValues,
+    defaultValues: OrganizationSchema.cast(),
     resolver: yupResolver(OrganizationSchema)
   })
 
-  const onSubmit = data => {
-    if (Object.values(data).every(field => field.length > 0)) {
-      console.log(data)
-      stepper.next()
-    } else {
-      for (const key in data) {
-        if (data[key].length === 0) {
-          setError(key, {
-            type: 'manual',
-            message: `Please enter a valid ${key}`
-          })
-        }
-      }
-    }
+  const onSubmit = async data => {
+    data.userId = store.loginUser.id
+    await dispatch(createOrganization(data))
   }
+
+  const getBusineessEntity = () => {
+    axios.post('/businessentities/list').then(response => {
+      const arr = response.data
+      setBusinessEntityIdOptions(arr.businessentities)
+    })
+  }
+
+  const getCountries = () => {
+    axios.post('/countries/list').then(response => {
+      const arr = response.data
+      setCountryOptions(arr.countries)
+    })
+  }
+
+  const getStates = () => {
+    axios.post('/states/list').then(response => {
+      const arr = response.data
+      setStateOptions(arr.states)
+    })
+  }
+
+  useEffect(() => {
+    getBusineessEntity()
+    getCountries()
+    getStates()
+
+    if (store.activeOrganization !== null) {
+      window.cookieStore.set('activeOrganization', JSON.stringify(store.activeOrganization), { domain: 'localhost:3000' })
+      const data = store.loginUser
+      navigate(getHomeRouteForLoggedInUser(data.role))
+      toast(t => (
+        <ToastContent t={t} name={data.name} />
+      ))
+    }
+
+
+  }, [store.activeOrganization])
+
+
+  const getRow = (fieldLabel, fieldName, reqflag = false) => {
+    return (
+      <Row className='mb-1'>
+        <Label sm='12' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
+          {fieldLabel}
+        </Label>
+        <Col sm='12'>
+          <Controller
+            id={fieldName}
+            name={fieldName}
+            control={control}
+            render={({ field }) => <Input invalid={errors[fieldName] && true} {...field} />}
+          />
+          {errors[fieldName] && <FormFeedback>{errors[fieldName].message}</FormFeedback>}
+        </Col>
+      </Row>
+    )
+  }
+
+  const getSelectRow = (fieldLabel, fieldName, options, reqflag = false) => {
+    return (
+
+      <Row className='mb-1'>
+        <Label sm='12' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName} >
+          {fieldLabel}
+        </Label>
+        <Col sm='12'>
+          <Controller
+            control={control}
+            name={fieldName}
+            id={fieldName}
+            render={({ field, ref }) => (
+              <Select
+                inputRef={ref}
+                className={classnames('react-select', { 'is-invalid': errors[fieldName] })}
+                {...field}
+                classNamePrefix='select'
+                options={options}
+                value={options.find(c => { return c.id === field.value })}
+                onChange={val => { return field.onChange(val.id) }}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+              />
+            )}
+
+          />
+          {errors[fieldName] && <FormFeedback className='text-danger'>{errors[fieldName]?.message}</FormFeedback>}
+        </Col>
+      </Row>
+
+    )
+  }
+
 
   return (
     <Fragment>
@@ -85,96 +173,24 @@ const Organization = ({ stepper }) => {
         <h2 className='fw-bolder mb-75'>Organization Information</h2>
         <span>Enter Your Organization Details.</span>
       </div>
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Row>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='businessName'>
-              Business Name
-            </Label>
-            <Controller
-              control={control}
-              name="businessName"
-              id="businessName"
-              render={({ field }) => (
-                <Input placeholder='Turia' invalid={errors.businessName && true} {...field} />
-              )}
-            />
-            {errors.businessName && <FormFeedback>{errors.businessName.message}</FormFeedback>}
+          <Col md='6' >
+            {getRow('Business Name', 'name', true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='businessEmail'>
-              Business E-mail
-            </Label>
-            <Controller
-              control={control}
-              name="businessEmail"
-              id="businessEmail"
-              render={({ field }) => (
-                <Input placeholder='example@turia.in' type='email' invalid={errors.businessEmail && true}  {...field} />
-              )}
-            />
-            {errors.businessEmail && <FormFeedback>{errors.businessEmail.message}</FormFeedback>}
+          <Col md='6' >
+            {getRow('Business E-mail', 'businessEmail', true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='contactNo'>
-              Conatct No
-            </Label>
-            <Controller
-              control={control}
-              name="contactNo"
-              id="contactNo"
-              render={({ field }) => (
-                <Input placeholder='1234567890' type='number' invalid={errors.contactNo && true} {...field} />
-              )}
-            />
-            {errors.contactNo && <FormFeedback>{errors.contactNo.message}</FormFeedback>}
+          <Col md='6' >
+            {getRow('Conatct No', 'contactNo', true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='businessType' >
-              Business Type
-            </Label>
-            <Controller
-              control={control}
-              name="businessType"
-              id="businessType"
-              render={({ field, value, ref }) => (
-                <Select
-                  inputRef={ref}
-                  className={classnames('react-select', { 'is-invalid': errors.businessType })}
-                  {...field}
-                  classNamePrefix='select'
-                  options={stateOptions}
-                  value={stateOptions.find(c => { return c.value === value })}
-                  onChange={val => field.onChange(val.value)}
-                />
-              )}
-
-            />
-            {errors.businessType && <FormFeedback className='text-danger'>{errors.businessType?.message}</FormFeedback>}
+          <Col md='6'>
+            {getSelectRow('Business Type', 'businessTypeId', businessEntityIdOptions, true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='pincode'>
-              Business Entity
-            </Label>
-            <Controller
-              control={control}
-              name="businessEntity"
-              id="businessEntity"
-              render={({ field, value, ref }) => (
-                <Select
-                  inputRef={ref}
-                  className={classnames('react-select', { 'is-invalid': errors.businessEntity })}
-                  {...field}
-                  classNamePrefix='select'
-                  options={stateOptions}
-                  value={stateOptions.find(c => { return c.value === value })}
-                  onChange={val => field.onChange(val.value)}
-                />
-              )}
-            />
-            {errors.businessEntity && <FormFeedback className='text-danger'>{errors.businessEntity?.message}</FormFeedback>}
+          <Col md='6'>
+            {getSelectRow('Business Entity', 'businessEntityId', businessEntityIdOptions, true)}
           </Col>
-          <Col md='6' className='mb-1'>
+          <Col md='6'>
             <Label className='form-label' for='pincode'>
               Is GST Registered?
             </Label>
@@ -182,118 +198,26 @@ const Organization = ({ stepper }) => {
               <Input type='switch' id='switch-success' name='isGstRegistered' defaultChecked />
             </div>
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='gstin'>
-              GSTIN
-            </Label>
-            <Controller
-              control={control}
-              name="gstin"
-              id="gstin"
-              render={({ field }) => (
-                <Input placeholder='1234567890' type='text' invalid={errors.gstin && true} {...field} />
-              )}
-            />
-            {errors.gstin && <FormFeedback>{errors.gstin.message}</FormFeedback>}
+          <Col md='6'>
+            {getRow('GSTIN', 'gstin', true)}
           </Col>
-          <Col sm='12' className='mb-1'>
-            <Label className='form-label' for='addressLine1'>
-              Address
-            </Label>
-            <Controller
-              id='addressLine1'
-              name='addressLine1'
-              control={control}
-              render={({ field }) => <Input placeholder='Flat No' invalid={errors.addressLine1 && true} {...field} />}
-            />
-            {errors.addressLine1 && <FormFeedback>{errors.addressLine1.message}</FormFeedback>}
+          <Col sm='12' >
+            {getRow('Address', 'addressLine1', true)}
           </Col>
-          <Col sm={12} className='mb-1'>
-            <Label className='form-label' for='area-sector'>
-              Area, Street, Sector, Village
-            </Label>
-            <Controller
-              control={control}
-              name="addressLine2"
-              id="addressLine2"
-              render={({ field }) => (
-                <Input placeholder='Area, Street, Sector, Village' invalid={errors.addressLine2 && true} {...field} />
-              )}
-            />
-            {errors.addressLine2 && <FormFeedback>{errors.addressLine2.message}</FormFeedback>}
+          <Col sm={12}>
+            {getRow('Area, Street, Sector, Village', 'addressLine2', true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='state'>
-              State
-            </Label>
-            <Controller
-              control={control}
-              name="state"
-              id="state"
-              render={({ field, value, ref }) => (
-                <Select
-                  inputRef={ref}
-                  className={classnames('react-select', { 'is-invalid': errors.state })}
-                  {...field}
-                  classNamePrefix='select'
-                  options={stateOptions}
-                  value={stateOptions.find(c => { return c.value === value })}
-                  onChange={val => field.onChange(val.value)}
-                />
-              )}
-
-            />
-            {errors.state && <FormFeedback className='text-danger'>{errors.state?.message}</FormFeedback>}
+          <Col md='6'>
+            {getSelectRow('State', 'stateId', stateOptions, true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='postal-code'>
-              Postal Code
-            </Label>
-            <Controller
-              control={control}
-              name="zipCode"
-              id="zipCode"
-              render={({ field }) => (
-                <Input placeholder='000 000' type='number' invalid={errors.zipCode && true} {...field} />
-              )}
-            />
-            {errors.zipCode && <FormFeedback>{errors.zipCode.message}</FormFeedback>}
+          <Col md='6'>
+            {getRow('Postal Code', 'pinZipCode', true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='town-city'>
-              Town/City
-            </Label>
-            <Controller
-              control={control}
-              name="city"
-              id="city"
-              render={({ field }) => (
-                <Input placeholder='City' invalid={errors.city && true} {...field} />
-              )}
-            />
-            {errors.city && <FormFeedback>{errors.city.message}</FormFeedback>}
+          <Col md='6'>
+            {getRow('Town/City', 'city', true)}
           </Col>
-          <Col md='6' className='mb-1'>
-            <Label className='form-label' for='country'>
-              Country
-            </Label>
-            <Controller
-              control={control}
-              name="country"
-              id="country"
-              render={({ field, value, ref }) => (
-                <Select
-                  inputRef={ref}
-                  className={classnames('react-select', { 'is-invalid': errors.country })}
-                  {...field}
-                  classNamePrefix='select'
-                  options={stateOptions}
-                  value={stateOptions.find(c => { return c.value === value })}
-                  onChange={val => field.onChange(val.value)}
-                />
-              )}
-            />
-            {errors.country && <FormFeedback className='text-danger'>{errors.country?.message}</FormFeedback>}
+          <Col md='6'>
+            {getSelectRow('Country', 'countryId', countryOptions, true)}
           </Col>
         </Row>
         <div className='d-flex justify-content-between mt-2'>
@@ -306,7 +230,7 @@ const Organization = ({ stepper }) => {
             <Check size={14} className='align-middle ms-sm-25 ms-0'></Check>
           </Button>
         </div>
-      </Form>
+      </form>
     </Fragment>
   )
 }

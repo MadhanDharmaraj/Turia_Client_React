@@ -28,10 +28,17 @@ const UserDropdown = () => {
   // ** State
   const [userData, setUserData] = useState(null)
 
+  // eslint-disable-next-line arrow-body-style
+const user = document.cookie !== '' ? document.cookie
+.split('; ')
+.find((row) => row.startsWith('userData='))
+?.split('=')[1] : null
+
+
   //** ComponentDidMount
   useEffect(() => {
     if (isUserLoggedIn() !== null) {
-      setUserData(JSON.parse(localStorage.getItem('userData')))
+      setUserData(JSON.parse(user))
     }
   }, [])
 

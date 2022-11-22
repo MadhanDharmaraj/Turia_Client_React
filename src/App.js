@@ -10,6 +10,7 @@ import { getRoutes } from './router/routes'
 import { useLayout } from '@hooks/useLayout'
 
 const App = () => {
+
   const [allRoutes, setAllRoutes] = useState([])
 
   // ** Hooks

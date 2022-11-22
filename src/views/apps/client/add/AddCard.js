@@ -5,7 +5,7 @@ import classnames from 'classnames'
 import { useDispatch } from 'react-redux'
 // ** Custom Components
 import { addClient, addContactInfo } from '../store'
-import axios from '../../../../configs/axios/axiosConfig'
+import axios from '@src/configs/axios/axiosConfig'
 
 import { X, Plus, Hash } from 'react-feather'
 import Select from 'react-select'
@@ -35,7 +35,7 @@ const AddCard = () => {
   const [countryOptions, setCountryOptions] = useState([])
   const [currencyOptions, setCurrencyOptions] = useState([])
   const [gstRegistrationTypeOptions, setGstRegistrationTypeOptions] = useState([])
-  const [clientType, setClientType] = useState(2)
+  //const [setClientType] = useState(2)
   const [clientInfo, setClientInfo] = useState([])
   const [contactId, setConatctId] = useState(null)
 
@@ -136,10 +136,10 @@ const AddCard = () => {
     })
   }
 
-  const getRow = (fieldLabel, fieldName) => {
+  const getRow = (fieldLabel, fieldName, reqflag = false) => {
     return (
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
         <Col sm='9'>
@@ -155,11 +155,11 @@ const AddCard = () => {
     )
   }
 
-  const getSelectRow = (fieldLabel, fieldName, options) => {
+  const getSelectRow = (fieldLabel, fieldName, options, reqflag = false) => {
     return (
 
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName} >
           {fieldLabel}
         </Label>
         <Col sm='9'>
@@ -175,7 +175,7 @@ const AddCard = () => {
                 classNamePrefix='select'
                 options={options}
                 value={options.find(c => { return c.id === field.value })}
-                onChange={val => field.onChange(val.id)}
+                onChange={val => { return field.onChange(val.id) }}
                 getOptionLabel={(option) => option.name}
                 getOptionValue={(option) => option.id}
               />
@@ -212,27 +212,31 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='contactPersonName'>
+                <Label sm='3' size='lg' className='form-label required' for='contactPersonName'>
                   Client Type
                 </Label>
                 <Col sm='9'>
                   <div className='form-check form-check-primary form-check-inline'>
                     <Controller
                       name='clientType'
+                      id='clientType_2'
                       control={control}
-                      render={({ field }) => <Input type='radio' id='clientType_1' defaultChecked value={2} {...field} onChange={() => setClientType(2)} />}
+                      render={({ field }) => (<Input name='clientType' id='clientType_2' type='radio'
+                        {...field} onChange={val => { return val.target.value }} value={1} />)}
                     />
-                    <Label className='form-check-label' for='clientType_1'>
+                    <Label className='form-check-label' for='clientType_2'>
                       Business
                     </Label>
                   </div>
                   <div className='form-check form-check-primary form-check-inline'>
                     <Controller
                       name='clientType'
+                      id='clientType_1'
                       control={control}
-                      render={({ field }) => <Input id='clientType_2' type='radio' value={1} {...field} onChange={() => setClientType(1)} />}
+                      render={({ field }) => (<Input name='clientType' id='clientType_1' type='radio'
+                        {...field} onChange={val => { return val.target.value }} value={2} />)}
                     />
-                    <Label className='form-check-label' for='clientType_2'>
+                    <Label className='form-check-label' for='clientType_1'>
                       Individual
                     </Label>
                   </div>
@@ -240,16 +244,16 @@ const AddCard = () => {
               </Row>
             </Col>
             <Col md='6' className='mb-1'>
-              {getRow('Unique No', 'uniqueIdentity')}
+              {getRow('Unique No', 'uniqueIdentity', true)}
             </Col>
           </Row>
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Contact Person Name', 'contactPersonName')}
+              {getRow('Contact Person Name', 'contactPersonName', true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getRow('Business Name', 'name')}
+              {getRow('Business Name', 'name', true)}
             </Col>
           </Row>
 
@@ -258,17 +262,16 @@ const AddCard = () => {
               {getRow('Mobile Number', 'contactNumber')}
             </Col>
             <Col md='6' className='mb-1'>
-              {getRow('Email ID', 'email')}
+              {getRow('Email ID', 'email', true)}
             </Col>
           </Row>
 
-          {clientType === 2 && (
-            <Row>
-              <Col md='6' className='mb-1'>
-                {getSelectRow('Business Entity', 'businessEntity', businessEntityOptions)}
-              </Col>
-            </Row>
-          )}
+          <Row>
+            <Col md='6' className='mb-1'>
+              {getSelectRow('Business Entity', 'businessEntity', businessEntityOptions, true)}
+            </Col>
+          </Row>
+
         </CardBody>
         {/* /Header */}
 
@@ -295,7 +298,7 @@ const AddCard = () => {
                       {errors.contact_info?.[i]?.name && <FormFeedback>{errors.contact_info?.[i]?.name.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-3 col-sm-12'>
-                      <CardText className='col-title mb-md-2 mb-0'>Email</CardText>
+                      <CardText className='col-title mb-md-2 mb-0 '>Email</CardText>
                       <Controller
                         control={control}
                         id='contact_info_email'
@@ -368,19 +371,19 @@ const AddCard = () => {
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('GST Type', 'gstRegistrationType', gstRegistrationTypeOptions)}
+              {getSelectRow('GST Type', 'gstRegistrationType', gstRegistrationTypeOptions, true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Place of Supply', 'placeOfSupply', stateOptions)}
+              {getSelectRow('Place of Supply', 'placeOfSupply', stateOptions, true)}
             </Col>
           </Row>
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('GSTIN', 'gstin')}
+              {getRow('GSTIN', 'gstin', true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Currency', 'currency', currencyOptions)}
+              {getSelectRow('Currency', 'currency', currencyOptions, true)}
             </Col>
           </Row>
         </CardBody>
@@ -404,13 +407,13 @@ const AddCard = () => {
               {getSelectRow('State', 'billingAddressState', stateOptions)}
             </Col>
           </Row>
+
           <Row>
             <Col md='6' className='mb-1'>
               {getSelectRow('Country', 'billingAddressCountry', countryOptions)}
             </Col>
             <Col md='6' className='mb-1'>
               {getRow('Zip Code', 'billingAddressZip')}
-
             </Col>
           </Row>
         </CardBody>

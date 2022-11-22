@@ -2,14 +2,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
-import axios from '../../../../../configs/axios/axiosConfig'
+import axios from '@src/configs/axios/axiosConfig'
 
 export const register = createAsyncThunk('appUsers/createUser', async (user, { rejectWithValue }) => {
   try {
     const response = await axios.post('/users/create', user)
     return { user: response.data.users }
   } catch (error) {
-      return rejectWithValue(error.data)
+    return rejectWithValue(error.data)
   }
 })
 
@@ -24,8 +24,8 @@ export const verfiyCode = createAsyncThunk('appUsers/verfiyCode', async (data, {
 })
 
 export const createOrganization = createAsyncThunk('appUsers/createOrganization', async (organization, { }) => {
-  const response = await axios.post('/organization/create', organization)
-  return response.payload.organization
+  const response = await axios.post('/organizations/create', organization)
+  return { organization: response.data.organizations }
 })
 
 export const appUsersSlice = createSlice({
@@ -34,25 +34,33 @@ export const appUsersSlice = createSlice({
     data: [],
     loginUser: null,
     loginError: null,
-    verifyprocess : false,
-    activeOrganization: {},
+    verifyprocess: false,
+    activeOrganization: null,
     activeOrganizationId: null
   },
   reducers: {},
   extraReducers: builder => {
     builder
       .addCase(register.fulfilled, (state, action) => {
-        state.loginUser = action.payload.user
+        const data = action.payload.user
+        data.role = 'admin'
+        data.ability = [
+          {
+            action: 'manage',
+            subject: 'all'
+          }
+        ]
+        state.loginUser = data
       })
       .addCase(register.rejected, (state, { error }) => {
         state.loginError = error
       })
-      .addCase(verfiyCode.fulfilled, (state, {  }) => {
+      .addCase(verfiyCode.fulfilled, (state, { }) => {
         state.verifyprocess = true
       })
       .addCase(createOrganization.fulfilled, (state, action) => {
-        state.activeOrganization = action.payload
-        state.activeOrganizationId = action.payload.id
+        state.activeOrganization = action.payload.organization
+        state.activeOrganizationId = action.payload.organization.id
       })
   }
 })

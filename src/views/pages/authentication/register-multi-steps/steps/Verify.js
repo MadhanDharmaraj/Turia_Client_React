@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect } from 'react'
 
 // ** Third Party Components
 import classnames from 'classnames'
@@ -9,6 +9,8 @@ import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { verfiyCode } from '../store/index'
+// ** Actions
+import { handleLogin } from '@store/authentication'
 
 // ** Reactstrap Imports
 import { Form, Label, Input, Row, Col, Button, FormFeedback } from 'reactstrap'
@@ -40,8 +42,11 @@ const Verify = ({ stepper }) => {
     }
   }
 
-  useState(() => {
+  useEffect(async () => {
     if (store.verifyprocess) {
+      window.cookieStore.set('userData', JSON.stringify(store.loginUser), { domain: 'localhost:3000' })
+      const data = store.loginUser
+      dispatch(handleLogin(data))
       stepper.next()
     }
   }, [store.verifyprocess])

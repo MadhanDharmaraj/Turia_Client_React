@@ -10,7 +10,7 @@ import Spinner from '@components/spinner/Loading-spinner'
 // ** Store & Actions
 import { getData } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
-import axios from '../../../../configs/axios/axiosConfig'
+import axios from '@src/configs/axios/axiosConfig'
 
 // ** Third Party Components
 import Select from 'react-select'

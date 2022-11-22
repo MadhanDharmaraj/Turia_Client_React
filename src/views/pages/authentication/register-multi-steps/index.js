@@ -30,7 +30,7 @@ const RegisterMultiSteps = () => {
     {
       id: 'account-details',
       title: 'Account',
-      subtitle: 'Enter username',
+      subtitle: 'Enter User Details',
       icon: <User size={18} />,
       content: <AccountDetails stepper={stepper} />
     },
@@ -118,7 +118,7 @@ const RegisterMultiSteps = () => {
               steps={steps}
               instance={el => setStepper(el)}
               headerClassName='px-0'
-              contentWrapperClassName='px-0 mt-4'
+              contentWrapperClassName='px-0 mt-1'
               className='register-multi-steps-wizard shadow-none'
             />
           </div>

@@ -5,7 +5,7 @@ import classnames from 'classnames'
 import { useDispatch } from 'react-redux'
 // ** Custom Components
 import { updateClient, addContactInfo, getClient, getConatctInfo } from '../store'
-import axios from '../../../../configs/axios/axiosConfig'
+import axios from '@src/configs/axios/axiosConfig'
 
 import { X, Plus, Hash } from 'react-feather'
 import Select from 'react-select'
@@ -189,10 +189,11 @@ const EditCard = () => {
 
   }, [])
 
-  const getRow = (fieldLabel, fieldName) => {
+ 
+  const getRow = (fieldLabel, fieldName, reqflag = false) => {
     return (
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
         <Col sm='9'>
@@ -208,11 +209,11 @@ const EditCard = () => {
     )
   }
 
-  const getSelectRow = (fieldLabel, fieldName, options) => {
+  const getSelectRow = (fieldLabel, fieldName, options, reqflag = false) => {
     return (
 
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
         <Col sm='9'>
@@ -251,7 +252,7 @@ const EditCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='contactPersonName'>
+                <Label sm='3' size='lg' className='form-label required' for='contactPersonName'>
                   Client Type
                 </Label>
                 <Col sm='9'>
@@ -279,16 +280,16 @@ const EditCard = () => {
               </Row>
             </Col>
             <Col md='6' className='mb-1'>
-              {getRow('Unique No', 'uniqueIdentity')}
+              {getRow('Unique No', 'uniqueIdentity', true)}
             </Col>
           </Row>
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Contact Person Name', 'contactPersonName')}
+              {getRow('Contact Person Name', 'contactPersonName', true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getRow('Business Name', 'name')}
+              {getRow('Business Name', 'name', true)}
             </Col>
           </Row>
 
@@ -297,14 +298,14 @@ const EditCard = () => {
               {getRow('Mobile Number', 'contactNumber')}
             </Col>
             <Col md='6' className='mb-1'>
-              {getRow('Email ID', 'email')}
+              {getRow('Email ID', 'email', true)}
             </Col>
           </Row>
 
           {clientType === 2 && (
             <Row>
               <Col md='6' className='mb-1'>
-                {getSelectRow('Business Entity', 'businessEntity', businessEntityOptions)}
+                {getSelectRow('Business Entity', 'businessEntity', businessEntityOptions, true)}
               </Col>
             </Row>
           )}
@@ -334,7 +335,7 @@ const EditCard = () => {
                       {errors.contact_info?.[i]?.name && <FormFeedback>{errors.contact_info?.[i]?.name.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-3 col-sm-12'>
-                      <CardText className='col-title mb-md-2 mb-0'>Email</CardText>
+                      <CardText className='col-title mb-md-2 mb-0 '>Email</CardText>
                       <Controller
                         control={control}
                         id='contact_info_email'
@@ -407,19 +408,19 @@ const EditCard = () => {
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('GST Type', 'gstRegistrationType', gstRegistrationTypeOptions)}
+              {getSelectRow('GST Type', 'gstRegistrationType', gstRegistrationTypeOptions, true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Place of Supply', 'placeOfSupply', stateOptions)}
+              {getSelectRow('Place of Supply', 'placeOfSupply', stateOptions, true)}
             </Col>
           </Row>
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('GSTIN', 'gstin')}
+              {getRow('GSTIN', 'gstin', true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Currency', 'currency', currencyOptions)}
+              {getSelectRow('Currency', 'currency', currencyOptions, true)}
             </Col>
           </Row>
         </CardBody>
@@ -443,13 +444,13 @@ const EditCard = () => {
               {getSelectRow('State', 'billingAddressState', stateOptions)}
             </Col>
           </Row>
+
           <Row>
             <Col md='6' className='mb-1'>
               {getSelectRow('Country', 'billingAddressCountry', countryOptions)}
             </Col>
             <Col md='6' className='mb-1'>
               {getRow('Zip Code', 'billingAddressZip')}
-
             </Col>
           </Row>
         </CardBody>

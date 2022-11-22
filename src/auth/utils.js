@@ -6,11 +6,17 @@ import useJwt from '@src/@core/auth/jwt/useJwt'
  * e.g. If you are using cookies to store the application please update this function
  */
 // eslint-disable-next-line arrow-body-style
+const user = document.cookie !== '' ? JSON.parse(document.cookie
+  .split('; ')
+  .find((row) => row.startsWith('userData='))
+  ?.split('=')[1]) : null
+
+
 export const isUserLoggedIn = () => {
-  return localStorage.getItem('userData') && localStorage.getItem(useJwt.jwtConfig.storageTokenKeyName)
+  return user && localStorage.getItem(useJwt.jwtConfig.storageTokenKeyName)
 }
 
-export const getUserData = () => JSON.parse(localStorage.getItem('userData'))
+export const getUserData = () => user
 
 /**
  * This function is used for demo purpose route navigation

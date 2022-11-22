@@ -14,6 +14,7 @@ import { Form, Label, Input, Row, Col, Button, FormFeedback } from 'reactstrap'
 
 // ** Custom Components
 import InputPasswordToggle from '@components/input-password-toggle'
+import { Link } from 'react-router-dom'
 
 const defaultValues = {
   email: '',
@@ -166,6 +167,12 @@ const AccountDetails = ({ stepper }) => {
           </Button>
         </div>
       </Form>
+      <p className='text-center mt-2'>
+        <span className='me-25'>Already Have an Account?</span>
+        <Link to='/login'>
+          <span>Login</span>
+        </Link>
+      </p>
     </Fragment>
   )
 }

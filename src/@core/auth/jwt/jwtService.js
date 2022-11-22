@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from '@src/configs/axios/axiosConfig'
 import jwtDefaultConfig from './jwtDefaultConfig'
 
 export default class JwtService {

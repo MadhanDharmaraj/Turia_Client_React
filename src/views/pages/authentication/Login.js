@@ -31,7 +31,7 @@ import { Row, Col, Form, Input, Label, Button, CardText, CardTitle } from 'react
 // ** Styles
 import '@styles/react/pages/page-authentication.scss'
 
-const ToastContent = ({ t, name}) => {
+const ToastContent = ({ t, name }) => {
   return (
     <div className='d-flex'>
       <div className='me-1'>
@@ -42,7 +42,7 @@ const ToastContent = ({ t, name}) => {
           <h6>{name}</h6>
           <X size={12} className='cursor-pointer' onClick={() => toast.dismiss(t.id)} />
         </div>
-        <span>You have successfully logged in as an  user to Vuexy. Now you can start to explore. Enjoy!</span>
+        <span>You have successfully logged in as an user to Vuexy. Now you can start to explore. Enjoy!</span>
       </div>
     </div>
   )
@@ -73,12 +73,20 @@ const Login = () => {
       useJwt
         .login({ email: data.loginEmail, password: data.password })
         .then(res => {
-          const data = { ...res.data.userData, accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }
+          const data = res.data.users
+          data.role = 'admin'
+          data.ability = [
+            {
+              action: 'manage',
+              subject: 'all'
+            }
+          ]
           dispatch(handleLogin(data))
-          ability.update(res.data.userData.ability)
+          ability.update(data.ability)
+          window.cookieStore.set('userData', JSON.stringify(data), { domain: 'localhost:3000' })
           navigate(getHomeRouteForLoggedInUser(data.role))
           toast(t => (
-            <ToastContent t={t} name={data.fullName || data.username || 'John Doe'} />
+            <ToastContent t={t} name={data.name} />
           ))
         })
         .catch(err => console.log(err))

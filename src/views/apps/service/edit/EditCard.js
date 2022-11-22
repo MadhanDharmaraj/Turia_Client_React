@@ -101,10 +101,11 @@ const EditCard = () => {
     navigate(`/service/view/${seviceId}`)
   }
 
-  const getRow = (fieldLabel, fieldName) => {
+
+  const getRow = (fieldLabel, fieldName, reqflag = false) => {
     return (
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
         <Col sm='9'>
@@ -120,11 +121,11 @@ const EditCard = () => {
     )
   }
 
-  const getSelectRow = (fieldLabel, fieldName, options) => {
+  const getSelectRow = (fieldLabel, fieldName, options, reqflag = false) => {
     return (
 
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className='form-label' for={fieldName}>
+        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
         <Col sm='9'>
@@ -161,34 +162,34 @@ const EditCard = () => {
         <CardBody className='pb-0'>
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Category', 'categoryId', categoryOptions)}
+              {getSelectRow('Category', 'categoryId', categoryOptions, true)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Name', 'name')}
+              {getRow('Name', 'name', true)}
             </Col>
           </Row>
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('SAC Code', 'sacCode')}
+              {getRow('SAC Code', 'sacCode', true)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Professional Fee', 'sellingPrice')}
+              {getRow('Professional Fee', 'sellingPrice', true)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Tax Rate', 'taxgroupid', taxGroupOptions)}
+              {getSelectRow('Tax Rate', 'taxgroupid', taxGroupOptions, true)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='description'>
+                <Label sm='3' size='lg' className='form-label required' for='description'>
                   Description
                 </Label>
                 <Col sm='9'>
