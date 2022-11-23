@@ -28,6 +28,12 @@ export const createOrganization = createAsyncThunk('appUsers/createOrganization'
   return { organization: response.data.organizations }
 })
 
+export const createOrganizationUser = createAsyncThunk('appUsers/createOrganizationUser', async (organization, { }) => {
+  const response = await axios.post('/organizationusers/create', organization)
+  return { organization: response.data.organizations }
+})
+
+
 export const appUsersSlice = createSlice({
   name: 'appUsers',
   initialState: {
@@ -36,7 +42,8 @@ export const appUsersSlice = createSlice({
     loginError: null,
     verifyprocess: false,
     activeOrganization: null,
-    activeOrganizationId: null
+    activeOrganizationId: null,
+    accessToken : ''
   },
   reducers: {},
   extraReducers: builder => {
@@ -55,8 +62,9 @@ export const appUsersSlice = createSlice({
       .addCase(register.rejected, (state, { error }) => {
         state.loginError = error
       })
-      .addCase(verfiyCode.fulfilled, (state, { }) => {
+      .addCase(verfiyCode.fulfilled, (state, action) => {
         state.verifyprocess = true
+        state.accessToken = action.payload.data.token
       })
       .addCase(createOrganization.fulfilled, (state, action) => {
         state.activeOrganization = action.payload.organization

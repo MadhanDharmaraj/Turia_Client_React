@@ -73,7 +73,7 @@ const Login = () => {
       useJwt
         .login({ email: data.loginEmail, password: data.password })
         .then(res => {
-          const data = res.data.users
+          const data = res.data
           data.role = 'admin'
           data.ability = [
             {
@@ -83,7 +83,6 @@ const Login = () => {
           ]
           dispatch(handleLogin(data))
           ability.update(data.ability)
-          window.cookieStore.set('userData', JSON.stringify(data), { domain: 'localhost:3000' })
           navigate(getHomeRouteForLoggedInUser(data.role))
           toast(t => (
             <ToastContent t={t} name={data.name} />

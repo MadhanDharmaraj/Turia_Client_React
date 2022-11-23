@@ -100,28 +100,23 @@ const Organization = ({ stepper }) => {
       userId: user.id,
       name: user.name,
       organizationId: org.id,
-      email: user.email,
-      userTypeId: user.accounttype
+      email : user.email,
+      userTypeId : user.accounttype 
     }
     await dispatch(createOrganizationUser(data))
     navigate(getHomeRouteForLoggedInUser(data.role))
   }
 
-  useEffect(async () => {
-    if (store.verifyprocess) {
-      getBusineessEntity()
-      getCountries()
-      getStates()
-    }
-  }, [store.verifyprocess])
-
   useEffect(() => {
+    getBusineessEntity()
+    getCountries()
+    getStates()
 
     if (store.activeOrganization !== null) {
       window.cookieStore.set('activeOrganization', JSON.stringify(store.activeOrganization), { domain: 'localhost:3000' })
       const user = store.loginUser
       const org = store.activeOrganization
-
+     
       createOrgUser(user, org)
       toast(t => (
         <ToastContent t={t} name={data.name} />

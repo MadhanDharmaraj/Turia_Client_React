@@ -12,7 +12,7 @@ const initialUser = () => {
     .split('; ')
     .find((row) => row.startsWith('userData='))
     ?.split('=')[1]) : null
-  
+
   //** Parse stored json or if none return initialValue
   return item ? item : {}
 }
@@ -24,12 +24,11 @@ export const authSlice = createSlice({
   },
   reducers: {
     handleLogin: (state, action) => {
-      state.userData = action.payload
-      state[config.storageTokenKeyName] = action.payload[config.storageTokenKeyName]
-      state[config.storageRefreshTokenKeyName] = action.payload[config.storageRefreshTokenKeyName]
-      //localStorage.setItem('userData', JSON.stringify(action.payload))
-      window.cookieStore.set('userData', JSON.stringify(action.payload), { domain: 'localhost:3000' })
-      // localStorage.setItem(config.storageTokenKeyName, JSON.stringify(action.payload.accessToken))
+      state.userData = action.payload.users
+      state[config.storageTokenKeyName] = action.payload['token']
+      //state[config.storageRefreshTokenKeyName] = action.payload[config.storageRefreshTokenKeyName]
+      localStorage.setItem('userData', JSON.stringify(action.payload.users))
+      localStorage.setItem(config.storageTokenKeyName, action.payload.token)
       // localStorage.setItem(config.storageRefreshTokenKeyName, JSON.stringify(action.payload.refreshToken))
     },
     handleLogout: state => {
@@ -37,11 +36,8 @@ export const authSlice = createSlice({
       state[config.storageTokenKeyName] = null
       state[config.storageRefreshTokenKeyName] = null
       // ** Remove user, accessToken & refreshToken from localStorage
-      window.cookieStore.delete('userData')
-      window.cookieStore.delete('activeOrganization')
-      localStorage.removeItem('userData')
       localStorage.removeItem(config.storageTokenKeyName)
-      localStorage.removeItem(config.storageRefreshTokenKeyName)
+      localStorage.removeItem('userData')
     }
   }
 })

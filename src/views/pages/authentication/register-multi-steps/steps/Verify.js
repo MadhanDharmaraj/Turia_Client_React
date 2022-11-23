@@ -43,13 +43,14 @@ const Verify = ({ stepper }) => {
   }
 
   useEffect(async () => {
-    if (store.verifyprocess) {
-      window.cookieStore.set('userData', JSON.stringify(store.loginUser), { domain: 'localhost:3000' })
-      const data = store.loginUser
+    if (store.accessToken) {
+      const data = {}
+      data['users'] = store.loginUser
+      data['token'] = store.accessToken
       dispatch(handleLogin(data))
       stepper.next()
     }
-  }, [store.verifyprocess])
+  }, [store.accessToken])
 
   return (
     <Fragment>
