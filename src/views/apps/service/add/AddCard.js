@@ -17,7 +17,9 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from "react"
+import { activeOrganizationid } from '@src/helper/sassHelper'
 
+const activeOrgId = activeOrganizationid()
 const AddCard = () => {
   // ** States
   const navigate = useNavigate({})
@@ -27,25 +29,17 @@ const AddCard = () => {
 
   const schema = yup.object().shape({
     categoryId: yup.string().required("Please select a Category"),
+    categoryType : yup.number().default(1),
     name: yup.string().required("Please Enter Service Name"),
-    taxgroupid: yup.string().required("Please Select Tax Rate"),
+    organizationId : yup.number().default(activeOrgId),
+    taxGroupId: yup.string().required("Please Select Tax Rate"),
     sellingPrice: yup.string().required("Please Enter Professional Fee"),
     sacCode: yup.string().required("Please Enter SAC Code")
   })
 
-
   const { handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      organizationId: 1,
-      categoryType: 1,
-      categoryId: '',
-      name: '',
-      sellingPrice: '',
-      sacCode: '',
-      taxgroupid: '',
-      description: ''
-    }
+    defaultValues: schema.cast()
   })
 
   const getTaxGroups = () => {
@@ -70,7 +64,7 @@ const AddCard = () => {
 
   const onSubmit = async (data) => {
     const datatemp = await dispatch(addService(data))
-    const seviceId = datatemp.payload.services.id
+    const seviceId = datatemp.payload.id
     navigate(`/service/view/${seviceId}`)
   }
 
@@ -157,7 +151,7 @@ const AddCard = () => {
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Tax Rate', 'taxgroupid', taxGroupOptions, true)}
+              {getSelectRow('Tax Rate', 'taxGroupId', taxGroupOptions, true)}
             </Col>
           </Row>
           <Row>

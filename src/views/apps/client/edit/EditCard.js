@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import classnames from 'classnames'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 // ** Custom Components
 import { updateClient, addContactInfo, getClient, getConatctInfo } from '../store'
 import axios from '@src/configs/axios/axiosConfig'
@@ -28,7 +28,7 @@ const EditCard = () => {
   const phoneRegExp = /^[0-9\- ]{10,10}$/
   const zipcodeExp = /^[0-9\- ]{6,6}$/
   const navigate = useNavigate({})
-
+  const store = useSelector(state => state.client)
   const dispatch = useDispatch()
   const [businessEntityOptions, setBusinessEntityOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
@@ -45,7 +45,7 @@ const EditCard = () => {
     uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when(["clientType"], { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
-    contactNumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
+    contactnumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
     email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
     businessEntity: yup.string().when(["clientType"], { is: (clientType) => clientType === 2, then: yup.string().required("Please Select Business Enity.") }),
     gstRegistrationType: yup.string().required("Please select a GST Type"),
@@ -55,9 +55,9 @@ const EditCard = () => {
     billingAddressZip: yup.string().matches(zipcodeExp, { message: 'Zip Code is not valid', excludeEmptyString: true }),
     contact_info: yup.array().of(
       yup.object().shape({
-        firstName: yup.string().required("Please Enter A Name"),
+        name: yup.string().required("Please Enter A Name"),
         email: yup.string().email().required("Please Enter valid Email"),
-        contactNumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true })
+        contactnumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true })
       })
     ).min(1, "Please Enter atleast one contact Info")
 
@@ -90,7 +90,7 @@ const EditCard = () => {
   }
 
   const addItem = (() => {
-    append({ firstName: '', email: '', contactNumber: '', designation: '', is_primary: '' })
+    append({ name: '', email: '', contactnumber: '', designation: '', primarystatus: '' })
   })
 
   const removeItem = e => {
@@ -135,6 +135,7 @@ const EditCard = () => {
 
   const getClientInfo = async () => {
     await dispatch(getConatctInfo(contactId))
+
   }
 
   const getClientData = async () => {
@@ -151,7 +152,7 @@ const EditCard = () => {
         contactPersonName: clientDetails.contactpersonname,
         organization: clientDetails.organizationid,
         name: clientDetails.name,
-        contactNumber: clientDetails.contactnumber,
+        contactnumber: clientDetails.contactnumber,
         businessEntity: clientDetails.businessentityid,
         email: clientDetails.email,
         gstRegistrationType: clientDetails.gstregistrationtypeid,
@@ -167,7 +168,7 @@ const EditCard = () => {
       })
 
       setConatctId(clientDetails.id)
-      addItem()
+
     }
 
     if (contactId !== null) {
@@ -175,6 +176,12 @@ const EditCard = () => {
     }
 
   }, [contactId, clientDetails])
+
+  useEffect(() => {
+    store.clientInformations.forEach((obj) => {
+      append(obj)
+    })
+  }, [store.clientInformations])
 
   useEffect(() => {
     getBusineessEntity()
@@ -185,11 +192,9 @@ const EditCard = () => {
 
     getClientData()
 
-    addItem()
-
   }, [])
 
- 
+
   const getRow = (fieldLabel, fieldName, reqflag = false) => {
     return (
       <Row className='mb-1'>
@@ -295,7 +300,7 @@ const EditCard = () => {
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Mobile Number', 'contactNumber')}
+              {getRow('Mobile Number', 'contactnumber')}
             </Col>
             <Col md='6' className='mb-1'>
               {getRow('Email ID', 'email', true)}
@@ -318,7 +323,7 @@ const EditCard = () => {
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
 
-            <div key={i} className='repeater-wrapper'>
+            <div key={item.id} className='repeater-wrapper'>
               <Row >
                 <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
@@ -326,8 +331,8 @@ const EditCard = () => {
                       <CardText className='col-title mb-md-50 mb-0'>First Name</CardText>
                       <Controller
                         control={control}
-                        id='contact_info_firstName'
-                        name={`contact_info.${i}.name`}
+                        id='contact_info_name'
+                        name={`contact_info[${i}].name`}
                         render={({ field }) => (
                           <Input type='text' {...register(`contact_info.${i}.name`)} invalid={errors.contact_info?.[i]?.name && true} {...field} />
                         )}
@@ -339,7 +344,7 @@ const EditCard = () => {
                       <Controller
                         control={control}
                         id='contact_info_email'
-                        name={`contact_info.${i}.email`}
+                        name={`contact_info[${i}].email`}
                         render={({ field }) => (
                           <Input type='email' {...register(`contact_info.${i}.email`)} invalid={errors.contact_info?.[i]?.email && true} {...field} />
                         )}
@@ -350,20 +355,20 @@ const EditCard = () => {
                       <CardText className='col-title mb-md-2 mb-0'>Mobile</CardText>
                       <Controller
                         control={control}
-                        id='contact_info_contactNumber'
-                        name={`contact_info.${i}.contactNumber`}
+                        id='contact_info_contactnumber'
+                        name={`contact_info[${i}].contactnumber`}
                         render={({ field }) => (
-                          <Input type='number'  {...register(`contact_info.${i}.contactNumber`)} invalid={errors.contact_info?.[i]?.contactNumber && true} {...field} />
+                          <Input type='number'  {...register(`contact_info.${i}.contactnumber`)} invalid={errors.contact_info?.[i]?.contactnumber && true} {...field} />
                         )}
                       />
-                      {errors.contact_info?.[i]?.contactNumber && <FormFeedback>{errors.contact_info?.[i]?.contactNumber.message}</FormFeedback>}
+                      {errors.contact_info?.[i]?.contactnumber && <FormFeedback>{errors.contact_info?.[i]?.contactnumber.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Designation</CardText>
                       <Controller
                         control={control}
                         id='contact_info_designation'
-                        name={`contact_info.${i}.designation`}
+                        name={`contact_info[${i}].designation`}
                         render={({ field }) => (
                           <Input type='text' invalid={errors.contact_info?.[i]?.designation && true} {...register(`contact_info.${i}.designation`)} {...field} />
                         )}
@@ -376,7 +381,7 @@ const EditCard = () => {
                         <Controller
                           control={control}
                           id='contact_info_primaryStatus'
-                          name={`contact_info.${i}.primaryStatus`}
+                          name={`contact_info[${i}].primaryStatus`}
                           render={({ field }) => (
                             <Input type='switch' {...register(`contact_info.${i}.primaryStatus`)} {...field} />
                           )}

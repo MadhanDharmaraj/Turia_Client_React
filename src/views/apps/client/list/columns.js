@@ -23,7 +23,7 @@ const renderClient = row => {
       initials
       className='me-1'
       color={'light-primary'}
-      content={row.name}
+      content={row.name.charAt(0).toUpperCase()}
     />
   )
 }

@@ -43,7 +43,8 @@ export const appUsersSlice = createSlice({
     verifyprocess: false,
     activeOrganization: null,
     activeOrganizationId: null,
-    accessToken : ''
+    accessToken: '',
+    registerSuccess: false
   },
   reducers: {},
   extraReducers: builder => {
@@ -70,6 +71,10 @@ export const appUsersSlice = createSlice({
         state.activeOrganization = action.payload.organization
         state.activeOrganizationId = action.payload.organization.id
       })
+      .addCase(createOrganizationUser.fulfilled, (state) => {
+        state.registerSuccess = true
+      })
+
   }
 })
 

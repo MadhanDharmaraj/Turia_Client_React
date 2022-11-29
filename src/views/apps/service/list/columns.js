@@ -21,7 +21,7 @@ const renderService = row => {
     initials
     className='me-1'
     color='light-primary'
-    content={row.name}
+    content={row.name.charAt(0).toUpperCase()}
   />
   )
 }
@@ -95,7 +95,7 @@ export const columns = [
     minWidth: '172px',
     sortField: 'role',
     selector: row => row.categoriesname,
-    cell: row => <span className='text-capitalize'>{row.categoriesname}</span>
+    cell: row => <span className='text-capitalize text-truncate'>{row.categoriesname}</span>
   },
   {
     name: 'Status',

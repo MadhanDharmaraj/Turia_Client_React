@@ -19,15 +19,10 @@ export default class JwtService {
       config => {
         // ** Get token from localStorage
         const accessToken = this.getToken()
-        const orgid = this.getactiveOrganizationId()
         // ** If token is present add it to request's Authorization Header
         if (accessToken) {
           // ** eslint-disable-next-line no-param-reassign
           config.headers.Authorization = `${this.jwtConfig.tokenType} ${accessToken}`
-        }
-        if (orgid) {
-          // ** eslint-disable-next-line no-param-reassign
-          config.params.organizationId = orgid
         }
         return config
       },
@@ -105,11 +100,11 @@ export default class JwtService {
   }
 
   getactiveOrganization() {
-    return localStorage.getItem('activeOrganization')
+    return JSON.parse(localStorage.getItem('activeOrganization'))
   }
 
   getactiveOrganizationId() {
-    return localStorage.getItem('activeOrganization') === null ? null : localStorage.getItem('activeOrganization')['id']
+    return localStorage.getItem('activeOrganization') === null ? null : JSON.parse(localStorage.getItem('activeOrganization'))['id']
   }
 
   refreshToken() {

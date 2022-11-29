@@ -12,7 +12,7 @@ import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-
+import {activeOrganizationid} from '@src/helper/sassHelper'
 // ** Reactstrap Imports
 import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback } from 'reactstrap'
 
@@ -22,6 +22,7 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
+const activeOrgId = activeOrganizationid()
 const AddCard = () => {
 
   // ** States
@@ -40,7 +41,8 @@ const AddCard = () => {
   const [contactId, setConatctId] = useState(null)
 
   const schema = yup.object().shape({
-    clientType: yup.number(),
+    clientType: yup.number().default(2),
+    organization  : yup.number().default(activeOrgId),
     uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when("clientType", { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
@@ -93,7 +95,7 @@ const AddCard = () => {
   }
 
   const addItem = (() => {
-    append({ organizationId: 1, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: true })
+    append({ organizationId: activeOrgId, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: true })
   })
 
   const removeItem = e => {
@@ -220,6 +222,7 @@ const AddCard = () => {
                     <Controller
                       name='clientType'
                       id='clientType_2'
+        
                       control={control}
                       render={({ field }) => (<Input name='clientType' id='clientType_2' type='radio'
                         {...field} onChange={val => { return val.target.value }} value={1} />)}
@@ -281,7 +284,7 @@ const AddCard = () => {
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
 
-            <div key={i} className='repeater-wrapper'>
+            <div key={item.id} className='repeater-wrapper'>
               <Row >
                 <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
@@ -290,7 +293,7 @@ const AddCard = () => {
                       <Controller
                         control={control}
                         id='contact_info_firstName'
-                        name={`contact_info.${i}.name`}
+                        name={`contact_info[${i}].name`}
                         render={({ field }) => (
                           <Input type='text' {...register(`contact_info.${i}.name`)} invalid={errors.contact_info?.[i]?.name && true} {...field} />
                         )}
@@ -302,7 +305,7 @@ const AddCard = () => {
                       <Controller
                         control={control}
                         id='contact_info_email'
-                        name={`contact_info.${i}.email`}
+                        name={`contact_info[${i}].email`}
                         render={({ field }) => (
                           <Input type='email' {...register(`contact_info.${i}.email`)} invalid={errors.contact_info?.[i]?.email && true} {...field} />
                         )}
@@ -314,7 +317,7 @@ const AddCard = () => {
                       <Controller
                         control={control}
                         id='contact_info_contactNumber'
-                        name={`contact_info.${i}.contactNumber`}
+                        name={`contact_info[${i}].contactNumber`}
                         render={({ field }) => (
                           <Input type='number'  {...register(`contact_info.${i}.contactNumber`)} invalid={errors.contact_info?.[i]?.contactNumber && true} {...field} />
                         )}
@@ -326,7 +329,7 @@ const AddCard = () => {
                       <Controller
                         control={control}
                         id='contact_info_designation'
-                        name={`contact_info.${i}.designation`}
+                        name={`contact_info[${i}].designation`}
                         render={({ field }) => (
                           <Input type='text' invalid={errors.contact_info?.[i]?.designation && true} {...register(`contact_info.${i}.designation`)} {...field} />
                         )}
@@ -339,7 +342,7 @@ const AddCard = () => {
                         <Controller
                           control={control}
                           id='contact_info_primaryStatus'
-                          name={`contact_info.${i}.primaryStatus`}
+                          name={`contact_info[${i}].primaryStatus`}
                           render={({ field }) => (
                             <Input type='switch' {...register(`contact_info.${i}.primaryStatus`)} {...field} />
                           )}

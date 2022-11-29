@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import classnames from 'classnames'
 // ** Third Party Components
-//import axios from 'axios'
+import axios from '@src/configs/axios/axiosConfig'
 import Flatpickr from 'react-flatpickr'
 import { X, Plus } from 'react-feather'
 import Select from 'react-select'
+import { DSCList, addDsc } from '../store/index'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
-
+//import moment from 'moment'
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 
@@ -20,21 +21,26 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
-import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux'
+import { activeOrganizationid } from '@src/helper/sassHelper'
 
+const activeOrgId = activeOrganizationid()
 const AddCard = () => {
 
   const phoneRegExp = /^[0-9\- ]{10,10}$/
-
+  const dispatch = useDispatch()
+  const store = useSelector(state => state.digitalsignature)
+  //const [clientId, setClientId] = useState(null)
   const schema = yup.object().shape({
-    client_id: yup.string().required("Please select a Client"),
-    dsc_lists: yup.array().of(
+    clientId: yup.string().required("Please select a Client"),
+    rows: yup.array().of(
       yup.object().shape({
         name: yup.string().required("Please Enter Name"),
+        organizationId: yup.string().default(activeOrgId),
         email: yup.string().email().required("Please Enter Email"),
-        contact_no: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
-        issued_date: yup.date("Please Enter Valid Date").nullable().required("Please Enter Issued Date"),
-        expiry_date: yup.date("Please Enter Valid Date").nullable().required("Please Enter Expiry Date"),
+        contact: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
+        // issuedDate: yup.string().required("Please Enter Issued Date"),
+        // expiryDate: yup.string().required("Please Enter Expiry Date"),
         password: yup.string().min(5, "Password length should be 5 or above.")
       })
     )
@@ -43,28 +49,21 @@ const AddCard = () => {
   const { register, handleSubmit, formState: { errors }, control } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      client_id: '',
-      dsc_lists: []
+      clientId: '',
+      rows: []
     }
   })
 
   //const [date, setDate] = useState("")
   const [clientOptions, setClientOptions] = useState([])
-  const { fields, append, remove } = useFieldArray({ name: 'dsc_lists', control })
-  const onSubmit = data => console.log(data)
-
-
-  useEffect(() => {
-    // ** Get Clients
-    axios.get('/api/client/dropdown').then(response => {
-      const arr = response.data
-      setClientOptions(arr)
-    })
-
-  }, [])
+  const { fields, append, remove } = useFieldArray({ name: 'rows', control })
+  const onSubmit = async data => {
+    console.log(data)
+    await dispatch(addDsc(data))
+  }
 
   const addItem = (() => {
-    append({ name: '', email: '', contact_no: '', issued_date: '', expiry_date: '', password: '' })
+    append({ name: '', email: '', contact: '', issuedDate: '', expiryDate: '', password: '' })
   })
 
   const removeItem = e => {
@@ -73,7 +72,50 @@ const AddCard = () => {
     e.target.closest('.repeater-wrapper').remove()
   }
 
+  const compareDate = (fie) => {
+
+    console.log(fie)
+    // if (control._formValues.rows[ind].issuedDate !== '' && control._formValues.rows[ind].expiryDate !== '') {
+    //   const issDate = control._formValues.rows[ind].issuedDate[0]
+    //   const expDate = control._formValues.rows[ind].expiryDate[0]
+
+    //   if (expDate < issDate) {
+    //     console.log('Success Date')
+    //   }
+  }
+
+  const getClientList = () => {
+    axios.post('/clients/dropdown').then(response => {
+      const arr = response.data
+      setClientOptions(arr.clients)
+    })
+  }
+
+  // const getClientInfo = async (id) => {
+  //   remove()
+  //   await dispatch(DSCList(id))
+  // }
+
   useEffect(() => {
+    // store.DSCLists.forEach((obj) => {
+    //   const data = {}
+
+    //   data['name'] = obj.name
+    //   data['email'] = obj.email
+    //   data['organizationId'] = activeOrgId
+    //   data['clientId'] = clientId
+    //   data['contact'] = obj.contactnumber
+    //   data['issuedDate'] = obj.issuedDate | ''
+    //   data['expiryDate'] = obj.expiryDate | ''
+    //   data['password'] = obj.password | ''
+
+    //   append(data)
+    // })
+
+  }, [store.DSCLists])
+
+  useEffect(() => {
+    getClientList()
     addItem()
   }, [])
 
@@ -86,29 +128,29 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='client_id'>
+                <Label sm='3' size='lg' className='form-label' for='clientId'>
                   Client
                 </Label>
                 <Col sm='9'>
                   <Controller
                     control={control}
-                    name="client_id"
-                    id="client_id"
-                    render={({ field, value, ref }) => (
+                    name="clientId"
+                    id="clientId"
+                    render={({ field, ref }) => (
                       <Select
                         {...field}
                         inputRef={ref}
-                        className={classnames('react-select', { 'is-invalid': errors.client_id })}
-                        {...field}
+                        className={classnames('react-select', { 'is-invalid': errors.clientId })}
                         classNamePrefix='select'
                         options={clientOptions}
-                        value={clientOptions.find(c => { return c.value === value })}
-                        onChange={val => field.onChange(val.value)}
+                        value={clientOptions.find(c => { return c.id === field.value })}
+                        onChange={(val) => { return field.onChange(val.id) }}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
                       />
                     )}
-
                   />
-                  {errors.client_id && <FormFeedback className='text-danger'>{errors.client_id?.message}</FormFeedback>}
+                  {errors.clientId && <FormFeedback className='text-danger'>{errors.clientId?.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
@@ -116,7 +158,7 @@ const AddCard = () => {
         </CardBody>
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
-            <div key={i} className='repeater-wrapper'>
+            <div key={item.id} className='repeater-wrapper'>
               <Row >
                 <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
@@ -125,72 +167,72 @@ const AddCard = () => {
                       <Controller
                         control={control}
                         id='dsc_list_name'
-                        name={`dsc_lists.${i}.name`}
+                        name={`rows[${i}].name`}
                         render={({ field }) => (
-                          <Input type='text'  {...register(`dsc_lists.${i}.name`)} invalid={errors.dsc_lists?.[i]?.name && true} {...field} />
+                          <Input type='text'  {...register(`rows.${i}.name`)} invalid={errors.rows?.[i]?.name && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.name && <FormFeedback>{errors.dsc_lists?.[i]?.name.message}</FormFeedback>}
+                      {errors.rows?.[i]?.name && <FormFeedback>{errors.rows?.[i]?.name.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
                       <CardText className='col-title mb-md-50 mb-0'>Email</CardText>
                       <Controller
                         control={control}
                         id='dsc_list_email'
-                        name={`dsc_lists.${i}.email`}
+                        name={`rows[${i}].email`}
                         render={({ field }) => (
-                          <Input type='email'  {...register(`dsc_lists.${i}.email`)} invalid={errors.dsc_lists?.[i]?.email && true} {...field} />
+                          <Input type='email'  {...register(`rows.${i}.email`)} invalid={errors.rows?.[i]?.email && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.email && <FormFeedback>{errors.dsc_lists?.[i]?.email.message}</FormFeedback>}
+                      {errors.rows?.[i]?.email && <FormFeedback>{errors.rows?.[i]?.email.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Mobile</CardText>
                       <Controller
                         control={control}
-                        id='dsc_list_contact_no'
-                        name={`dsc_lists.${i}.contact_no`}
+                        id='dsc_list_contactNumber'
+                        name={`rows[${i}].contact`}
                         render={({ field }) => (
-                          <Input type='number'  {...register(`dsc_lists.${i}.conatct_no`)} invalid={errors.dsc_lists?.[i]?.contact_no && true} {...field} />
+                          <Input type='number' {...register(`rows.${i}.contact`)} invalid={errors.rows?.[i]?.contact && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.contact_no && <FormFeedback>{errors.dsc_lists?.[i]?.contact_no.message}</FormFeedback>}
+                      {errors.rows?.[i]?.contact && <FormFeedback>{errors.rows?.[i]?.contact.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Issued Date</CardText>
                       <Controller
                         control={control}
-                        id='dsc_list_issued_date'
-                        name={`dsc_lists.${i}.issued_date`}
-                        render={({ field, value }) => (
-                          <Flatpickr className={classnames('form-control', { 'is-invalid': errors.dsc_lists?.[i]?.issued_date })} options={{ dateFormat: "d-m-Y" }} onChange={date => field.onChange(date)} value={value} {...field} />
+                        id='dsc_list_issuedDate'
+                        name={`rows[${i}].issuedDate`}
+                        render={({ field }) => (
+                          <Flatpickr className={classnames('form-control', { 'is-invalid': errors.rows?.[i]?.issuedDate })} options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }} onChange={compareDate(field)} value={field.value} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.issued_date && <FormFeedback>{errors.dsc_lists?.[i]?.issued_date.message}</FormFeedback>}
+                      {errors.rows?.[i]?.issuedDate && <FormFeedback>{errors.rows?.[i]?.issuedDate.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Expiry Date</CardText>
-                      <Controller
+                      <Controller 
                         control={control}
-                        id='dsc_list_expiry_date'
-                        name={`dsc_lists.${i}.expiry_date`}
-                        render={({ field, value }) => (
-                          <Flatpickr className={classnames('form-control', { 'is-invalid': errors.dsc_lists?.[i]?.expiry_date })} options={{ dateFormat: "d-m-Y" }} onChange={date => field.onChange(date)} value={value} {...field} />
+                        id='dsc_list_expiryDate'
+                        name={`rows[${i}].expiryDate`}
+                        render={({ field }) => (
+                          <Flatpickr name={`rows.${i}.expiryDate`} className={classnames('form-control', { 'is-invalid': errors.rows?.[i]?.expiryDate })} options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }} onChange={compareDate(field)} value={field.value}  {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.expiry_date && <FormFeedback>{errors.dsc_lists?.[i]?.expiry_date.message}</FormFeedback>}
+                      {errors.rows?.[i]?.expiryDate && <FormFeedback>{errors.rows?.[i]?.expiryDate.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Password</CardText>
                       <Controller
                         control={control}
                         id='dsc_list_password'
-                        name={`dsc_lists.${i}.password`}
+                        name={`rows[${i}].password`}
                         render={({ field }) => (
-                          <Input type='text'  {...register(`dsc_lists.${i}.password`)} invalid={errors.dsc_lists?.[i]?.password && true} {...field} />
+                          <Input type='text'  {...register(`rows.${i}.password`)} invalid={errors.rows?.[i]?.password && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.password && <FormFeedback>{errors.dsc_lists?.[i]?.password.message}</FormFeedback>}
+                      {errors.rows?.[i]?.password && <FormFeedback>{errors.rows?.[i]?.password.message}</FormFeedback>}
                     </Col>
 
                   </Row>

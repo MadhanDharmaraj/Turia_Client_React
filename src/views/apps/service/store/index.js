@@ -18,13 +18,12 @@ export const getService = createAsyncThunk('appServices/getService', async id =>
   return response.data.services
 })
 
-export const addService = createAsyncThunk('appServices/addService', async (service, { dispatch, getState }) => {
-  await axios.post('/services/create', service)
-  await dispatch(getData(getState().users.params))
-  return service
+export const addService = createAsyncThunk('appServices/addService', async (service, { }) => {
+  const response = await axios.post('/services/create', service)
+  return response.data.services
 })
 
-export const updateService = createAsyncThunk('appServices/addService', async (service, { }) => {
+export const updateService = createAsyncThunk('appServices/updateService', async (service, { }) => {
   const response = await axios.post(`/Services/update`, service)
   return { service: response.data.services }
 })

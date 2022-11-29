@@ -17,6 +17,9 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from "react"
+import { activeOrganizationid } from '@src/helper/sassHelper'
+
+const activeOrgId = activeOrganizationid()
 
 const EditCard = () => {
 
@@ -31,8 +34,10 @@ const EditCard = () => {
 
   const schema = yup.object().shape({
     categoryId: yup.string().required("Please select a Category"),
+    categoryType : yup.number().default(1),
+    organizationId : yup.number().default(activeOrgId),
     name: yup.string().required("Please Enter Service Name"),
-    taxgroupid: yup.string().required("Please Select Tax Rate"),
+    taxGroupId: yup.string().required("Please Select Tax Rate"),
     sellingPrice: yup.string().required("Please Enter Professional Fee"),
     sacCode: yup.string().required("Please Enter SAC Code")
   })
@@ -40,16 +45,7 @@ const EditCard = () => {
 
   const { handleSubmit, control, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      organizationId: 1,
-      categoryType: 1,
-      categoryId: '',
-      name: '',
-      sellingPrice: '',
-      sacCode: '',
-      taxgroupid: '',
-      description: ''
-    }
+    defaultValues: schema.cast()
   })
 
   const getTaxGroups = () => {
@@ -81,7 +77,7 @@ const EditCard = () => {
         organizationId: serviceDetails.organizationid,
         sellingPrice: serviceDetails.sellingprice,
         sacCode: serviceDetails.saccode,
-        taxgroupid: serviceDetails.taxgroupid,
+        taxGroupId: serviceDetails.taxGroupId,
         description: serviceDetails.description
       })
     }
@@ -183,7 +179,7 @@ const EditCard = () => {
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Tax Rate', 'taxgroupid', taxGroupOptions, true)}
+              {getSelectRow('Tax Rate', 'taxGroupId', taxGroupOptions, true)}
             </Col>
           </Row>
           <Row>

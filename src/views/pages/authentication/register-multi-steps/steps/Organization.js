@@ -104,7 +104,6 @@ const Organization = ({ stepper }) => {
       userTypeId: user.accounttype
     }
     await dispatch(createOrganizationUser(data))
-    navigate(getHomeRouteForLoggedInUser(user.role))
   }
 
   useEffect(async () => {
@@ -115,10 +114,17 @@ const Organization = ({ stepper }) => {
     }
   }, [store.verifyprocess])
 
+  useEffect(async () => {
+    if (store.registerSuccess) {
+      const user = store.loginUser
+      navigate(getHomeRouteForLoggedInUser(user.role))
+    }
+  }, [store.registerSuccess])
+
   useEffect(() => {
 
     if (store.activeOrganization !== null) {
-      window.cookieStore.set('activeOrganization', JSON.stringify(store.activeOrganization), { domain: 'localhost:3000' })
+      localStorage.setItem('activeOrganization', JSON.stringify(store.activeOrganization))
       const user = store.loginUser
       const org = store.activeOrganization
       createOrgUser(user, org)
@@ -126,7 +132,6 @@ const Organization = ({ stepper }) => {
         <ToastContent t={t} name={user.name} />
       ))
     }
-
 
   }, [store.activeOrganization])
 

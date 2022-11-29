@@ -34,7 +34,7 @@ const UserInfoCard = ({ selectedService }) => {
         initials
         color={statusColors[selectedService.status]}
         className='rounded mt-3 mb-2'
-        content={selectedService.name}
+        content={selectedService.name.charAt(0).toUpperCase()}
         contentStyles={{
           borderRadius: 0,
           fontSize: 'calc(48px)',
@@ -78,7 +78,7 @@ const UserInfoCard = ({ selectedService }) => {
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>SAC Code:</span>
-                  <span className='col-6 text-end'>{selectedService.hsncode}</span>
+                  <span className='col-6 text-end'>{selectedService.saccode}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Fee:</span>
@@ -86,7 +86,7 @@ const UserInfoCard = ({ selectedService }) => {
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Tax Rate:</span>
-                  <span className='col-6 text-end'>{selectedService.taxgroupid}</span>
+                  <span className='col-6 text-end'>{selectedService.taxgroupsname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Status:</span>

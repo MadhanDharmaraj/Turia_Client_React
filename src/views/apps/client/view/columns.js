@@ -26,8 +26,8 @@ export const columns = [
     name: 'Contact',
     sortable: false,
     minWidth: '135px',
-    selector: row => row.contactNumber,
-    cell: row => <span>{row.contactNumber || 0}</span>
+    selector: row => row.contactnumber,
+    cell: row => <span>{row.contactnumber}</span>
   },
   {
     name: 'Designation',

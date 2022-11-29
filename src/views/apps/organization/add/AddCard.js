@@ -113,7 +113,7 @@ const Organization = ({ stepper }) => {
     getStates()
 
     if (store.activeOrganization !== null) {
-      window.cookieStore.set('activeOrganization', JSON.stringify(store.activeOrganization), { domain: 'localhost:3000' })
+      localStorage.setItem('activeOrganization',store.activeOrganization)
       const user = store.loginUser
       const org = store.activeOrganization
      

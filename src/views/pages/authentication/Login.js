@@ -30,6 +30,7 @@ import { Row, Col, Form, Input, Label, Button, CardText, CardTitle } from 'react
 
 // ** Styles
 import '@styles/react/pages/page-authentication.scss'
+import axios from '@src/configs/axios/axiosConfig'
 
 const ToastContent = ({ t, name }) => {
   return (
@@ -68,6 +69,12 @@ const Login = () => {
   const illustration = skin === 'dark' ? 'login-v2-dark.svg' : 'login-v2.svg',
     source = require(`@src/assets/images/pages/${illustration}`).default
 
+  const getOrganization = async (data) => {
+    const user = { userId: data.users.id }
+    const res = await axios.post('organizations/list', user)
+    localStorage.setItem('activeOrganization', JSON.stringify(res.data.organizations[0]))
+    navigate(getHomeRouteForLoggedInUser(data.role))
+  }
   const onSubmit = data => {
     if (Object.values(data).every(field => field.length > 0)) {
       useJwt
@@ -83,7 +90,8 @@ const Login = () => {
           ]
           dispatch(handleLogin(data))
           ability.update(data.ability)
-          navigate(getHomeRouteForLoggedInUser(data.role))
+
+          getOrganization(data)
           toast(t => (
             <ToastContent t={t} name={data.name} />
           ))
