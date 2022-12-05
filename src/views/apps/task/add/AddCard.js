@@ -299,8 +299,12 @@ const AddCard = () => {
                     control={control}
                     rules={{ required: true }}
                     options={{ dateFormat: "d-m-Y" }}
-                    render={({ field, value }) => (
-                      <Flatpickr className={classnames('form-control', { 'is-invalid': errors.start_date })} options={{ dateFormat: "d-m-Y" }} name="start_date" onChange={date => field.onChange(date)} value={value} />
+                    render={({ field }) => (
+                      <Flatpickr
+                      value={field.value}
+                      onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                      options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                      className='form-control due-date-picker' />
                     )}
                   />
 
@@ -320,8 +324,12 @@ const AddCard = () => {
                     control={control}
                     rules={{ required: true }}
                     options={{ dateFormat: "d-m-Y" }}
-                    render={({ field, value }) => (
-                      <Flatpickr className={classnames('form-control', { 'is-invalid': errors.end_date })} options={{ dateFormat: "d-m-Y" }} name="end_date" FormFeedback onChange={date => field.onChange(date)} value={value} />
+                    render={({ field }) => (
+                      <Flatpickr
+                      value={field.value}
+                      onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                      options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                      className='form-control due-date-picker' />
                     )}
                   />
 
@@ -371,7 +379,7 @@ const AddCard = () => {
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
 
-            <div key={i} className='repeater-wrapper'>
+            <div key={item.id} className='repeater-wrapper'>
               <Row>
                 <Col className='d-lg-flex product-details-border position-relative pe-0 ps-sm-0' sm='12'>
                   <Row className='w-100 pe-lg-0 py-2 ms-sm-1'>

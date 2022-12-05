@@ -1,5 +1,5 @@
 // ** Reactstrap Imports
-import { Card, CardHeader, Progress } from 'reactstrap'
+import { Card, CardHeader } from 'reactstrap'
 
 // ** Third Party Components
 import { ChevronDown } from 'react-feather'
@@ -8,133 +8,103 @@ import DataTable from 'react-data-table-component'
 // ** Custom Components
 import Avatar from '@components/avatar'
 
+import { DSCList } from '../store/index'
 // ** Styles
 import '@styles/react/libs/tables/react-dataTable-component.scss'
+import { useDispatch, useSelector } from 'react-redux'
+import moment from 'moment'
+import { useEffect, useState } from 'react'
 
-const projectsArr = [
-  {
-    progress: 60,
-    hours: '210:30h',
-    progressColor: 'info',
-    totalTasks: '233/240',
-    subtitle: 'React Project',
-    title: 'BGC eCommerce App',
-    img: require('@src/assets/images/icons/brands/react-label.png').default
-  },
-  {
-    hours: '89h',
-    progress: 15,
-    totalTasks: '9/50',
-    progressColor: 'danger',
-    subtitle: 'UI/UX Project',
-    title: 'Falcon Logo Design',
-    img: require('@src/assets/images/icons/brands/xd-label.png').default
-  },
-  {
-    progress: 90,
-    hours: '129:45h',
-    totalTasks: '100/190',
-    progressColor: 'success',
-    subtitle: 'Vuejs Project',
-    title: 'Dashboard Design',
-    img: require('@src/assets/images/icons/brands/vue-label.png').default
-  },
-  {
-    hours: '45h',
-    progress: 49,
-    totalTasks: '12/86',
-    progressColor: 'warning',
-    subtitle: 'iPhone Project',
-    title: 'Foodista mobile app',
-    img: require('@src/assets/images/icons/brands/sketch-label.png').default
-  },
+const dateFormat = (value) => {
 
-  {
-    progress: 73,
-    hours: '67:10h',
-    totalTasks: '234/378',
-    progressColor: 'info',
-    subtitle: 'React Project',
-    title: 'Dojo React Project',
-    img: require('@src/assets/images/icons/brands/react-label.png').default
-  },
-  {
-    progress: 81,
-    hours: '108:39h',
-    totalTasks: '264/537',
-    title: 'HTML Project',
-    progressColor: 'success',
-    subtitle: 'Crypto Website',
-    img: require('@src/assets/images/icons/brands/html-label.png').default
-  },
-  {
-    progress: 78,
-    hours: '88:19h',
-    totalTasks: '214/627',
-    progressColor: 'success',
-    subtitle: 'Vuejs Project',
-    title: 'Vue Admin template',
-    img: require('@src/assets/images/icons/brands/vue-label.png').default
-  }
+  return moment.unix(value).format("MMM DD, YYYY")
+
+}
+
+const statusArr = [
+  '',
+  "Active",
+  "In Active"
+
 ]
 
 export const columns = [
   {
     sortable: true,
     minWidth: '300px',
-    name: 'Project',
-    selector: row => row.title,
+    name: 'Client',
+    selector: row => row.name,
     cell: row => {
       return (
         <div className='d-flex justify-content-left align-items-center'>
           <div className='avatar-wrapper'>
-            <Avatar className='me-1' img={row.img} alt={row.title} imgWidth='32' />
+            <Avatar className='me-1' content={row.name.charAt(0)} alt={row.name} imgWidth='32' />
           </div>
           <div className='d-flex flex-column'>
-            <span className='text-truncate fw-bolder'>{row.title}</span>
-            <small className='text-muted'>{row.subtitle}</small>
+            <span className='text-truncate fw-bolder'>{row.name}</span>
+            <small className='text-muted'>{row.email}</small>
           </div>
         </div>
       )
     }
   },
   {
-    name: 'Total Tasks',
-    selector: row => row.totalTasks
+    name: 'Contact',
+    selector: row => row.contact
   },
   {
-    name: 'Progress',
-    selector: row => row.progress,
+    name: 'Issued Date',
+    selector: row => dateFormat(row.issueddate)
+  },
+  {
+    name: 'Expiry Date',
+    selector: row => dateFormat(row.expirydate)
+  },
+  {
+    name: 'Status',
+    selector: row => row.status,
     sortable: true,
     cell: row => {
       return (
         <div className='d-flex flex-column w-100'>
-          <small className='mb-1'>{`${row.progress}%`}</small>
-          <Progress
-            value={row.progress}
-            style={{ height: '6px' }}
-            className={`w-100 progress-bar-${row.progressColor}`}
-          />
+          <small className='mb-1'>{`${statusArr[row.status]}`}</small>
         </div>
       )
     }
-  },
-  {
-    name: 'Hours',
-    selector: row => row.hours
   }
 ]
 
 const UserProjectsList = () => {
+
+  const store = useSelector(state => state.digitalsignature)
+  const [dataArray, setDataArray] = useState([])
+  const dispatch = useDispatch()
+
+  useEffect(async () => {
+
+    if (store.DSCLists.length > 0) {
+      setDataArray(store.DSCLists)
+    }
+
+  }, [store.DSCLists])
+
+
+  useEffect(async () => {
+    if (store.selectedDigitalSignature !== null) {
+      await dispatch(DSCList(store.selectedDigitalSignature.clientid))
+    }
+
+  }, [store.selectedDigitalSignature])
+
   return (
     <Card>
-      <CardHeader tag='h4'>User's Projects List</CardHeader>
+      <CardHeader tag='h4'>Digital Signature List</CardHeader>
       <div className='react-dataTable user-view-account-projects'>
         <DataTable
           noHeader
           responsive
           columns={columns}
-          data={projectsArr}
+          data={dataArray}
           className='react-dataTable'
           sortIcon={<ChevronDown size={10} />}
         />

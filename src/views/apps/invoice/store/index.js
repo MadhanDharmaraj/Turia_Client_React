@@ -5,11 +5,10 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@src/configs/axios/axiosConfig'
 
 export const getData = createAsyncThunk('appInvoice/getData', async params => {
-  const response = await axios.get('/apps/invoice/invoices', params)
+  const response = await axios.get('/invoices/list', params)
   return {
     params,
     data: response.data.invoices,
-    allData: response.data.allData,
     totalPages: response.data.total
   }
 })
@@ -17,7 +16,7 @@ export const getData = createAsyncThunk('appInvoice/getData', async params => {
 export const addInvoice = createAsyncThunk('appInvoice/addInvoice', async (invoice, { rejectWithValue }) => {
   try {
     const response = await axios.post(`/taskinvoices/create`, invoice)
-    return { invoices: response.data.invoices }
+    return { invoices: response.data.taskinvoices }
   } catch (ex) {
     return rejectWithValue(getExceptionPayload(ex))
   }
@@ -25,17 +24,17 @@ export const addInvoice = createAsyncThunk('appInvoice/addInvoice', async (invoi
 
 export const addInvoiceTax = createAsyncThunk('appInvoice/addInvoiceTax', async (invoiceTax, { rejectWithValue }) => {
   try {
-    const response = await axios.post(`/invoicetaxes/create`, invoiceTax)
-    return { invoices: response.data.invoices }
+    const response = await axios.post(`/invoicetaxes/create`, { rows: invoiceTax })
+    return { invoiceTaxes: response.data.taskinvoices }
   } catch (ex) {
     return rejectWithValue(getExceptionPayload(ex))
   }
 })
 
-export const addInvoiceItems = createAsyncThunk('appInvoice/addInvoiceItems', async (invoiceItems, { rejectWithValue }) => {
+export const addInvoiceItems = createAsyncThunk('appInvo  ice/addInvoiceItems', async (invoiceItems, { rejectWithValue }) => {
   try {
-    const response = await axios.post(`/taskinvoiceitems/create`, invoiceItems)
-    return { invoices: response.data.invoices }
+    const response = await axios.post(`/taskinvoiceitems/create`, { rows: invoiceItems })
+    return { invoiceItems: response.data.taskinvoiceitems }
   } catch (ex) {
     return rejectWithValue(getExceptionPayload(ex))
   }
@@ -43,7 +42,7 @@ export const addInvoiceItems = createAsyncThunk('appInvoice/addInvoiceItems', as
 
 export const addInvoiceItemTax = createAsyncThunk('appInvoice/addInvoiceItemTax', async (invoiceItemTax, { rejectWithValue }) => {
   try {
-    const response = await axios.post(`/invocieitemtaxes/create`, invoiceItemTax)
+    const response = await axios.post(`/invocieitemtaxes/create`, { rows: invoiceItemTax })
     return { invoices: response.data.invoices }
   } catch (ex) {
     return rejectWithValue(getExceptionPayload(ex))
@@ -69,7 +68,8 @@ export const appInvoiceSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    invoiceId: null
+    invoiceId: null,
+    invoiceItems: []
   },
   reducers: {},
   extraReducers: builder => {
@@ -80,7 +80,10 @@ export const appInvoiceSlice = createSlice({
       state.params = action.payload.params
     })
     builder.addCase(addInvoice.fulfilled, (state, action) => {
-      state.invoiceId = action.payload.invoice.id
+      state.invoiceId = action.payload.invoices.id
+    })
+    builder.addCase(addInvoiceItems.fulfilled, (state, action) => {
+      state.invoiceItems = action.payload.invoiceItems
     })
 
   }

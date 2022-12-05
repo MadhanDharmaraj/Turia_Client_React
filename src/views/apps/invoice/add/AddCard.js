@@ -20,12 +20,17 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
 import { calculateTax } from '../helper/hepler'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 const activeOrgId = activeOrganizationid()
+const activeOrg = activeOrganization()
+
+const noteText =
+  'It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
+
 
 const AddCard = () => {
 
@@ -39,6 +44,10 @@ const AddCard = () => {
 
   const [invoiceItems, setInvoiceItems] = useState([])
   const [selectedClient, setSelectedClient] = useState({})
+  const [taxValues, setTaxValues] = useState([])
+
+  const [invoiceTaxes, setInvoiceTaxes] = useState([])
+  const [invoiceItemTaxes, setInvoiceItemTaxes] = useState([])
 
   const dispatch = useDispatch()
 
@@ -56,6 +65,17 @@ const AddCard = () => {
       setServiceOptions(arr.services)
     })
   }
+
+  const getTaxValue = (taxType) => {
+    const data = {
+      type: taxType
+    }
+    axios.post('/taxvalues/list', data).then(response => {
+      const arr = response.data
+      setTaxValues(arr.taxvalues)
+    })
+  }
+
 
   const getStates = () => {
     axios.post('/states/list').then(response => {
@@ -86,24 +106,24 @@ const AddCard = () => {
   }
 
   const schema = yup.object().shape({
-    contactId: yup.string().required("Please select a Client"),
+    contactId: yup.number().required("Please select a Client"),
     uniqueIdentity: yup.string(),
     contactEmail: yup.string(),
-    // invoiceDate: yup.string(),
-    // paymentDue: yup.string(),
-    placeOfSupplyId: yup.string().required("Please select a Place Of Supply"),
-    subTotalAmount: yup.number().min(1),
-    totalAmount: yup.number().min(1),
-    totalTaxAmount: yup.number().min(1),
+    invoiceDate: yup.number(),
+    paymentDue: yup.number(),
+    placeOfSupplyId: yup.number().required("Please select a Place Of Supply"),
+    subTotalAmount: yup.string(),
+    totalAmount: yup.string(),
+    totalTaxAmount: yup.string(),
     organizationId: yup.number().default(activeOrgId),
     isRcmApplicable: yup.boolean().default(true),
-    dueAmount: yup.number().min(1),
+    dueAmount: yup.string(),
     billingAddressLine1: yup.string(),
     billingAddressLine2: yup.string(),
     billingAddressState: yup.string(),
     billingAddressCity: yup.string(),
     billingAddressZipCode: yup.string(),
-    billingCurrencyId: yup.string(),
+    billingCurrencyId: yup.number(),
     bankAccountBankName: yup.string(),
     bankAccountBranchName: yup.string(),
     bankAccountHolderName: yup.string(),
@@ -112,19 +132,19 @@ const AddCard = () => {
     bankAccountNumber: yup.string(),
     contactEmail: yup.string(),
     gstin: yup.string(),
-    note: yup.string(),
+    note: yup.string().default(noteText),
     status: yup.number().default(1),
     paymentStatus: yup.number().default(11),
-    invoiceItems: yup.array().of(
+    rows: yup.array().of(
       yup.object().shape({
         serviceId: yup.string().required("Please Select Service Item"),
         sacCode: yup.string(),
         price: yup.string(),
-        organization_id: yup.string().default(activeOrgId),
-        exemption_reason_id: yup.string(),
-        actualPrice: yup.number().positive("Must be more than 0").required(),
+        organizationId: yup.string().default(activeOrgId),
+        exemptioReasonId: yup.string(),
+        actualPrice: yup.string().required(),
         taxGroupId: yup.string().required("Pleace Select Tax"),
-        totalAmount: yup.number().min(1)
+        subTotalAmount: yup.string().required(1)
       })
     )
   })
@@ -134,69 +154,103 @@ const AddCard = () => {
     defaultValues: schema.cast()
   })
 
-  const { fields, append, remove, update } = useFieldArray({ control, name: 'invoiceItems' })
+  const { fields, append, remove, update } = useFieldArray({ control, name: 'rows' })
 
   const onSubmit = async data => {
-    const temp = data.invoiceItems
+    const temp = data.rows
     setInvoiceItems(predata => ([...predata, ...temp]))
-    delete data.invoiceItems
+    delete data.rows
     console.log(invoiceItems)
     await dispatch(addInvoice(data))
-
   }
 
-  const InvoiceTax = async () => {
-    await dispatch(addInvoiceTax)
+  const InvoiceTax = async (id) => {
+    invoiceTaxes.forEach((obj, key) => {
+      invoiceTaxes[key].invoiceId = id
+    })
+    await dispatch(addInvoiceTax(invoiceTaxes))
   }
 
-  const InvoiceItems = async () => {
-    await dispatch(addInvoiceItems)
+  const InvoiceItems = async (id) => {
+    invoiceItems.forEach((obj, key) => {
+      invoiceItems[key].invoiceId = id
+    })
+    await dispatch(addInvoiceItems(invoiceItems))
   }
 
   const InvoiceItemTax = async () => {
-    await dispatch(addInvoiceItemTax)
+
+    await dispatch(addInvoiceItemTax(invoiceItemTaxes))
   }
 
   const addItem = (() => {
-    append({ invoiceId: 0, serviceId: '', sacCode: '', actualPrice: 0, taxGroupId: '', totalAmount: 0, taxPrice: 0, description: '' })
+    append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '' })
   })
 
   useEffect(() => {
     addItem()
   }, [])
 
-  useEffect(() => {
-    if (Object.keys(selectedClient).length > 0) {
-      setValue('billingAddressCity', selectedClient.billingaddresscity)
-      setValue('billingAddressLine1', selectedClient.billingaddressline1)
-      setValue('billingAddressLine2', selectedClient.billingaddressline1)
-      setValue('billingAddressState', selectedClient.billingaddressstatesname)
-      setValue('billingAddressZipCode', selectedClient.billingaddresszip)
-      setValue('billingCurrencyId', selectedClient.currencyid)
-      setValue('contactEmail', selectedClient.email)
-      setValue('gstin', selectedClient.gstin)
-      setValue('placeOfSupplyId', selectedClient.placeofsupplyid)
-    }
-
-  }, [selectedClient])
-
   useEffect(async () => {
-
     if (store.invoiceId !== null) {
-      await InvoiceTax()
-      await InvoiceItems()
-      await InvoiceItemTax()
+      await InvoiceTax(store.invoiceId)
+
+      await InvoiceItems(store.invoiceId)
     }
   }, [store.invoiceId])
 
+  useEffect(async () => {
+    if (store.invoiceItems.length > 0) {
+      const inputArray = control._formValues.rows.map(a => a.taxes)
+      const temp = inputArray.flat()
+      store.invoiceItems.forEach(async (obj) => {
+        temp.forEach((object, key) => {
+          temp[key].invoiceItemId = obj.id
+        })
+      })
+
+      setInvoiceItemTaxes(temp)
+    }
+  }, [store.invoiceItems])
+
+  useEffect(async () => {
+    if (invoiceItemTaxes.length > 0) {
+      await InvoiceItemTax()
+    }
+  }, [invoiceItemTaxes])
+
+  const calculateInvoiceTax = () => {
+
+    const inputArray = control._formValues.rows.map(a => a.taxes)
+    const temp = inputArray.flat()
+    const output = temp.reduce((acc, item) => {
+      if (item !== undefined) {
+        const existItem = acc.find((obj) => {
+          return item.taxName === obj.taxName
+        })
+        if (existItem) {
+          existItem.taxAmount += item.taxAmount
+        } else {
+          acc.push(item)
+        }
+      }
+      return acc
+    }, [])
+
+    setInvoiceTaxes(output)
+
+  }
+
   const ItemFinalTotalAmount = () => {
 
-    const items = control._formValues.invoiceItems
+    calculateInvoiceTax()
+
+    const items = control._formValues.rows
     let finalTotal = 0
     let finalsubTotalAmount = 0
     let finalTaxAmount = 0
     items.forEach(obj => {
-      finalTotal = parseFloat(obj.totalAmount) + parseFloat(finalTotal)
+      finalTotal = parseFloat(obj.subTotalAmount) + parseFloat(finalTotal)
       finalsubTotalAmount = parseFloat(obj.actualPrice) + parseFloat(finalsubTotalAmount)
       finalTaxAmount = parseFloat(finalTaxAmount) + parseFloat(obj.taxPrice)
     })
@@ -206,38 +260,61 @@ const AddCard = () => {
     control._formValues.dueAmount = finalTotal
     control._formValues.totalTaxAmount = finalTaxAmount
 
-
     setFinalTotal(finalTotal)
     setFinalSubTotal(finalsubTotalAmount)
   }
 
   const removeItem = ((ind) => {
     remove(ind)
-
     ItemFinalTotalAmount()
   })
 
-  const loadItemData = (ind, desFlg = false, priceFlg = false, sacFlg = false, taxFlg = false) => {
-    const eachObj = control._formValues.invoiceItems[ind]
+  const loadItemData = (ind, desFlg = false, priceFlg = false, sacFlg = false, taxFlg = false, itemFlg = false) => {
+    const eachObj = control._formValues.rows[ind]
 
     if (eachObj.serviceId === undefined || eachObj.serviceId === '') {
       return false
     }
     const selectedService = serviceOptions.find((a) => a.id === eachObj.serviceId)
-
-    eachObj['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
-    eachObj['actualPrice'] = priceFlg ? eachObj.actualPrice : selectedService.sellingprice | 0
-    eachObj['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
-    eachObj['description'] = desFlg ? eachObj.description : selectedService.description
-
-    let calculateTaxAmount = 0
-    const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
-    if (taxGroups !== undefined) {
-      calculateTaxAmount = calculateTax(eachObj.actualPrice, 18, 2)
+    if (itemFlg) {
+      eachObj['sacCode'] = selectedService.saccode
+      eachObj['actualPrice'] = selectedService.sellingprice | 0
+      eachObj['price'] = String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = selectedService.taxgroupid
+      eachObj['description'] = selectedService.description
+    } else {
+      eachObj['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
+      eachObj['price'] = priceFlg ? eachObj.actualPrice : selectedService.sellingprice | 0
+      eachObj['actualPrice'] = priceFlg ? String(eachObj.actualPrice) : String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
+      eachObj['description'] = desFlg ? eachObj.description : selectedService.description
     }
 
-    eachObj['totalAmount'] = parseFloat(calculateTaxAmount + eachObj.actualPrice).toFixed(2)
+    let calculateTaxAmount = 0
+    const invoice_item_taxes = []
+    const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
+    if (taxGroups !== undefined) {
+      taxValues.forEach(obj => {
+        if (obj.taxid === eachObj['taxGroupId']) {
+          const temp = calculateTax(eachObj.actualPrice, obj.percentage, 2)
+          calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
+          const dataTemp = {}
+          dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
+          dataTemp["taxId"] = parseInt(obj.id)
+          dataTemp["organizationId"] = parseInt(activeOrgId)
+          dataTemp["invoiceItemId"] = ''
+          dataTemp["taxNameValue"] = obj.name
+          dataTemp["taxPercentage"] = String(obj.percentage)
+          dataTemp["taxAmount"] = String(temp)
+
+          invoice_item_taxes.push(dataTemp)
+        }
+      })
+    }
+
+    eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(eachObj.actualPrice)).toFixed(2))
     eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
+    eachObj['taxes'] = invoice_item_taxes
 
     update(ind, eachObj)
 
@@ -245,25 +322,54 @@ const AddCard = () => {
 
   }
 
-  const renderError = () => {
-    const keys = Object.keys(errors)
-    const ErrorsText = []
-    if (Array.isArray(keys)) {
-      keys.forEach((key) => {
-        if (key !== 'invoiceItems') {
-          ErrorsText.push(<FormFeedback key={key}>${errors[key]?.message}</FormFeedback>)
-        } else {
-          console.log(errors[key])
-        }
-      })
+  const taxvaluefn = () => {
+    let taxtype = 1
+    if (activeOrg.stateid === control._formValues.placeOfSupplyId) {
+      taxtype = 2
     }
 
-    return ErrorsText
+    getTaxValue(taxtype)
 
   }
 
-  const note =
-    'It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
+  useEffect(() => {
+    if (taxValues.length > 0) {
+      control._formValues.rows.forEach((obj, ind) => {
+        loadItemData(ind, false, false, false, false, false)
+      })
+    }
+  }, [taxValues])
+
+
+  useEffect(() => {
+    if (Object.keys(selectedClient).length > 0) {
+      setValue('billingAddressCity', selectedClient.billingaddresscity)
+      setValue('billingAddressLine1', selectedClient.billingaddressline1)
+      setValue('billingAddressLine2', selectedClient.billingaddressline1)
+      setValue('billingAddressState', selectedClient.billingaddressstatesname)
+      setValue('billingAddressZipCode', selectedClient.billingaddresszip)
+      setValue('billingCurrencyId', parseInt(selectedClient.currencyid))
+      setValue('contactEmail', selectedClient.email)
+      setValue('gstin', selectedClient.gstin)
+      setValue('placeOfSupplyId', selectedClient.placeofsupplyid)
+      taxvaluefn()
+    }
+
+  }, [selectedClient])
+
+  const renderError = () => {
+    const keys = Object.keys(errors)
+    const ErrorText = []
+    if (Array.isArray(keys)) {
+      keys.forEach((key) => {
+        if (key !== 'rows') {
+          ErrorText.push(<FormFeedback key={key}>${errors[key]?.message}</FormFeedback>)
+        }
+      })
+    }
+    return ErrorText
+  }
+
 
   return (
 
@@ -315,7 +421,8 @@ const AddCard = () => {
                         render={({ field }) => (
                           <Flatpickr
                             value={field.value}
-                            onChange={date => field.onChange(date)}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
                             className='form-control invoice-edit-input date-picker'
                           />
                         )}
@@ -330,7 +437,8 @@ const AddCard = () => {
                         render={({ field }) => (
                           <Flatpickr
                             value={field.value}
-                            onChange={date => field.onChange(date)}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
                             className='form-control invoice-edit-input due-date-picker'
                           />
                         )}
@@ -433,7 +541,7 @@ const AddCard = () => {
                             classNamePrefix='select'
                             options={stateOptions}
                             value={stateOptions.find(c => { return c.id === field.value })}
-                            onChange={val => { return field.onChange(val.id) }}
+                            onChange={val => { field.onChange(val.id); taxvaluefn() }}
                             getOptionLabel={(option) => option.name}
                             getOptionValue={(option) => option.id}
                           />
@@ -479,81 +587,79 @@ const AddCard = () => {
                               <Controller
                                 control={control}
                                 defaultValue={`${item.serviceId}`}
-                                name={`invoiceItems[${index}].serviceId`}
+                                name={`rows[${index}].serviceId`}
                                 rules={{ required: true }}
                                 render={({ field, ref }) => (
                                   <Select
                                     {...field}
                                     inputRef={ref}
-                                    className={classnames('react-select', { 'is-invalid': errors.invoiceItems?.[index]?.serviceId })}
+                                    className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.serviceId })}
                                     classNamePrefix='select'
                                     options={serviceOptions}
                                     value={serviceOptions.find(c => c.id === field.value)}
-                                    onChange={val => { field.onChange(val.id) }}
-                                    onClick={() => { loadItemData(index, false, false, false, false) }}
+                                    onChange={val => { field.onChange(val.id); loadItemData(index, false, false, false, false, true) }}
                                     getOptionLabel={(option) => option.name}
                                     getOptionValue={(option) => option.id}
                                   />
                                 )}
                               />
-                              {errors.invoiceItems?.[index]?.serviceId && <FormFeedback>{errors.invoiceItems?.[index]?.serviceId.message}</FormFeedback>}
+                              {errors.rows?.[index]?.serviceId && <FormFeedback>{errors.rows?.[index]?.serviceId.message}</FormFeedback>}
                               <Controller
-                                id={`invoiceItems_${index}_description`}
+                                id={`rows_${index}_description`}
                                 defaultValue={`${item.description}`}
-                                name={`invoiceItems[${index}].description`}
+                                name={`rows[${index}].description`}
                                 control={control}
-                                render={({ field }) => <Input className='mt-1' invalid={errors.invoiceItems?.[index]?.description && true} onClick={() => { loadItemData(index, true, false, false, false) }} {...field} />}
+                                render={({ field }) => <Input className='mt-1' invalid={errors.rows?.[index]?.description && true} onInputCapture={() => { loadItemData(index, true, false, false, false, false) }} {...field} />}
                               />
                             </Col>
                             <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
                               <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
                               <Controller
-                                id={`invoiceItems_${index}_sacCode`}
+                                id={`rows_${index}_sacCode`}
                                 defaultValue={`${item.sacCode}`}
-                                name={`invoiceItems[${index}].sacCode`}
+                                name={`rows[${index}].sacCode`}
                                 control={control}
-                                render={({ field }) => <Input type='text' invalid={errors.invoiceItems?.[index]?.sacCode && true} onClick={() => loadItemData(index, false, true, false, false)} {...field} />}
+                                render={({ field }) => <Input type='text' invalid={errors.rows?.[index]?.sacCode && true} onChange={() => loadItemData(index, false, true, true, false, false)} {...field} />}
                               />
-                              {errors.invoiceItems?.[index]?.sacCode && <FormFeedback>{errors.invoiceItems?.[index]?.sacCode.message}</FormFeedback>}
+                              {errors.rows?.[index]?.sacCode && <FormFeedback>{errors.rows?.[index]?.sacCode.message}</FormFeedback>}
                             </Col>
                             <Col className='my-lg-0 my-2' lg='2' sm='12'>
                               <CardText className='col-title mb-md-2 mb-0'>Price</CardText>
                               <Controller
                                 defaultValue={item.actualPrice}
-                                id={`invoiceItems_${index}_price`}
-                                name={`invoiceItems[${index}].actualPrice`}
+                                id={`rows_${index}_price`}
+                                name={`rows[${index}].actualPrice`}
                                 control={control}
-                                render={({ field }) => <Input type='number' invalid={errors.invoiceItems?.[index]?.actualPrice && true} onClick={() => { loadItemData(index, false, false, true, false) }} {...field} />}
+                                render={({ field }) => <Input type='number' invalid={errors.rows?.[index]?.actualPrice && true} onChange={val => { field.onChange(val.id); loadItemData(index, false, false, true, false, false) }} {...field} />}
                               />
-                              {errors.invoiceItems?.[index]?.actualPrice && <FormFeedback>{errors.invoiceItems?.[index]?.actualPrice.message}</FormFeedback>}
+                              {errors.rows?.[index]?.actualPrice && <FormFeedback>{errors.rows?.[index]?.actualPrice.message}</FormFeedback>}
                             </Col>
                             <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                               <CardText className='col-title mb-md-50 mb-0'>Tax Rate</CardText>
                               <Controller
                                 control={control}
                                 defaultValue={item.taxGroupId}
-                                name={`invoiceItems[${index}].taxGroupId`}
+                                name={`rows[${index}].taxGroupId`}
                                 rules={{ required: true }}
                                 render={({ field, ref }) => (
                                   <Select
                                     {...field}
                                     inputRef={ref}
-                                    className={classnames('react-select', { 'is-invalid': errors.invoiceItems?.[index]?.taxGroupId })}
+                                    className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
                                     classNamePrefix='select'
                                     options={taxGroupOptions}
                                     value={taxGroupOptions.find(c => c.id === field.value)}
-                                    onChange={(val) => { field.onChange(val.id) }}
-                                    onClick={() => loadItemData(index, false, false, false, true)}
+                                    onChange={(val) => { field.onChange(val.id); loadItemData(index, false, true, false, true, false) }}
                                     getOptionLabel={(option) => option.name}
                                     getOptionValue={(option) => option.id}
                                   />
                                 )}
                               />
-                              {errors.invoiceItems?.[index]?.taxGroupId && <FormFeedback>{errors.invoiceItems?.[index]?.taxGroupId.message}</FormFeedback>}
+                              {errors.rows?.[index]?.taxGroupId && <FormFeedback>{errors.rows?.[index]?.taxGroupId.message}</FormFeedback>}
                             </Col>
                             <Col className='my-lg-0 mt-2' lg='1' sm='12'>
                               <CardText className='col-title mb-md-50 mb-0'>Amount</CardText>
-                              {item.totalAmount}
+                              {item.subTotalAmount}
                             </Col>
                           </Row>
                           <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
@@ -587,10 +693,14 @@ const AddCard = () => {
                         <p className='invoice-total-title'>Pre Tax Amount:</p>
                         <p className='invoice-total-amount'>{finalSubTotal}</p>
                       </div>
-                      <div className='invoice-total-item'>
-                        <p className='invoice-total-title'>Tax:</p>
-                        <p className='invoice-total-amount'>21%</p>
-                      </div>
+                      {
+                        invoiceTaxes.map((obj, ind) => {
+                          return (<div key={ind} className='invoice-total-item'>
+                            <p className='invoice-total-title'>{obj?.taxName}</p>
+                            <p className='invoice-total-amount'>{obj?.taxAmount}</p>
+                          </div>)
+                        })
+                      }
                       <hr className='my-50' />
                       <div className='invoice-total-item'>
                         <p className='invoice-total-title'>Total Payable:</p>
@@ -612,7 +722,12 @@ const AddCard = () => {
                       <Label for='note' className='form-label fw-bold'>
                         Note:
                       </Label>
-                      <Input type='textarea' rows='2' id='note' defaultValue={note} />
+                      <Controller
+                        id='note'
+                        name='note'
+                        control={control}
+                        render={({ field }) => <Input type="textarea" value={field.value} invalid={errors.note && true} {...field} />}
+                      />
                     </div>
                   </Col>
                 </Row>

@@ -8,9 +8,9 @@ import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
 import { User, Lock } from 'react-feather'
 
 // ** User Components
-import Timeline from '@components/timeline'
 import Conversation from './Conversation'
-import { basicData } from './data'
+import UserProjectsList from './UserProjectsList'
+
 const UserTabs = ({ active, toggleTab }) => {
   return (
     <Fragment>
@@ -30,7 +30,7 @@ const UserTabs = ({ active, toggleTab }) => {
       </Nav>
       <TabContent activeTab={active}>
         <TabPane tabId='1'>
-        <Timeline data={basicData} />
+          <UserProjectsList />
         </TabPane>
         <TabPane tabId='2'>
           <Conversation />

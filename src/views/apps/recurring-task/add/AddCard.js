@@ -358,7 +358,7 @@ const AddCard = () => {
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
 
-            <div key={i} className='repeater-wrapper'>
+            <div key={item.id} className='repeater-wrapper'>
               <Row>
                 <Col className='d-lg-flex product-details-border position-relative pe-0 ps-sm-0' sm='12'>
                   <Row className='w-100 pe-lg-0 py-2 ms-sm-1'>

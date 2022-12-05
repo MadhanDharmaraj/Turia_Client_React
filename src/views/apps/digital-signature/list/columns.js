@@ -6,34 +6,46 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getDsc, deleteUser } from '../store'
+import { getDsc, deleteDigitalSignature } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
+import { MoreVertical, Trash2, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
 
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
+import moment from 'moment'
 
 // ** Renders Client Columns
 const renderClient = row => {
-  if (row.avatar.length) {
-    return <Avatar className='me-1' img={row.avatar} width='32' height='32' />
-  } else {
-    return (
-      <Avatar
-        initials
-        className='me-1'
-        color={row.avatarColor || 'light-primary'}
-        content={row.client || 'John Doe'}
-      />
-    )
-  }
+
+  return (
+    <Avatar
+      initials
+      className='me-1'
+      color={'light-primary'}
+      content={row.name || ''}
+    />
+  )
+
 }
 
-const statusObj = {
-  pending: 'light-warning',
-  active: 'light-success',
-  inactive: 'light-secondary'
+const statusObj = [
+  '',
+  'light-primary',
+  'light-warning'
+]
+
+const statusArr = [
+  '',
+  "Active",
+  "In Active"
+
+]
+
+const dateFormat = (value) => {
+
+  return moment.unix(value).format("MMM DD, YYYY")
+
 }
 
 export const columns = [
@@ -42,7 +54,7 @@ export const columns = [
     sortable: true,
     minWidth: '172px',
     sortField: 'role',
-    selector: row => row.uniqueId,
+    selector: row => row.id,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
         <Link
@@ -50,7 +62,7 @@ export const columns = [
           className='user_name text-truncate text-body'
           onClick={() => store.dispatch(getDsc(row.id))}
         >
-          <span className='text-capitalize fw-bolder'>{row.uniqueId}</span>
+          <span className='text-capitalize fw-bolder'>{row.id}</span>
         </Link>
       </div>
     )
@@ -60,12 +72,12 @@ export const columns = [
     sortable: true,
     minWidth: '300px',
     sortField: 'client',
-    selector: row => row.client,
+    selector: row => row.name,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
         {renderClient(row)}
         <div className='d-flex flex-column'>
-          <span className='fw-bolder'>{row.client}</span>
+          <span className='fw-bolder'>{row.name}</span>
           <small className='text-truncate text-muted mb-0'>{row.email}</small>
         </div>
       </div>
@@ -76,16 +88,16 @@ export const columns = [
     sortable: true,
     minWidth: '172px',
     sortField: 'role',
-    selector: row => row.issuedDate,
-    cell: row => <span className='text-capitalize'>{row.issuedDate}</span>
+    selector: row => row.issueddate,
+    cell: row => <span className='text-capitalize'>{dateFormat(row.issueddate)}</span>
   },
   {
     name: 'Expiry Date',
     minWidth: '138px',
     sortable: true,
     sortField: 'currentPlan',
-    selector: row => row.expiryDate,
-    cell: row => <span className='text-capitalize'>{row.expiryDate}</span>
+    selector: row => row.expirydate,
+    cell: row => <span className='text-capitalize'>{dateFormat(row.expirydate)}</span>
   },
   {
     name: 'Status',
@@ -95,7 +107,7 @@ export const columns = [
     selector: row => row.status,
     cell: row => (
       <Badge className='text-capitalize' color={statusObj[row.status]} pill>
-        {row.status}
+        {statusArr[row.status]}
       </Badge>
     )
   },
@@ -106,13 +118,12 @@ export const columns = [
       <div className='column-action d-flex align-items-center'>
         <Col tag={Link} lg={4}
           to={`/digital-signature/view/${row.id}`}
-          onClick={() => store.dispatch(getUser(row.id))}>
+          onClick={() => store.dispatch(getDsc(row.id))}>
           <Eye
             className='cursor-pointer mt-0' size={16} />
         </Col>
         <Col tag={Link} lg={4}
-          to={`/digital-signature/edit/${row.id}`}
-          onClick={() => store.dispatch(getUser(row.id))} >
+          to={`/digital-signature/edit/${row.clientid}`}>
           <Edit
             className='cursor-pointer ms-1 mt-0' size={16} />
         </Col>
@@ -121,21 +132,13 @@ export const columns = [
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <CheckCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Active</span>
-            </DropdownItem>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <XCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Inactive</span>
-            </DropdownItem>
             <DropdownItem
               tag='a'
               href='/'
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteUser(row.id))
+                store.dispatch(deleteDigitalSignature(row.id))
               }}
             >
               <Trash2 size={14} className='me-50' />

@@ -38,6 +38,7 @@ export const authSlice = createSlice({
       // ** Remove user, accessToken & refreshToken from localStorage
       localStorage.removeItem(config.storageTokenKeyName)
       localStorage.removeItem('userData')
+      localStorage.removeItem('activeOrganization')
     }
   }
 })

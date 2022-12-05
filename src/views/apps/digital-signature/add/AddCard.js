@@ -1,6 +1,6 @@
 // ** React Imports
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import classnames from 'classnames'
 // ** Third Party Components
 import axios from '@src/configs/axios/axiosConfig'
@@ -30,7 +30,8 @@ const AddCard = () => {
   const phoneRegExp = /^[0-9\- ]{10,10}$/
   const dispatch = useDispatch()
   const store = useSelector(state => state.digitalsignature)
-  //const [clientId, setClientId] = useState(null)
+  const navigate = useNavigate()
+  const [clientId, setClientId] = useState(null)
   const schema = yup.object().shape({
     clientId: yup.string().required("Please select a Client"),
     rows: yup.array().of(
@@ -39,8 +40,8 @@ const AddCard = () => {
         organizationId: yup.string().default(activeOrgId),
         email: yup.string().email().required("Please Enter Email"),
         contact: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
-        // issuedDate: yup.string().required("Please Enter Issued Date"),
-        // expiryDate: yup.string().required("Please Enter Expiry Date"),
+        issuedDate: yup.number().required("Please Enter Issued Date"),
+        expiryDate: yup.number().required("Please Enter Expiry Date"),
         password: yup.string().min(5, "Password length should be 5 or above.")
       })
     )
@@ -48,10 +49,7 @@ const AddCard = () => {
 
   const { register, handleSubmit, formState: { errors }, control } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      clientId: '',
-      rows: []
-    }
+    defaultValues: schema.cast()
   })
 
   //const [date, setDate] = useState("")
@@ -60,29 +58,36 @@ const AddCard = () => {
   const onSubmit = async data => {
     console.log(data)
     await dispatch(addDsc(data))
+    navigate('/digital-signature/list')
+
   }
 
   const addItem = (() => {
-    append({ name: '', email: '', contact: '', issuedDate: '', expiryDate: '', password: '' })
+    append({ clientId: '', name: '', email: '', contact: '', issuedDate: '', expiryDate: '', password: '' })
+
+    control._formValues.rows.forEach((obj, key) => {
+      control._formValues.rows[key].clientId = clientId
+    })
+    console.log(control._formValues.rows)
+
   })
 
-  const removeItem = e => {
-    remove()
-    e.preventDefault()
-    e.target.closest('.repeater-wrapper').remove()
+  const removeItem = (ind) => {
+    remove(ind)
+
   }
 
-  const compareDate = (fie) => {
+  // const compareDate = (fie) => {
 
-    console.log(fie)
-    // if (control._formValues.rows[ind].issuedDate !== '' && control._formValues.rows[ind].expiryDate !== '') {
-    //   const issDate = control._formValues.rows[ind].issuedDate[0]
-    //   const expDate = control._formValues.rows[ind].expiryDate[0]
+  //   console.log(fie)
+  //   // if (control._formValues.rows[ind].issuedDate !== '' && control._formValues.rows[ind].expiryDate !== '') {
+  //   //   const issDate = control._formValues.rows[ind].issuedDate[0]
+  //   //   const expDate = control._formValues.rows[ind].expiryDate[0]
 
-    //   if (expDate < issDate) {
-    //     console.log('Success Date')
-    //   }
-  }
+  //   //   if (expDate < issDate) {
+  //   //     console.log('Success Date')
+  //   //   }
+  // }
 
   const getClientList = () => {
     axios.post('/clients/dropdown').then(response => {
@@ -91,26 +96,27 @@ const AddCard = () => {
     })
   }
 
-  // const getClientInfo = async (id) => {
-  //   remove()
-  //   await dispatch(DSCList(id))
-  // }
+  const getClientInfo = async (id) => {
+    setClientId(id)
+    remove()
+    await dispatch(DSCList(id))
+  }
 
   useEffect(() => {
-    // store.DSCLists.forEach((obj) => {
-    //   const data = {}
+    store.DSCLists.forEach((obj) => {
+      const data = {}
 
-    //   data['name'] = obj.name
-    //   data['email'] = obj.email
-    //   data['organizationId'] = activeOrgId
-    //   data['clientId'] = clientId
-    //   data['contact'] = obj.contactnumber
-    //   data['issuedDate'] = obj.issuedDate | ''
-    //   data['expiryDate'] = obj.expiryDate | ''
-    //   data['password'] = obj.password | ''
+      data['name'] = obj.name
+      data['email'] = obj.email
+      data['organizationId'] = activeOrgId
+      data['clientId'] = clientId
+      data['contact'] = obj.contact
+      data['issuedDate'] = obj.issuedDate | null
+      data['expiryDate'] = obj.expiryDate | null
+      data['password'] = obj.password | ''
 
-    //   append(data)
-    // })
+      append(data)
+    })
 
   }, [store.DSCLists])
 
@@ -144,7 +150,7 @@ const AddCard = () => {
                         classNamePrefix='select'
                         options={clientOptions}
                         value={clientOptions.find(c => { return c.id === field.value })}
-                        onChange={(val) => { return field.onChange(val.id) }}
+                        onChange={(val) => { field.onChange(val.id); getClientInfo(val.id) }}
                         getOptionLabel={(option) => option.name}
                         getOptionValue={(option) => option.id}
                       />
@@ -205,19 +211,29 @@ const AddCard = () => {
                         id='dsc_list_issuedDate'
                         name={`rows[${i}].issuedDate`}
                         render={({ field }) => (
-                          <Flatpickr className={classnames('form-control', { 'is-invalid': errors.rows?.[i]?.issuedDate })} options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }} onChange={compareDate(field)} value={field.value} {...field} />
+                          <Flatpickr
+                            value={field.value}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                            className='form-control invoice-edit-input date-picker'
+                          />
                         )}
                       />
                       {errors.rows?.[i]?.issuedDate && <FormFeedback>{errors.rows?.[i]?.issuedDate.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Expiry Date</CardText>
-                      <Controller 
+                      <Controller
                         control={control}
                         id='dsc_list_expiryDate'
                         name={`rows[${i}].expiryDate`}
                         render={({ field }) => (
-                          <Flatpickr name={`rows.${i}.expiryDate`} className={classnames('form-control', { 'is-invalid': errors.rows?.[i]?.expiryDate })} options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }} onChange={compareDate(field)} value={field.value}  {...field} />
+                          <Flatpickr
+                            value={field.value}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                            className='form-control invoice-edit-input date-picker'
+                          />
                         )}
                       />
                       {errors.rows?.[i]?.expiryDate && <FormFeedback>{errors.rows?.[i]?.expiryDate.message}</FormFeedback>}
@@ -237,7 +253,7 @@ const AddCard = () => {
 
                   </Row>
                   <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={removeItem} />
+                    <X size={18} className='cursor-pointer' onClick={removeItem(i)} />
                   </div>
                 </Col>
               </Row>

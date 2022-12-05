@@ -22,12 +22,15 @@ import {
   Col,
   Card,
   Input,
-  Button
+  Button,
+  CardBody,
+  Label
 } from 'reactstrap'
-
+import { selectThemeColors } from '@utils'
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
+import Select from 'react-select'
 
 // ** Table Header
 const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) => {
@@ -84,7 +87,7 @@ const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) 
 const DigitalSignatureList = () => {
   // ** Store Vars
   const dispatch = useDispatch()
-  const store = useSelector(state => state.digitalsignature)
+  const store = useSelector(state =>  { return state.digitalsignature })
 
   // ** States
   const [sort, setSort] = useState('desc')
@@ -92,7 +95,14 @@ const DigitalSignatureList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState('id')
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [currentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
+  const [currentStatus, setCurrentStatus] = useState({ id: 1, name: 'Active' })
+
+  // ** Client filter options
+  const statusOptions = [
+    { id: '', name: 'Select Status' },
+    { id: 1, name: 'Active' },
+    { id: 3, name: 'Expired' }
+  ]
 
   // ** Bootstrap Checkbox Component
   const BootstrapCheckbox = forwardRef((props, ref) => (
@@ -110,7 +120,7 @@ const DigitalSignatureList = () => {
         q: searchTerm,
         page: currentPage,
         perPage: rowsPerPage,
-        status: currentStatus.value
+        status: currentStatus.id
       })
     )
   }, [dispatch, store.data.length, sort, sortColumn, currentPage])
@@ -124,7 +134,7 @@ const DigitalSignatureList = () => {
         q: searchTerm,
         perPage: rowsPerPage,
         page: page.selected + 1,
-        status: currentStatus.value
+        status: currentStatus.id
       })
     )
     setCurrentPage(page.selected + 1)
@@ -140,7 +150,7 @@ const DigitalSignatureList = () => {
         q: searchTerm,
         perPage: value,
         page: currentPage,
-        status: currentStatus.value
+        status: currentStatus.id
       })
     )
     setRowsPerPage(value)
@@ -156,7 +166,7 @@ const DigitalSignatureList = () => {
         sortColumn,
         page: currentPage,
         perPage: rowsPerPage,
-        status: currentStatus.value
+        status: currentStatus.id
       })
     )
   }
@@ -187,7 +197,7 @@ const DigitalSignatureList = () => {
   // ** Table data to render
   const dataToRender = () => {
     const filters = {
-      status: currentStatus.value,
+      status: currentStatus.id,
       q: searchTerm
     }
 
@@ -214,14 +224,46 @@ const DigitalSignatureList = () => {
         q: searchTerm,
         page: currentPage,
         perPage: rowsPerPage,
-        status: currentStatus.value
+        status: currentStatus.id
       })
     )
   }
 
   return (
     <Fragment>
+      <Card>
+        <CardBody>
+          <Row>
+            <Col md='4'>
+              <Label for='status-select'>Status</Label>
+              <Select
+                theme={selectThemeColors}
+                isClearable={false}
+                className='react-select'
+                classNamePrefix='select'
+                options={statusOptions}
+                value={currentStatus}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+                onChange={async data => {
+                  setCurrentStatus(data)
+                  await dispatch(
+                    getData({
+                      sort,
+                      sortColumn,
+                      q: searchTerm,
+                      page: currentPage,
+                      perPage: rowsPerPage,
+                      status: data.id
+                    })
+                  )
+                }}
+              />
+            </Col>
 
+          </Row>
+        </CardBody>
+      </Card>
       <Card className='overflow-hidden'>
         <div className='react-dataTable'>
           <DataTable

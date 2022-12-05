@@ -1,13 +1,13 @@
 // ** React Imports
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import classnames from 'classnames'
 // ** Third Party Components
 import axios from '@src/configs/axios/axiosConfig'
 import Flatpickr from 'react-flatpickr'
 import { X, Plus } from 'react-feather'
 import Select from 'react-select'
-import { DSCList, addDsc } from '../store/index'
+import { DSCList, updateDsc } from '../store/index'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 //import moment from 'moment'
 import * as yup from "yup"
@@ -22,63 +22,56 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useDispatch, useSelector } from 'react-redux'
+import { activeOrganizationid } from '@src/helper/sassHelper'
 
-
+const activeOrgId = activeOrganizationid()
 const EditCard = () => {
 
   const phoneRegExp = /^[0-9\- ]{10,10}$/
   const dispatch = useDispatch()
+  const { id } = useParams()
   const store = useSelector(state => state.digitalsignature)
+  const navigate = useNavigate()
   const [clientId, setClientId] = useState(null)
   const schema = yup.object().shape({
     clientId: yup.string().required("Please select a Client"),
-    dsc_lists: yup.array().of(
+    rows: yup.array().of(
       yup.object().shape({
         name: yup.string().required("Please Enter Name"),
+        organizationId: yup.string().default(activeOrgId),
         email: yup.string().email().required("Please Enter Email"),
-        contactNumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
-        issuedDate: yup.date("Please Enter Valid Date").nullable().required("Please Enter Issued Date"),
-        expiryDate: yup.date("Please Enter Valid Date").nullable().required("Please Enter Expiry Date"),
+        contact: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
+        issuedDate: yup.number().required("Please Enter Issued Date"),
+        expiryDate: yup.number().required("Please Enter Expiry Date"),
         password: yup.string().min(5, "Password length should be 5 or above.")
       })
     )
   })
 
-  const { register, handleSubmit, formState: { errors }, control } = useForm({
+  const { handleSubmit, setValue, formState: { errors }, control } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      clientId: '',
-      dsc_lists: []
-    }
+    defaultValues: schema.cast()
   })
 
-  //const [date, setDate] = useState("")
   const [clientOptions, setClientOptions] = useState([])
-  const { fields, append, remove } = useFieldArray({ name: 'dsc_lists', control })
+  const { fields, append, remove } = useFieldArray({ name: 'rows', keyName: 'row_id', control })
   const onSubmit = async data => {
-    await dispatch(addDsc(data))
+    await dispatch(updateDsc(data))
+    navigate('/digital-signature/list')
+
   }
 
   const addItem = (() => {
-    append({ name: '', email: '', contactNumber: '', issuedDate: '', expiryDate: '', password: '' })
+    append({ clientId: '', name: '', email: '', contact: '', issuedDate: '', expiryDate: '', password: '' })
+
+    control._formValues.rows.forEach((obj, key) => {
+      control._formValues.rows[key].clientId = clientId
+    })
+
   })
 
-  const removeItem = e => {
-    remove()
-    e.preventDefault()
-    e.target.closest('.repeater-wrapper').remove()
-  }
-
-  const compareDate = (ind) => {
-
-    if (control._formValues.dsc_lists[ind].issuedDate !== '' && control._formValues.dsc_lists[ind].expiryDate !== '') {
-      const issDate = control._formValues.dsc_lists[ind].issuedDate[0]
-      const expDate = control._formValues.dsc_lists[ind].expiryDate[0]
-
-      if (expDate < issDate) {
-        console.log('Success Date')
-      }
-    }
+  const removeItem = (ind) => {
+    remove(ind)
   }
 
   const getClientList = () => {
@@ -89,31 +82,43 @@ const EditCard = () => {
   }
 
   const getClientInfo = async (id) => {
-    remove()
+    setClientId(id)
     await dispatch(DSCList(id))
   }
 
   useEffect(() => {
-    store.clientInfos.forEach((obj) => {
+    remove()
+    store.DSCLists.forEach((obj) => {
+
       const data = {}
 
+      data['id'] = obj.id
       data['name'] = obj.name
       data['email'] = obj.email
+      data['organizationId'] = activeOrgId
       data['clientId'] = clientId
-      data['contactNumber'] = obj.contactnumber
-      data['issuedDate'] = ''
-      data['expiryDate'] = ''
-      data['password'] = ''
+      data['contact'] = obj.contact
+      data['issuedDate'] = obj.issuedDate | null
+      data['expiryDate'] = obj.expiryDate | null
+      data['password'] = obj.password | ''
 
       append(data)
     })
 
-  }, [store.clientInfos])
+  }, [store.DSCLists])
 
-  useEffect(() => {
-    getClientList()
+  useEffect(async () => {
+    setValue('clientId', id)
+    setClientId(id)
+
+    if (clientOptions.length === 0) {
+      await getClientList()
+    }
+
+    if (store.DSCLists.length === 0) {
+      await getClientInfo(id)
+    }
   }, [])
-
   return (
 
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -134,13 +139,13 @@ const EditCard = () => {
                     render={({ field, ref }) => (
                       <Select
                         {...field}
+                        isDisabled={true}
                         inputRef={ref}
                         className={classnames('react-select', { 'is-invalid': errors.clientId })}
-                        {...field}
                         classNamePrefix='select'
                         options={clientOptions}
                         value={clientOptions.find(c => { return c.id === field.value })}
-                        onChange={(val) => { setClientId(val.id); getClientInfo(val.id); return field.onChange(val.id) }}
+                        onChange={(val) => { return field.onChange(val.id) }}
                         getOptionLabel={(option) => option.name}
                         getOptionValue={(option) => option.id}
                       />
@@ -154,7 +159,7 @@ const EditCard = () => {
         </CardBody>
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
-            <div key={item.id} className='repeater-wrapper'>
+            <div key={item.row_id} className='repeater-wrapper'>
               <Row >
                 <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
@@ -163,81 +168,92 @@ const EditCard = () => {
                       <Controller
                         control={control}
                         id='dsc_list_name'
-                        name={`dsc_lists[${i}].name`}
+                        name={`rows[${i}].name`}
                         render={({ field }) => (
-                          <Input type='text'  {...register(`dsc_lists.${i}.name`)} invalid={errors.dsc_lists?.[i]?.name && true} {...field} />
+                          <Input type='text' invalid={errors.rows?.[i]?.name && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.name && <FormFeedback>{errors.dsc_lists?.[i]?.name.message}</FormFeedback>}
+                      {errors.rows?.[i]?.name && <FormFeedback>{errors.rows?.[i]?.name.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
                       <CardText className='col-title mb-md-50 mb-0'>Email</CardText>
                       <Controller
                         control={control}
                         id='dsc_list_email'
-                        name={`dsc_lists[${i}].email`}
+                        name={`rows[${i}].email`}
                         render={({ field }) => (
-                          <Input type='email'  {...register(`dsc_lists.${i}.email`)} invalid={errors.dsc_lists?.[i]?.email && true} {...field} />
+                          <Input type='email' invalid={errors.rows?.[i]?.email && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.email && <FormFeedback>{errors.dsc_lists?.[i]?.email.message}</FormFeedback>}
+                      {errors.rows?.[i]?.email && <FormFeedback>{errors.rows?.[i]?.email.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 my-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Mobile</CardText>
                       <Controller
                         control={control}
                         id='dsc_list_contactNumber'
-                        name={`dsc_lists[${i}].contactNumber`}
+                        name={`rows[${i}].contact`}
                         render={({ field }) => (
-                          <Input type='number' {...register(`dsc_lists.${i}.contactNumber`)} invalid={errors.dsc_lists?.[i]?.contactNumber && true} {...field} />
+                          <Input type='number' invalid={errors.rows?.[i]?.contact && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.contactNumber && <FormFeedback>{errors.dsc_lists?.[i]?.contactNumber.message}</FormFeedback>}
+                      {errors.rows?.[i]?.contact && <FormFeedback>{errors.rows?.[i]?.contact.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Issued Date</CardText>
                       <Controller
                         control={control}
                         id='dsc_list_issuedDate'
-                        name={`dsc_lists[${i}].issuedDate`}
-                        render={({ field, value }) => (
-                          <Flatpickr className={classnames('form-control', { 'is-invalid': errors.dsc_lists?.[i]?.issuedDate })} options={{ dateFormat: "d-m-Y" }} onChange={date => field.onChange(date)} value={value} {...field} />
+                        name={`rows[${i}].issuedDate`}
+                        render={({ field }) => (
+                          <Flatpickr
+                            value={field.value}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                            className='form-control invoice-edit-input date-picker'
+                          />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.issuedDate && <FormFeedback>{errors.dsc_lists?.[i]?.issuedDate.message}</FormFeedback>}
+                      {errors.rows?.[i]?.issuedDate && <FormFeedback>{errors.rows?.[i]?.issuedDate.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Expiry Date</CardText>
                       <Controller
                         control={control}
                         id='dsc_list_expiryDate'
-                        name={`dsc_lists[${i}].expiryDate`}
-                        render={({ field, value }) => (
-                          <Flatpickr className={classnames('form-control', { 'is-invalid': errors.dsc_lists?.[i]?.expiryDate })} options={{ dateFormat: "d-m-Y" }} onChange={compareDate(i)} value={value} {...field} />
+                        name={`rows[${i}].expiryDate`}
+                        render={({ field }) => (
+                          <Flatpickr
+                            value={field.value}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                            className='form-control invoice-edit-input date-picker'
+                          />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.expiryDate && <FormFeedback>{errors.dsc_lists?.[i]?.expiryDate.message}</FormFeedback>}
+                      {errors.rows?.[i]?.expiryDate && <FormFeedback>{errors.rows?.[i]?.expiryDate.message}</FormFeedback>}
                     </Col>
                     <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                       <CardText className='col-title mb-md-50 mb-0'>Password</CardText>
                       <Controller
                         control={control}
                         id='dsc_list_password'
-                        name={`dsc_lists[${i}].password`}
+                        name={`rows[${i}].password`}
                         render={({ field }) => (
-                          <Input type='text'  {...register(`dsc_lists.${i}.password`)} invalid={errors.dsc_lists?.[i]?.password && true} {...field} />
+                          <Input type='text' invalid={errors.rows?.[i]?.password && true} {...field} />
                         )}
                       />
-                      {errors.dsc_lists?.[i]?.password && <FormFeedback>{errors.dsc_lists?.[i]?.password.message}</FormFeedback>}
+                      {errors.rows?.[i]?.password && <FormFeedback>{errors.rows?.[i]?.password.message}</FormFeedback>}
                     </Col>
 
                   </Row>
                   <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={removeItem} />
+                    <X size={18} className='cursor-pointer' onClick={removeItem(i)} />
                   </div>
                 </Col>
               </Row>
             </div>
+
           ))}
 
           <Row className='mt-1'>

@@ -5,36 +5,45 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@src/configs/axios/axiosConfig'
 
 export const getData = createAsyncThunk('appDigitalSignature/getData', async params => {
-  const response = await axios.get('/digitalsignature/list', params)
+  const response = await axios.post('/digitalsignature/list', params)
   return {
     params,
-    data: response.data.digitalsignatures,
+    data: response.data.digitalsignature,
     totalPages: response.data.total
   }
 })
 
-export const getDsc = createAsyncThunk('appDigitalSignature/getUser', async id => {
-  const response = await axios.get('/digitalsignature/get', { id })
-  return response.data.user
+export const getDsc = createAsyncThunk('appDigitalSignature/getDsc', async id => {
+  const response = await axios.post('/digitalsignature/get', { id })
+  return response.data.digitalsignature
 })
 
-export const DSCList = createAsyncThunk('appDigitalSignature/getConatctInfo', async (contactid) => {
+export const DSCList = createAsyncThunk('appDigitalSignature/DSCList', async (contactid) => {
   const response = await axios.post(`/digitalsignature/listbyclient`, { contactid })
-  return { data: response.data.dsclists }
+  return { data: response.data.digitalsignature }
 })
 
-export const addDsc = createAsyncThunk('appDigitalSignature/addUser', async (dsc, { dispatch, getState }) => {
+export const addDsc = createAsyncThunk('appDigitalSignature/addDsc', async (dsc, { dispatch, getState }) => {
   await axios.post('/digitalsignature/create', dsc)
   await dispatch(getData(getState().digitalsignature.params))
   await dispatch(getAllData())
   return user
 })
 
-export const deleteUser = createAsyncThunk('appDigitalSignature/deleteUser', async (id, { dispatch, getState }) => {
-  await axios.delete('/apps/digital-signature/delete', { id })
+export const updateDsc = createAsyncThunk('appDigitalSignature/updateDsc', async (dsc, { dispatch, getState }) => {
+  await axios.post('/digitalsignature/update', dsc)
   await dispatch(getData(getState().digitalsignature.params))
   await dispatch(getAllData())
-  return id
+  return user
+})
+
+
+export const deleteDigitalSignature = createAsyncThunk('appDigitalSignature/deleteDigitalSignature', async (id, { dispatch, getState }) => {
+  await axios.post('/digitalsignature/delete', { id })
+
+  await dispatch(getData(getState().digitalsignature.params))
+  await dispatch(getAllData())
+  return null
 })
 
 export const appDigitalSignatureSlice = createSlice({
