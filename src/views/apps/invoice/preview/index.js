@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 
 // ** Third Party Components
-import axios from 'axios'
-
+import axios from '@src/configs/axios/axiosConfig'
 // ** Reactstrap Imports
 import { Row, Col, Alert } from 'reactstrap'
 
@@ -22,28 +21,34 @@ const InvoicePreview = () => {
   const { id } = useParams()
 
   // ** States
-  const [data, setData] = useState(null)
   const [sendSidebarOpen, setSendSidebarOpen] = useState(false)
   const [addPaymentOpen, setAddPaymentOpen] = useState(false)
+  const [data, setData] = useState(null)
 
   // ** Functions to toggle add & send sidebar
   const toggleSendSidebar = () => setSendSidebarOpen(!sendSidebarOpen)
   const toggleAddSidebar = () => setAddPaymentOpen(!addPaymentOpen)
 
-  // ** Get invoice on mount based on id
+  const getInvoice = async () => {
+    axios.post('/taskinvoices/get', { id }).then((res) => {
+      setData(res.data.taskinvoices)
+    }).catch((err) => { console.log(err) })
+
+  }
+
   useEffect(() => {
-    axios.get(`/api/invoice/invoices/${id}`).then(response => {
-      setData(response.data)
-    })
+    getInvoice()
   }, [])
 
-  return data !== null && data.invoice !== undefined ? (
+  // ** Get invoice on mount based on id
+
+  return data !== null && data !== undefined ? (
     <div className='invoice-preview-wrapper'>
       <Row className='invoice-preview'>
-        <Col xl={9} md={8} sm={12}>
+        <Col xl={10} md={8} sm={12}>
           <PreviewCard data={data} />
         </Col>
-        <Col xl={3} md={4} sm={12}>
+        <Col xl={2} md={4} sm={12}>
           <PreviewActions id={id} setSendSidebarOpen={setSendSidebarOpen} setAddPaymentOpen={setAddPaymentOpen} />
         </Col>
       </Row>

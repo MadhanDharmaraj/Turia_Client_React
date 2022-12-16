@@ -6,7 +6,7 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getDsc, deleteDigitalSignature } from '../store'
+import { getDsc, deleteDigitalSignaturelist } from '../store'
 
 // ** Icons Imports
 import { MoreVertical, Trash2, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
@@ -14,6 +14,9 @@ import { MoreVertical, Trash2, Eye, Edit, CheckCircle, XCircle } from 'react-fea
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 import moment from 'moment'
+
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 
 // ** Renders Client Columns
 const renderClient = row => {
@@ -28,6 +31,37 @@ const renderClient = row => {
   )
 
 }
+
+const MySwal = withReactContent(Swal)
+
+const deletefun = (id) => {
+
+  return MySwal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    customClass: {
+      confirmButton: 'btn btn-primary',
+      cancelButton: 'btn btn-outline-danger ms-1'
+    },
+    buttonsStyling: false
+  }).then(async (result) => {
+    if (result.value) {
+      await store.dispatch(deleteDigitalSignaturelist(id))
+      MySwal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Digital Signature has been deleted.',
+        customClass: {
+          confirmButton: 'btn btn-success'
+        }
+      })
+    }
+  })
+}
+
 
 const statusObj = [
   '',
@@ -138,7 +172,7 @@ export const columns = [
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteDigitalSignature(row.id))
+                deletefun(row.id)
               }}
             >
               <Trash2 size={14} className='me-50' />

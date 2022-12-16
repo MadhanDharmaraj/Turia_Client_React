@@ -133,11 +133,11 @@ const AppRoutes = [
   },
   {
     element: <InvoicePreview />,
-    path: '/invoice/preview/:id'
+    path: '/invoice/view/:id'
   },
   {
-    path: '/invoice/preview',
-    element: <Navigate to='/invoice/preview/4987' />
+    path: '/invoice/view',
+    element: <Navigate to='/invoice/view/4987' />
   },
   {
     element: <InvoiceEdit />,

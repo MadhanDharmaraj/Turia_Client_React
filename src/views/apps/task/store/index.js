@@ -2,65 +2,62 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
-import axios from 'axios'
+import axios from '@src/configs/axios/axiosConfig'
 
-export const getAllData = createAsyncThunk('appUsers/getAllData', async () => {
-  const response = await axios.get('/api/task/list/all-data')
-  return response.data
-})
-
-export const getData = createAsyncThunk('appUsers/getData', async params => {
-  const response = await axios.get('/api/task/list/data', params)
+export const getData = createAsyncThunk('appTasks/getData', async params => {
+  const response = await axios.get('/tasks/list', params)
   return {
     params,
-    data: response.data.users,
+    data: response.data.tasks,
     totalPages: response.data.total
   }
 })
 
-export const getTask = createAsyncThunk('appUsers/getUser', async id => {
-  const response = await axios.get('/api/task', { id })
-  return response.data.user
+export const getClient = createAsyncThunk('appInvoice/getClient', async id => {
+  const response = await axios.post('/clients/get', { id })
+  return response.data.clients
 })
 
-export const addUser = createAsyncThunk('appUsers/addUser', async (user, { dispatch, getState }) => {
-  await axios.post('/apps/users/add-user', user)
-  await dispatch(getData(getState().users.params))
+export const getTask = createAsyncThunk('appTasks/getTask', async id => {
+  const response = await axios.get('/tasks/get', { id })
+  return response.data.task
+})
+
+export const addTask = createAsyncThunk('appTasks/addTask', async (task, { dispatch, getState }) => {
+  await axios.post('/tasks/create', task)
+  await dispatch(getData(getState().tasks.params))
   await dispatch(getAllData())
-  return user
+  return task
 })
 
-export const deleteUser = createAsyncThunk('appUsers/deleteUser', async (id, { dispatch, getState }) => {
-  await axios.delete('/apps/users/delete', { id })
-  await dispatch(getData(getState().users.params))
+export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
+  await axios.delete('/tasks/delete', { id })
+  await dispatch(getData(getState().tasks.params))
   await dispatch(getAllData())
   return id
 })
 
-export const appUsersSlice = createSlice({
-  name: 'appUsers',
+export const appTasksSlice = createSlice({
+  name: 'appTasks',
   initialState: {
     data: [],
     total: 1,
     params: {},
     allData: [],
-    selectedUser: null
+    selectedTask: null
   },
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(getAllData.fulfilled, (state, action) => {
-        state.allData = action.payload
-      })
       .addCase(getData.fulfilled, (state, action) => {
         state.data = action.payload.data
         state.params = action.payload.params
         state.total = action.payload.totalPages
       })
       .addCase(getTask.fulfilled, (state, action) => {
-        state.selectedUser = action.payload
+        state.selectedTask = action.payload
       })
   }
 })
 
-export default appUsersSlice.reducer
+export default appTasksSlice.reducer

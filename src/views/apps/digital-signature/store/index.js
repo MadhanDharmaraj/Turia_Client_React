@@ -30,17 +30,20 @@ export const addDsc = createAsyncThunk('appDigitalSignature/addDsc', async (dsc,
   return user
 })
 
-export const updateDsc = createAsyncThunk('appDigitalSignature/updateDsc', async (dsc, { dispatch, getState }) => {
+export const updateDSC = createAsyncThunk('appDigitalSignature/updateDsc', async (dsc, { dispatch, getState }) => {
   await axios.post('/digitalsignature/update', dsc)
   await dispatch(getData(getState().digitalsignature.params))
   await dispatch(getAllData())
   return user
 })
 
-
-export const deleteDigitalSignature = createAsyncThunk('appDigitalSignature/deleteDigitalSignature', async (id, { dispatch, getState }) => {
+export const deleteDigitalSignature = createAsyncThunk('appDigitalSignature/deleteDigitalSignature', async (id, { }) => {
   await axios.post('/digitalsignature/delete', { id })
+  return null
+})
 
+export const deleteDigitalSignaturelist = createAsyncThunk('appDigitalSignature/deleteDigitalSignature', async (id, { dispatch, getState }) => {
+  await axios.post('/digitalsignature/delete', { id })
   await dispatch(getData(getState().digitalsignature.params))
   await dispatch(getAllData())
   return null

@@ -5,13 +5,14 @@ import { useState, useEffect, forwardRef } from 'react'
 // ** Table Columns
 import { columns } from './columns'
 
+import Select from 'react-select'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import { ChevronDown } from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
-import { Button, Input, Row, Col, Card } from 'reactstrap'
+import { Button, Input, Row, Col, Card, CardBody, Label } from 'reactstrap'
 
 // ** Store & Actions
 import { getData } from '../store'
@@ -20,8 +21,9 @@ import { useDispatch, useSelector } from 'react-redux'
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
+import { selectThemeColors } from '@utils'
 
-const CustomHeader = ({ handleFilter, value, handleStatusValue, statusValue, handlePerPage, rowsPerPage }) => {
+const CustomHeader = ({ handleFilter, value, handlePerPage, rowsPerPage }) => {
   return (
     <div className='invoice-list-table-header w-100 py-2'>
       <Row>
@@ -59,15 +61,6 @@ const CustomHeader = ({ handleFilter, value, handleStatusValue, statusValue, han
               placeholder='Search Invoice'
             />
           </div>
-          <Input className='w-auto ' type='select' value={statusValue} onChange={handleStatusValue}>
-            <option value=''>Select Status</option>
-            <option value='downloaded'>Downloaded</option>
-            <option value='draft'>Draft</option>
-            <option value='paid'>Paid</option>
-            <option value='partial payment'>Partial Payment</option>
-            <option value='past due'>Past Due</option>
-            <option value='sent'>Sent</option>
-          </Input>
         </Col>
       </Row>
     </div>
@@ -84,8 +77,14 @@ const InvoiceList = () => {
   const [sort, setSort] = useState('desc')
   const [sortColumn, setSortColumn] = useState('id')
   const [currentPage, setCurrentPage] = useState(1)
-  const [statusValue, setStatusValue] = useState('')
   const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [currentStatus, setCurrentStatus] = useState({ id: 1, name: 'Active' })
+
+  const statusOptions = [
+    { id: '', name: 'Select Status' },
+    { id: 1, name: 'Active' },
+    { id: 2, name: 'Inactive' }
+  ]
 
   // ** Bootstrap Checkbox Component
   const BootstrapCheckbox = forwardRef((props, ref) => (
@@ -93,7 +92,7 @@ const InvoiceList = () => {
       <Input type='checkbox' ref={ref} {...props} />
     </div>
   ))
-  
+
   useEffect(() => {
     dispatch(
       getData({
@@ -102,7 +101,7 @@ const InvoiceList = () => {
         sortColumn,
         page: currentPage,
         perPage: rowsPerPage,
-        status: statusValue
+        status: currentStatus.id
       })
     )
   }, [dispatch, store.data.length])
@@ -116,7 +115,7 @@ const InvoiceList = () => {
         sortColumn,
         page: currentPage,
         perPage: rowsPerPage,
-        status: statusValue
+        status: currentStatus.id
       })
     )
   }
@@ -128,7 +127,7 @@ const InvoiceList = () => {
         q: value,
         sortColumn,
         page: currentPage,
-        status: statusValue,
+        status: currentStatus.id,
         perPage: parseInt(e.target.value)
       })
     )
@@ -136,7 +135,7 @@ const InvoiceList = () => {
   }
 
   const handleStatusValue = e => {
-    setStatusValue(e.target.value)
+    setCurrentStatus(e.target.value)
     dispatch(
       getData({
         sort,
@@ -155,7 +154,7 @@ const InvoiceList = () => {
         sort,
         q: value,
         sortColumn,
-        status: statusValue,
+        status: currentStatus.id,
         perPage: rowsPerPage,
         page: page.selected + 1
       })
@@ -191,7 +190,7 @@ const InvoiceList = () => {
   const dataToRender = () => {
     const filters = {
       q: value,
-      status: statusValue
+      status: currentStatus.id
     }
 
     const isFiltered = Object.keys(filters).some(function (k) {
@@ -215,7 +214,7 @@ const InvoiceList = () => {
         q: value,
         page: currentPage,
         sort: sortDirection,
-        status: statusValue,
+        status: currentStatus.id,
         perPage: rowsPerPage,
         sortColumn: column.sortField
       })
@@ -224,6 +223,39 @@ const InvoiceList = () => {
 
   return (
     <div className='invoice-list-wrapper'>
+      <Card>
+        <CardBody>
+          <Row>
+            <Col md='4'>
+              <Label for='status-select'>Status</Label>
+              <Select
+                theme={selectThemeColors}
+                isClearable={false}
+                className='react-select'
+                classNamePrefix='select'
+                options={statusOptions}
+                value={currentStatus}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+                onChange={async data => {
+                  setCurrentStatus(data)
+                  setBlock(true)
+                  await dispatch(
+                    getData({
+                      sort,
+                      sortColumn,
+                      q: searchTerm,
+                      page: currentPage,
+                      perPage: rowsPerPage,
+                      status: data.id
+                    })
+                  )
+                }}
+              />
+            </Col>
+          </Row>
+        </CardBody>
+      </Card>
       <Card>
         <div className='invoice-list-dataTable react-dataTable'>
           <DataTable
@@ -246,7 +278,7 @@ const InvoiceList = () => {
             subHeaderComponent={
               <CustomHeader
                 value={value}
-                statusValue={statusValue}
+                currentStatus={currentStatus}
                 rowsPerPage={rowsPerPage}
                 handleFilter={handleFilter}
                 handlePerPage={handlePerPage}

@@ -22,7 +22,7 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
 import { calculateTax } from '../helper/hepler'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 const activeOrgId = activeOrganizationid()
@@ -49,6 +49,7 @@ const AddCard = () => {
   const [invoiceTaxes, setInvoiceTaxes] = useState([])
   const [invoiceItemTaxes, setInvoiceItemTaxes] = useState([])
 
+  const navigate = useNavigate()
   const dispatch = useDispatch()
 
   const store = useSelector(state => state.invoice)
@@ -109,6 +110,7 @@ const AddCard = () => {
     contactId: yup.number().required("Please select a Client"),
     uniqueIdentity: yup.string(),
     contactEmail: yup.string(),
+    contactName: yup.string(),
     invoiceDate: yup.number(),
     paymentDue: yup.number(),
     placeOfSupplyId: yup.number().required("Please select a Place Of Supply"),
@@ -116,7 +118,7 @@ const AddCard = () => {
     totalAmount: yup.string(),
     totalTaxAmount: yup.string(),
     organizationId: yup.number().default(activeOrgId),
-    isRcmApplicable: yup.boolean().default(true),
+    isRcmApplicable: yup.boolean().default(false),
     dueAmount: yup.string(),
     billingAddressLine1: yup.string(),
     billingAddressLine2: yup.string(),
@@ -130,20 +132,29 @@ const AddCard = () => {
     bankAccountId: yup.string(),
     bankAccountIfscCode: yup.string(),
     bankAccountNumber: yup.string(),
-    contactEmail: yup.string(),
+    organizationAddressLine1: yup.string().default(activeOrg.addressline1),
+    organizationAddressLine2: yup.string().default(activeOrg.addressline2),
+    organizationCity: yup.string().default(activeOrg.organizationcity),
+    organizationState: yup.string().default(activeOrg.statename),
+    organizationZipCode: yup.string().default(activeOrg.pinzipcode),
+    organizationName: yup.string().default(activeOrg.name),
+    organizationImageUrl: yup.string().default(''),
+    organizationStateCode: yup.string().default(activeOrg.stateshortname),
+    organizationGstin: yup.string().default(activeOrg.gstin),
     gstin: yup.string(),
     note: yup.string().default(noteText),
     status: yup.number().default(1),
     paymentStatus: yup.number().default(11),
     rows: yup.array().of(
       yup.object().shape({
-        serviceId: yup.string().required("Please Select Service Item"),
+        serviceId: yup.number().required("Please Select Service Item"),
+        invoiceId: yup.number(),
         sacCode: yup.string(),
         price: yup.string(),
-        organizationId: yup.string().default(activeOrgId),
-        exemptioReasonId: yup.string(),
+        organizationId: yup.number().default(activeOrgId),
+        exemptioReasonId: yup.number(),
         actualPrice: yup.string().required(),
-        taxGroupId: yup.string().required("Pleace Select Tax"),
+        taxGroupId: yup.number().required("Pleace Select Tax"),
         subTotalAmount: yup.string().required(1)
       })
     )
@@ -158,9 +169,9 @@ const AddCard = () => {
 
   const onSubmit = async data => {
     const temp = data.rows
+    temp.map(obj => delete obj.taxes)
     setInvoiceItems(predata => ([...predata, ...temp]))
     delete data.rows
-    console.log(invoiceItems)
     await dispatch(addInvoice(data))
   }
 
@@ -181,6 +192,7 @@ const AddCard = () => {
   const InvoiceItemTax = async () => {
 
     await dispatch(addInvoiceItemTax(invoiceItemTaxes))
+    navigate(`/invoice/view/${store.invoiceId}`)
   }
 
   const addItem = (() => {
@@ -205,7 +217,10 @@ const AddCard = () => {
       const temp = inputArray.flat()
       store.invoiceItems.forEach(async (obj) => {
         temp.forEach((object, key) => {
-          temp[key].invoiceItemId = obj.id
+          if (object.serviceId === obj.serviceid) {
+            temp[key].invoiceItemId = obj.id
+          }
+          temp[key].invoiceId = store.invoiceId
         })
       })
 
@@ -223,13 +238,14 @@ const AddCard = () => {
 
     const inputArray = control._formValues.rows.map(a => a.taxes)
     const temp = inputArray.flat()
-    const output = temp.reduce((acc, item) => {
+    let output = []
+    output = temp.reduce((acc, item) => {
       if (item !== undefined) {
         const existItem = acc.find((obj) => {
           return item.taxName === obj.taxName
         })
         if (existItem) {
-          existItem.taxAmount += item.taxAmount
+          existItem.taxAmount = parseFloat(existItem.taxAmount) + parseFloat(item.taxAmount)
         } else {
           acc.push(item)
         }
@@ -304,6 +320,7 @@ const AddCard = () => {
           dataTemp["organizationId"] = parseInt(activeOrgId)
           dataTemp["invoiceItemId"] = ''
           dataTemp["taxNameValue"] = obj.name
+          dataTemp["serviceId"] = eachObj.serviceId
           dataTemp["taxPercentage"] = String(obj.percentage)
           dataTemp["taxAmount"] = String(temp)
 
@@ -349,8 +366,12 @@ const AddCard = () => {
       setValue('billingAddressState', selectedClient.billingaddressstatesname)
       setValue('billingAddressZipCode', selectedClient.billingaddresszip)
       setValue('billingCurrencyId', parseInt(selectedClient.currencyid))
+      setValue('billingCurrencySymbol', selectedClient.currenciessymbol)
+      setValue('billingCurrencyShortName', selectedClient.currenciescode)
+      setValue('billingCurrencyName', selectedClient.currenciesname)
       setValue('contactEmail', selectedClient.email)
       setValue('gstin', selectedClient.gstin)
+      setValue('contactName', selectedClient.name)
       setValue('placeOfSupplyId', selectedClient.placeofsupplyid)
       taxvaluefn()
     }
@@ -390,11 +411,12 @@ const AddCard = () => {
                   <div>
                     <div className='logo-wrapper'>
 
-                      <h3 className='text-primary invoice-logo'>Vuexy</h3>
+                      <h3 className='text-primary invoice-logo'>{activeOrg.name}</h3>
                     </div>
-                    <p className='card-text mb-25'>Office 149, 450 South Brand Brooklyn</p>
-                    <p className='card-text mb-25'>San Diego County, CA 91905, USA</p>
-                    <p className='card-text mb-0'>+1 (123) 456 7891, +44 (876) 543 2198</p>
+                    <p className='card-text mb-25'>{activeOrg.addressline1}</p>
+                    <p className='card-text mb-25'>{activeOrg.addressline2}</p>
+                    <p className='card-text mb-0'>{activeOrg.organizationcity} - {activeOrg.pinzipcode}</p>
+                    <p className='card-text mb-0'>{activeOrg.statename}</p>
                   </div>
                   <div className='invoice-number-date mt-md-0 mt-2'>
                     <div className='d-flex align-items-center justify-content-md-end mb-1'>
@@ -519,7 +541,7 @@ const AddCard = () => {
                         </tr>
                         <tr>
                           <td className='pe-1'>Currency code:</td>
-                          <td>BR91905</td>
+                          <td>{selectedClient.currenciescode}</td>
                         </tr>
                       </tbody>
                     </table>

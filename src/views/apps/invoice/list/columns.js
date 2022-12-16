@@ -8,7 +8,6 @@ import Avatar from '@components/avatar'
 // ** Store & Actions
 import { store } from '@store/store'
 import { deleteInvoice } from '../store'
-
 // ** Reactstrap Imports
 import {
   Badge,
@@ -35,9 +34,10 @@ import {
   MoreVertical,
   ArrowDownCircle
 } from 'react-feather'
+import moment from 'moment'
 
 // ** Vars
-const invoiceStatusObj = {
+const paymentstatusObj = {
   Sent: { color: 'light-secondary', icon: Send },
   Paid: { color: 'light-success', icon: CheckCircle },
   Draft: { color: 'light-primary', icon: Save },
@@ -51,12 +51,14 @@ const renderClient = row => {
   const stateNum = Math.floor(Math.random() * 6),
     states = ['light-success', 'light-danger', 'light-warning', 'light-info', 'light-primary', 'light-secondary'],
     color = states[stateNum]
+  return <Avatar color={color} className='me-50' content={row.contactname !== null ? row.contactname.charAt(0) : ''} />
 
-  if (row.avatar.length) {
-    return <Avatar className='me-50' img={row.avatar} width='32' height='32' />
-  } else {
-    return <Avatar color={color} className='me-50' content={row.client ? row.client.name : 'John Doe'} initials />
-  }
+}
+
+const dateFormat = (value) => {
+
+  return moment.unix(value).format("MMM DD, YYYY")
+
 }
 
 // ** Table columns
@@ -67,26 +69,26 @@ export const columns = [
     sortField: 'id',
     minWidth: '107px',
     // selector: row => row.id,
-    cell: row => <Link to={`/invoice/preview/${row.id}`}>{`#${row.id}`}</Link>
+    cell: row => <Link to={`/invoice/view/${row.id}`}>{`${row.uniqueno}`}</Link>
   },
   {
     sortable: true,
     minWidth: '102px',
-    sortField: 'invoiceStatus',
+    sortField: 'paymentstatus',
     name: <TrendingUp size={14} />,
-    // selector: row => row.invoiceStatus,
+    // selector: row => row.paymentstatus,
     cell: row => {
-      const color = invoiceStatusObj[row.invoiceStatus] ? invoiceStatusObj[row.invoiceStatus].color : 'primary',
-        Icon = invoiceStatusObj[row.invoiceStatus] ? invoiceStatusObj[row.invoiceStatus].icon : Edit
+      const color = paymentstatusObj[row.paymentstatus] ? paymentstatusObj[row.paymentstatus].color : 'primary',
+        Icon = paymentstatusObj[row.paymentstatus] ? paymentstatusObj[row.paymentstatus].icon : Edit
       return (
         <Fragment>
           <Avatar color={color} icon={<Icon size={14} />} id={`av-tooltip-${row.id}`} />
           <UncontrolledTooltip placement='top' target={`av-tooltip-${row.id}`}>
-            <span className='fw-bold'>{row.invoiceStatus}</span>
+            <span className='fw-bold'>{row.paymentstatus}</span>
             <br />
-            <span className='fw-bold'>Balance:</span> {row.balance}
+            <span className='fw-bold'>Balance:</span> {row.dueamount}
             <br />
-            <span className='fw-bold'>Due Date:</span> {row.dueDate}
+            <span className='fw-bold'>Due Date:</span> {dateFormat(row.paymentdue)}
           </UncontrolledTooltip>
         </Fragment>
       )
@@ -99,8 +101,8 @@ export const columns = [
     sortField: 'client.name',
     // selector: row => row.client.name,
     cell: row => {
-      const name = row.client ? row.client.name : 'John Doe',
-        email = row.client ? row.client.companyEmail : 'johnDoe@email.com'
+      const name = row.contactname,
+        email = row.contactemail
       return (
         <div className='d-flex justify-content-left align-items-center'>
           {renderClient(row)}
@@ -118,25 +120,25 @@ export const columns = [
     minWidth: '150px',
     sortField: 'total',
     // selector: row => row.total,
-    cell: row => <span>${row.total || 0}</span>
+    cell: row => <span>${row.totalamount || 0}</span>
   },
   {
     sortable: true,
     minWidth: '200px',
-    name: 'Issued Date',
-    sortField: 'dueDate',
-    cell: row => row.dueDate
+    name: 'Due Date',
+    sortField: 'paymentdue',
+    cell: row => dateFormat(row.paymentdue)
     // selector: row => row.dueDate
   },
   {
     sortable: true,
     name: 'Balance',
     minWidth: '164px',
-    sortField: 'balance',
+    sortField: 'dueamount',
     // selector: row => row.balance,
     cell: row => {
-      return row.balance !== 0 ? (
-        <span>{row.balance}</span>
+      return row.dueamount !== 0 ? (
+        <span>{row.dueamount}</span>
       ) : (
         <Badge color='light-success' pill>
           Paid
@@ -153,7 +155,7 @@ export const columns = [
         <UncontrolledTooltip placement='top' target={`send-tooltip-${row.id}`}>
           Send Mail
         </UncontrolledTooltip>
-        <Link to={`/invoice/preview/${row.id}`} id={`pw-tooltip-${row.id}`}>
+        <Link to={`/invoice/view/${row.id}`} id={`pw-tooltip-${row.id}`}>
           <Eye size={17} className='mx-1' />
         </Link>
         <UncontrolledTooltip placement='top' target={`pw-tooltip-${row.id}`}>

@@ -47,14 +47,14 @@ const AddCard = () => {
     )
   })
 
-  const { register, handleSubmit, formState: { errors }, control } = useForm({
+  const { handleSubmit, formState: { errors }, control } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
 
   //const [date, setDate] = useState("")
   const [clientOptions, setClientOptions] = useState([])
-  const { fields, append, remove } = useFieldArray({ name: 'rows', control })
+  const { fields, append, remove } = useFieldArray({ name: 'rows', keyName: 'rowid', control })
   const onSubmit = async data => {
     console.log(data)
     await dispatch(addDsc(data))
@@ -74,7 +74,6 @@ const AddCard = () => {
 
   const removeItem = (ind) => {
     remove(ind)
-
   }
 
   // const compareDate = (fie) => {
@@ -164,7 +163,7 @@ const AddCard = () => {
         </CardBody>
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
-            <div key={item.id} className='repeater-wrapper'>
+            <div key={item.rowid} className='repeater-wrapper'>
               <Row >
                 <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
@@ -245,15 +244,14 @@ const AddCard = () => {
                         id='dsc_list_password'
                         name={`rows[${i}].password`}
                         render={({ field }) => (
-                          <Input type='text'  {...register(`rows.${i}.password`)} invalid={errors.rows?.[i]?.password && true} {...field} />
+                          <Input type='text' invalid={errors.rows?.[i]?.password && true} {...field} />
                         )}
                       />
                       {errors.rows?.[i]?.password && <FormFeedback>{errors.rows?.[i]?.password.message}</FormFeedback>}
                     </Col>
-
                   </Row>
                   <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={removeItem(i)} />
+                    <X size={18} className='cursor-pointer' onClick={() => removeItem(i)} />
                   </div>
                 </Col>
               </Row>

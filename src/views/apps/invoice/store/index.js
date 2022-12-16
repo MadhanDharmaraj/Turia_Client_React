@@ -5,11 +5,11 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@src/configs/axios/axiosConfig'
 
 export const getData = createAsyncThunk('appInvoice/getData', async params => {
-  const response = await axios.get('/invoices/list', params)
+  const response = await axios.post('/taskinvoices/list', params)
   return {
     params,
-    data: response.data.invoices,
-    totalPages: response.data.total
+    data: response.data.taskinvoices.taskinvoices,
+    totalPages: response.data.taskinvoices.total
   }
 })
 
@@ -42,13 +42,32 @@ export const addInvoiceItems = createAsyncThunk('appInvo  ice/addInvoiceItems', 
 
 export const addInvoiceItemTax = createAsyncThunk('appInvoice/addInvoiceItemTax', async (invoiceItemTax, { rejectWithValue }) => {
   try {
-    const response = await axios.post(`/invocieitemtaxes/create`, { rows: invoiceItemTax })
+    const response = await axios.post(`/invoiceitemtaxes/create`, { rows: invoiceItemTax })
     return { invoices: response.data.invoices }
   } catch (ex) {
     return rejectWithValue(getExceptionPayload(ex))
   }
 })
 
+export const getInvoice = createAsyncThunk('appInvoice/getInvoice', async id => {
+  const response = await axios.post('/taskinvoices/get', { id })
+  return { invoice: response.data.taskinvoices }
+})
+
+export const getInvoiceItems = createAsyncThunk('appInvoice/getInvoiceItem', async invoiceId => {
+  const response = await axios.post('/taskinvoiceitems/list', { invoiceId })
+  return response.data.taskinvoiceitems
+})
+
+export const getInvoiceTaxes = createAsyncThunk('appInvoice/getInvoiceTax', async invoiceId => {
+  const response = await axios.post('/invoicetaxes/list', { invoiceId })
+  return response.data.invoicetaxes
+})
+
+export const getInvoiceItemTaxes = createAsyncThunk('appInvoice/getInvoiceItemTax', async invoiceId => {
+  const response = await axios.post('/invoiceitemtaxes/list', { invoiceId })
+  return response.data.invoiceitemtaxes
+})
 
 export const getClient = createAsyncThunk('appInvoice/getClient', async id => {
   const response = await axios.post('/clients/get', { id })
@@ -56,9 +75,14 @@ export const getClient = createAsyncThunk('appInvoice/getClient', async id => {
 })
 
 export const deleteInvoice = createAsyncThunk('appInvoice/deleteInvoice', async (id, { dispatch, getState }) => {
-  await axios.delete('/apps/invoice/delete', { id })
+  await axios.delete('/invoices/delete', { id })
   await dispatch(getData(getState().invoice.params))
   return id
+})
+
+export const deleteInvoiceItem = createAsyncThunk('appInvoice/deleteInvoiceItem', async (id, {  }) => {
+  await axios.delete('/taskinvoiceitems/delete', { id })
+  return []
 })
 
 export const appInvoiceSlice = createSlice({
@@ -69,7 +93,8 @@ export const appInvoiceSlice = createSlice({
     params: {},
     allData: [],
     invoiceId: null,
-    invoiceItems: []
+    invoiceItems: [],
+    selectedInvoice: null
   },
   reducers: {},
   extraReducers: builder => {
@@ -84,6 +109,9 @@ export const appInvoiceSlice = createSlice({
     })
     builder.addCase(addInvoiceItems.fulfilled, (state, action) => {
       state.invoiceItems = action.payload.invoiceItems
+    })
+    builder.addCase(getInvoice.fulfilled, (state, action) => {
+      state.selectedInvoice = action.payload.invoice
     })
 
   }

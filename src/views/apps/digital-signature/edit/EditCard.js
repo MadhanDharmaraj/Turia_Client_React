@@ -7,9 +7,8 @@ import axios from '@src/configs/axios/axiosConfig'
 import Flatpickr from 'react-flatpickr'
 import { X, Plus } from 'react-feather'
 import Select from 'react-select'
-import { DSCList, updateDsc } from '../store/index'
+import { DSCList, updateDSC, deleteDigitalSignature } from '../store/index'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
-//import moment from 'moment'
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 
@@ -24,15 +23,17 @@ import '@styles/base/pages/app-invoice.scss'
 import { useDispatch, useSelector } from 'react-redux'
 import { activeOrganizationid } from '@src/helper/sassHelper'
 
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
 const activeOrgId = activeOrganizationid()
 const EditCard = () => {
 
+  const MySwal = withReactContent(Swal)
   const phoneRegExp = /^[0-9\- ]{10,10}$/
   const dispatch = useDispatch()
-  const { id } = useParams()
   const store = useSelector(state => state.digitalsignature)
   const navigate = useNavigate()
-  const [clientId, setClientId] = useState(null)
   const schema = yup.object().shape({
     clientId: yup.string().required("Please select a Client"),
     rows: yup.array().of(
@@ -43,82 +44,127 @@ const EditCard = () => {
         contact: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
         issuedDate: yup.number().required("Please Enter Issued Date"),
         expiryDate: yup.number().required("Please Enter Expiry Date"),
-        password: yup.string().min(5, "Password length should be 5 or above.")
+        password: yup.string()
       })
     )
   })
 
-  const { handleSubmit, setValue, formState: { errors }, control } = useForm({
+  const { handleSubmit, formState: { errors }, control, setValue } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
 
+  const { id } = useParams()
   const [clientOptions, setClientOptions] = useState([])
-  const { fields, append, remove } = useFieldArray({ name: 'rows', keyName: 'row_id', control })
+  const { fields, append, remove } = useFieldArray({ name: 'rows', keyName: 'rowid', control })
   const onSubmit = async data => {
-    await dispatch(updateDsc(data))
+    console.log(data)
+    await dispatch(updateDSC(data))
     navigate('/digital-signature/list')
-
   }
 
   const addItem = (() => {
     append({ clientId: '', name: '', email: '', contact: '', issuedDate: '', expiryDate: '', password: '' })
 
     control._formValues.rows.forEach((obj, key) => {
-      control._formValues.rows[key].clientId = clientId
+      control._formValues.rows[key].clientId = id
     })
+    console.log(control._formValues.rows)
 
   })
 
-  const removeItem = (ind) => {
-    remove(ind)
-  }
+  const deletefun = (id) => {
 
-  const getClientList = () => {
-    axios.post('/clients/dropdown').then(response => {
-      const arr = response.data
-      setClientOptions(arr.clients)
+    return MySwal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        confirmButton: 'btn btn-primary',
+        cancelButton: 'btn btn-outline-danger ms-1'
+      },
+      buttonsStyling: false
+    }).then(async (result) => {
+      if (result.value) {
+        await dispatch(deleteDigitalSignature(id))
+        MySwal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Conatct has been deleted.',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        })
+        return true
+      } else if (result.dismiss === MySwal.DismissReason.cancel) {
+        return false
+      }
     })
   }
 
-  const getClientInfo = async (id) => {
-    setClientId(id)
-    await dispatch(DSCList(id))
+  const removeItem = async (ind) => {
+    const tempid = control._formValues.rows[ind].id
+    let flg
+    if (tempid !== undefined) {
+      flg = await deletefun(tempid)
+    }
+    if (flg) {
+      remove(ind)
+    }
+  }
+
+  // const compareDate = (fie) => {
+
+  //   console.log(fie)
+  //   // if (control._formValues.rows[ind].issuedDate !== '' && control._formValues.rows[ind].expiryDate !== '') {
+  //   //   const issDate = control._formValues.rows[ind].issuedDate[0]
+  //   //   const expDate = control._formValues.rows[ind].expiryDate[0]
+
+  //   //   if (expDate < issDate) {
+  //   //     console.log('Success Date')
+  //   //   }
+  // }
+
+  const getClientInfo = async () => {
+    if (id !== undefined) {
+      await dispatch(DSCList(id))
+    }
+  }
+
+  const getClientList = async () => {
+    await axios.post('/clients/dropdown').then(response => {
+      const arr = response.data
+      setClientOptions(arr.clients)
+      getClientInfo()
+    })
   }
 
   useEffect(() => {
-    remove()
     store.DSCLists.forEach((obj) => {
-
       const data = {}
 
       data['id'] = obj.id
       data['name'] = obj.name
       data['email'] = obj.email
       data['organizationId'] = activeOrgId
-      data['clientId'] = clientId
+      data['clientId'] = id
       data['contact'] = obj.contact
-      data['issuedDate'] = obj.issuedDate | null
-      data['expiryDate'] = obj.expiryDate | null
-      data['password'] = obj.password | ''
+      data['issuedDate'] = obj.issueddate
+      data['expiryDate'] = obj.expirydate
+      data['password'] = obj.password
 
       append(data)
     })
 
   }, [store.DSCLists])
 
-  useEffect(async () => {
+  useEffect(() => {
     setValue('clientId', id)
-    setClientId(id)
-
-    if (clientOptions.length === 0) {
-      await getClientList()
-    }
-
-    if (store.DSCLists.length === 0) {
-      await getClientInfo(id)
-    }
+    getClientList()
   }, [])
+
   return (
 
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -139,13 +185,13 @@ const EditCard = () => {
                     render={({ field, ref }) => (
                       <Select
                         {...field}
-                        isDisabled={true}
                         inputRef={ref}
+                        isDisabled
                         className={classnames('react-select', { 'is-invalid': errors.clientId })}
                         classNamePrefix='select'
                         options={clientOptions}
                         value={clientOptions.find(c => { return c.id === field.value })}
-                        onChange={(val) => { return field.onChange(val.id) }}
+                        onChange={(val) => { field.onChange(val.id) }}
                         getOptionLabel={(option) => option.name}
                         getOptionValue={(option) => option.id}
                       />
@@ -159,7 +205,7 @@ const EditCard = () => {
         </CardBody>
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
-            <div key={item.row_id} className='repeater-wrapper'>
+            <div key={item.rowid} className='repeater-wrapper'>
               <Row >
                 <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
@@ -248,12 +294,11 @@ const EditCard = () => {
 
                   </Row>
                   <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={removeItem(i)} />
+                    <X size={18} className='cursor-pointer' onClick={() => removeItem(i)} />
                   </div>
                 </Col>
               </Row>
             </div>
-
           ))}
 
           <Row className='mt-1'>

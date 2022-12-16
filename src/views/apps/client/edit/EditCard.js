@@ -4,15 +4,15 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import classnames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 // ** Custom Components
-import { updateClient, addContactInfo, getClient, getConatctInfo } from '../store'
+import { updateClient, updateContactInfo, getClient, getConatctInfo, deleteContactInfo } from '../store'
 import axios from '@src/configs/axios/axiosConfig'
 
-import { X, Plus, Hash } from 'react-feather'
+import { X, Plus } from 'react-feather'
 import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-
+import { activeOrganizationid } from '@src/helper/sassHelper'
 // ** Reactstrap Imports
 import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback } from 'reactstrap'
 
@@ -21,10 +21,13 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
-
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+const activeOrgId = activeOrganizationid()
 const EditCard = () => {
 
   // ** States
+  const MySwal = withReactContent(Swal)
   const phoneRegExp = /^[0-9\- ]{10,10}$/
   const zipcodeExp = /^[0-9\- ]{6,6}$/
   const navigate = useNavigate({})
@@ -68,34 +71,71 @@ const EditCard = () => {
     defaultValues: schema.cast()
   })
   const { id } = useParams()
-  const { fields, append } = useFieldArray({ name: 'contact_info', control })
+  const { fields, append, remove } = useFieldArray({ name: 'contact_info', control, keyName: 'rowid' })
 
   const saveContactInfo = () => {
-    if (clientInfo.length > 0) {
-      dispatch(addContactInfo(clientInfo))
-      navigate(`/client/view/${contactId}`)
-    }
+
+    const data = { rows: clientInfo }
+    dispatch(updateContactInfo(data))
+    navigate(`/client/view/${contactId}`)
+
   }
 
   const onSubmit = async (data) => {
 
     const temp = data.contact_info
-    setClientInfo(predata => ([...predata, ...temp]))
     delete data.contact_info
     const id = clientDetails.id
     await dispatch(updateClient({ data, id }))
 
-    saveContactInfo()
+    setClientInfo(predata => ([...predata, ...temp]))
 
   }
 
+  const deletefun = (id) => {
+
+    return MySwal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        confirmButton: 'btn btn-primary',
+        cancelButton: 'btn btn-outline-danger ms-1'
+      },
+      buttonsStyling: false
+    }).then(async (result) => {
+      if (result.value) {
+        await dispatch(deleteContactInfo(id))
+        MySwal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Conatct has been deleted.',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        })
+        return true
+      } else if (result.dismiss === MySwal.DismissReason.cancel) {
+        return false
+      }
+    })
+  }
+
   const addItem = (() => {
-    append({ name: '', email: '', contactnumber: '', designation: '', primarystatus: '' })
+    append({ id: '', name: '', email: '', contactnumber: '', contactid: id, organizationid: activeOrgId, designation: '', primarystatus: false })
   })
 
-  const removeItem = e => {
-    e.preventDefault()
-    e.target.closest('.repeater-wrapper').remove()
+  const removeItem = async (ind) => {
+    const tempid = control._formValues.contact_info[ind].id
+    let flg
+    if (tempid !== undefined) {
+      flg = await deletefun(tempid)
+    }
+    if (flg) {
+      remove(ind)
+    }
   }
 
   const getBusineessEntity = () => {
@@ -182,6 +222,12 @@ const EditCard = () => {
       append(obj)
     })
   }, [store.clientInformations])
+
+  useEffect(() => {
+    if (clientInfo.length) {
+      saveContactInfo()
+    }
+  }, [clientInfo])
 
   useEffect(() => {
     getBusineessEntity()
@@ -323,7 +369,7 @@ const EditCard = () => {
         <CardBody className='invoice-padding invoice-product-details'>
           {fields.map((item, i) => (
 
-            <div key={item.id} className='repeater-wrapper'>
+            <div key={item.rowid} className='repeater-wrapper'>
               <Row >
                 <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
                   <Row className='w-100 pe-lg-0 pe-1 py-2'>
@@ -380,17 +426,17 @@ const EditCard = () => {
                       <div className='form-switch form-check-primary'>
                         <Controller
                           control={control}
-                          id='contact_info_primaryStatus'
-                          name={`contact_info[${i}].primaryStatus`}
+                          id='contact_info_primarystatus'
+                          name={`contact_info[${i}].primarystatus`}
                           render={({ field }) => (
-                            <Input type='switch' {...register(`contact_info.${i}.primaryStatus`)} {...field} />
+                            <Input type='switch' {...register(`contact_info.${i}.primarystatus`)} {...field} />
                           )}
                         />
                       </div>
                     </Col>
                   </Row>
                   <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={removeItem} />
+                    <X size={18} className='cursor-pointer' onClick={() => removeItem(i)} />
                   </div>
                 </Col>
               </Row>

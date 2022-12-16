@@ -33,8 +33,13 @@ export const updateClient = createAsyncThunk('appClients/updateClient', async (c
   return { client: response.data.clients }
 })
 
-export const addContactInfo = createAsyncThunk('appClients/addClientInfo', async (rows, { }) => {
+export const addContactInfo = createAsyncThunk('appClients/addContactInfo', async (rows, { }) => {
   const response = await axios.post(`/contactinformation/create`, rows)
+  return { clientInfos: response.data.clients }
+})
+
+export const updateContactInfo = createAsyncThunk('appClients/updateContactInfo', async (rows, { }) => {
+  const response = await axios.post(`/contactinformation/update`, rows)
   return { clientInfos: response.data.clients }
 })
 
@@ -48,6 +53,12 @@ export const deleteClient = createAsyncThunk('appClients/deleteClient', async (i
   await dispatch(getData(getState().client.params))
   return id
 })
+
+export const deleteContactInfo = createAsyncThunk('appClients/deleteContactInfo', async (id, {}) => {
+  await axios.post('/contactinformation/delete', { id })
+  return null
+})
+
 
 export const updateStatus = createAsyncThunk('appClients/updateStatus', async (data, { dispatch, getState }) => {
   await axios.post(`/clients/statusupdate`, data)

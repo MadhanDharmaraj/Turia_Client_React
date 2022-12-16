@@ -2,13 +2,11 @@
 import { Fragment, useState, useEffect, forwardRef } from 'react'
 import { Link } from 'react-router-dom'
 // ** Invoice List Sidebar
-import Sidebar from './Sidebar'
-
 // ** Table Columns
 import { columns } from './columns'
 
 // ** Store & Actions
-import { getAllData, getData } from '../store'
+import { getData } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 
 // ** Third Party Components
@@ -189,7 +187,6 @@ const UsersList = () => {
 
   // ** Get data on mount
   useEffect(() => {
-    dispatch(getAllData())
     dispatch(
       getData({
         sort,
