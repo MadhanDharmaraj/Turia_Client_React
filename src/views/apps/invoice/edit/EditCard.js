@@ -181,7 +181,7 @@ const AddCard = (data) => {
     paymentStatus: yup.number().default(11),
     rows: yup.array().of(
       yup.object().shape({
-        id : yup.number(),
+        id: yup.number(),
         serviceId: yup.number().required("Please Select Service Item"),
         invoiceId: yup.number(),
         sacCode: yup.string(),
@@ -200,7 +200,7 @@ const AddCard = (data) => {
     defaultValues: schema.cast()
   })
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'rows', keyname: 'rowid' })
+  const { fields, append, remove, update } = useFieldArray({ control, name: 'rows', keyName: 'rowid' })
 
   const onSubmit = async data => {
     const temp = invoice.rows
@@ -272,7 +272,8 @@ const AddCard = (data) => {
   const calculateInvoiceTax = () => {
 
     const inputArray = control._formValues.rows.map(a => a.taxes)
-    const temp = inputArray.flat()
+    let temp = []
+    temp = inputArray.flat()
     let output = []
     output = temp.reduce((acc, item) => {
       if (item !== undefined) {
@@ -302,7 +303,7 @@ const AddCard = (data) => {
     let finalTaxAmount = 0
     items.forEach(obj => {
       finalTotal = parseFloat(obj.subTotalAmount) + parseFloat(finalTotal)
-      finalsubTotalAmount = parseFloat(obj.actualPrice) + parseFloat(finalsubTotalAmount)
+      finalsubTotalAmount = parseFloat(obj.price) + parseFloat(finalsubTotalAmount)
       finalTaxAmount = parseFloat(finalTaxAmount) + parseFloat(obj.taxPrice)
     })
 
@@ -342,8 +343,8 @@ const AddCard = (data) => {
       items['description'] = selectedService.description
     } else {
       items['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
-      items['price'] = priceFlg ? eachObj.actualPrice : selectedService.sellingprice | 0
-      items['actualPrice'] = priceFlg ? String(eachObj.actualPrice) : String(selectedService.sellingprice) | 0
+      items['price'] = priceFlg ? eachObj.price : selectedService.sellingprice | 0
+      items['actualPrice'] = String(selectedService.sellingprice) | 0
       items['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
       items['description'] = desFlg ? eachObj.description : selectedService.description
     }
@@ -354,7 +355,7 @@ const AddCard = (data) => {
     if (taxGroups !== undefined) {
       taxValues.forEach(obj => {
         if (obj.taxid === items['taxGroupId']) {
-          const temp = calculateTax(items.actualPrice, obj.percentage, 2)
+          const temp = calculateTax(items.price, obj.percentage, 2)
           calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
           const dataTemp = {}
           dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
@@ -371,13 +372,13 @@ const AddCard = (data) => {
       })
     }
 
-    items['id'] = items.id
+    items['rowid'] = items.rowid
     items['organizationId'] = eachObj.organizationId
-    items['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(items.actualPrice)).toFixed(2))
+    items['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(items.price)).toFixed(2))
     items['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
     items['taxes'] = invoice_item_taxes
 
-    setValue(`rows[${ind}]`, items)
+    update(ind, items)
 
     ItemFinalTotalAmount()
 
@@ -731,7 +732,7 @@ const AddCard = (data) => {
                                 defaultValue={`${item.description}`}
                                 name={`rows[${index}].description`}
                                 control={control}
-                                render={({ field }) => <Input className='mt-1' invalid={errors.rows?.[index]?.description && true} onInputCapture={() => { loadItemData(index, true, false, false, false, false) }} {...field} />}
+                                render={({ field }) => <Input className='mt-1' invalid={errors.rows?.[index]?.description && true} onInput={(val) => { field.onChange(val); loadItemData(index, true, false, false, false, false) }} {...field} />}
                               />
                             </Col>
                             <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
@@ -741,20 +742,20 @@ const AddCard = (data) => {
                                 defaultValue={`${item.sacCode}`}
                                 name={`rows[${index}].sacCode`}
                                 control={control}
-                                render={({ field }) => <Input type='text' invalid={errors.rows?.[index]?.sacCode && true} onChange={() => loadItemData(index, false, true, true, false, false)} {...field} />}
+                                render={({ field }) => <Input type='text' invalid={errors.rows?.[index]?.sacCode && true} onInput={(val) => { field.onChange(val); loadItemData(index, false, true, true, false, false) }} {...field} />}
                               />
                               {errors.rows?.[index]?.sacCode && <FormFeedback>{errors.rows?.[index]?.sacCode.message}</FormFeedback>}
                             </Col>
                             <Col className='my-lg-0 my-2' lg='2' sm='12'>
                               <CardText className='col-title mb-md-2 mb-0'>Price</CardText>
                               <Controller
-                                defaultValue={item.actualPrice}
+                                defaultValue={item.price}
                                 id={`rows_${index}_price`}
-                                name={`rows[${index}].actualPrice`}
+                                name={`rows[${index}].price`}
                                 control={control}
-                                render={({ field }) => <Input type='number' invalid={errors.rows?.[index]?.actualPrice && true} onChange={val => { field.onChange(val.id); loadItemData(index, false, false, true, false, false) }} {...field} />}
+                                render={({ field }) => <Input type='number' id={`input_rows_${index}_price`} onInput={(val) => { field.onChange(val); loadItemData(index, false, true, false, false, false) }} {...field} invalid={errors.rows?.[index]?.price && true} />}
                               />
-                              {errors.rows?.[index]?.actualPrice && <FormFeedback>{errors.rows?.[index]?.actualPrice.message}</FormFeedback>}
+                              {errors.rows?.[index]?.price && <FormFeedback>{errors.rows?.[index]?.price.message}</FormFeedback>}
                             </Col>
                             <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                               <CardText className='col-title mb-md-50 mb-0'>Tax Rate</CardText>
