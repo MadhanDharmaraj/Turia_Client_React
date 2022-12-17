@@ -38,7 +38,6 @@ const PreviewCard = ({ data }) => {
     const res2 = await dispatch(getInvoiceItemTaxes(id))
     setInvoiceItemTaxes(res2.payload)
 
-    console.log(invoiceItemTaxes)
   }, [])
 
   return data !== null ? (
@@ -157,33 +156,39 @@ const PreviewCard = ({ data }) => {
             return (
               <tr key={ind}>
                 <td className='py-1'>
-                  <p className='card-text fw-bold mb-25'>{item.servicesname}</p>
+                  <p className='card-text fw-bold mb-25'>{item.servicesName}</p>
                   <p className='card-text text-nowrap'>
                     {item.description}
                   </p>
                 </td>
                 <td className='py-1'>
-                  <span className='fw-bold'>{item.actualprice}</span>
+                  <span className='fw-bold'>{item.sacCode}</span>
                 </td>
                 <td className='py-1'>
-                  <span className='fw-bold'>{item.actualprice}</span>
+                  <span className='fw-bold'>{item.price}</span>
                 </td>
                 {
                   invoiceItemTaxes.length > 0 &&
                   <td className='py-1'>
                     <span className='fw-bold'>
                       {
+                        item.isTaxApplicable === 'true' &&
                         invoiceItemTaxes.map((obj, k) => {
-                          if (item.serviceid === obj.serviceid) {
+                          if (item.serviceId === obj.serviceid) {
                             return (<Row key={k}><span>{obj.taxname} - {obj.taxamount}</span></Row>)
                           }
                         })
+                      }
+                      {
+                        item.isTaxApplicable === 'false' && (<Row>
+                          <span>{item.taxGroupName}</span>
+                          <span>{item.exemptionReasonName}</span></Row>)
                       }
                     </span>
                   </td>
                 }
                 <td className='py-1'>
-                  <span className='fw-bold'>{item.subtotalamount}</span>
+                  <span className='fw-bold'>{item.subTotalAmount}</span>
                 </td>
               </tr>
             )

@@ -24,7 +24,7 @@ export const addService = createAsyncThunk('appServices/addService', async (serv
 })
 
 export const updateService = createAsyncThunk('appServices/updateService', async (service, { }) => {
-  const response = await axios.post(`/Services/update`, service)
+  const response = await axios.post(`/services/update`, service)
   return { service: response.data.services }
 })
 

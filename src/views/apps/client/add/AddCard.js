@@ -12,9 +12,9 @@ import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import {activeOrganizationid} from '@src/helper/sassHelper'
+import { activeOrganizationid } from '@src/helper/sassHelper'
 // ** Reactstrap Imports
-import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback } from 'reactstrap'
+import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback, CardTitle, CardHeader } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -42,7 +42,7 @@ const AddCard = () => {
 
   const schema = yup.object().shape({
     clientType: yup.number().default(2),
-    organization  : yup.number().default(activeOrgId),
+    organization: yup.number().default(activeOrgId),
     uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when("clientType", { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
@@ -66,12 +66,12 @@ const AddCard = () => {
   })
 
 
-  const { register, handleSubmit, control, formState: { errors } } = useForm({
+  const { handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
 
-  const { fields, append } = useFieldArray({ name: 'contact_info', control })
+  const { fields, append, remove } = useFieldArray({ name: 'contact_info', control })
 
   const saveContactInfo = (clientId) => {
     if (clientInfo.length > 0) {
@@ -95,12 +95,15 @@ const AddCard = () => {
   }
 
   const addItem = (() => {
-    append({ organizationId: activeOrgId, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: true })
+    let primarytag = true
+    if (control._formValues.contact_info.length > 0) {
+      primarytag = false
+    }
+    append({ organizationId: activeOrgId, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: primarytag })
   })
 
-  const removeItem = e => {
-    e.preventDefault()
-    e.target.closest('.repeater-wrapper').remove()
+  const removeItem = ind => {
+    remove(ind)
   }
 
   const getBusineessEntity = () => {
@@ -210,6 +213,9 @@ const AddCard = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card className='invoice-preview-card'>
         {/* Header */}
+        <CardHeader>
+          <CardTitle> Add Client</CardTitle>
+        </CardHeader>
         <CardBody className='pb-0'>
           <Row>
             <Col md='6' className='mb-1'>
@@ -222,7 +228,7 @@ const AddCard = () => {
                     <Controller
                       name='clientType'
                       id='clientType_2'
-        
+
                       control={control}
                       render={({ field }) => (<Input name='clientType' id='clientType_2' type='radio'
                         {...field} onChange={val => { return val.target.value }} value={1} />)}
@@ -295,7 +301,7 @@ const AddCard = () => {
                         id='contact_info_firstName'
                         name={`contact_info[${i}].name`}
                         render={({ field }) => (
-                          <Input type='text' {...register(`contact_info.${i}.name`)} invalid={errors.contact_info?.[i]?.name && true} {...field} />
+                          <Input type='text' onChange={(val) => { field.onChange(val) }} invalid={errors.contact_info?.[i]?.name && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.name && <FormFeedback>{errors.contact_info?.[i]?.name.message}</FormFeedback>}
@@ -307,7 +313,7 @@ const AddCard = () => {
                         id='contact_info_email'
                         name={`contact_info[${i}].email`}
                         render={({ field }) => (
-                          <Input type='email' {...register(`contact_info.${i}.email`)} invalid={errors.contact_info?.[i]?.email && true} {...field} />
+                          <Input type='email' onChange={(val) => { field.onChange(val) }} invalid={errors.contact_info?.[i]?.email && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.email && <FormFeedback>{errors.contact_info?.[i]?.email.message}</FormFeedback>}
@@ -319,7 +325,7 @@ const AddCard = () => {
                         id='contact_info_contactNumber'
                         name={`contact_info[${i}].contactNumber`}
                         render={({ field }) => (
-                          <Input type='number'  {...register(`contact_info.${i}.contactNumber`)} invalid={errors.contact_info?.[i]?.contactNumber && true} {...field} />
+                          <Input type='number' onChange={(val) => { field.onChange(val) }} invalid={errors.contact_info?.[i]?.contactNumber && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.contactNumber && <FormFeedback>{errors.contact_info?.[i]?.contactNumber.message}</FormFeedback>}
@@ -331,7 +337,7 @@ const AddCard = () => {
                         id='contact_info_designation'
                         name={`contact_info[${i}].designation`}
                         render={({ field }) => (
-                          <Input type='text' invalid={errors.contact_info?.[i]?.designation && true} {...register(`contact_info.${i}.designation`)} {...field} />
+                          <Input type='text onChange={(val) => { field.onChange(val)}}' invalid={errors.contact_info?.[i]?.designation && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.designation && <FormFeedback>{errors.contact_info?.[i]?.designation.message}</FormFeedback>}
@@ -344,14 +350,14 @@ const AddCard = () => {
                           id='contact_info_primaryStatus'
                           name={`contact_info[${i}].primaryStatus`}
                           render={({ field }) => (
-                            <Input type='switch' {...register(`contact_info.${i}.primaryStatus`)} {...field} />
+                            <Input type='switch' onChange={(val) => { field.onChange(val) }} {...field} defaultChecked={field.value} />
                           )}
                         />
                       </div>
                     </Col>
                   </Row>
                   <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={removeItem} />
+                    <X size={18} className='cursor-pointer' onClick={() => { removeItem(i) }} />
                   </div>
                 </Col>
               </Row>

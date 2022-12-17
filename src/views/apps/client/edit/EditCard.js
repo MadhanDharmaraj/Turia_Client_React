@@ -14,7 +14,7 @@ import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { activeOrganizationid } from '@src/helper/sassHelper'
 // ** Reactstrap Imports
-import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback } from 'reactstrap'
+import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback, CardTitle, CardHeader } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -66,7 +66,7 @@ const EditCard = () => {
 
   })
 
-  const { register, handleSubmit, reset, control, formState: { errors } } = useForm({
+  const { handleSubmit, reset, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
@@ -299,6 +299,9 @@ const EditCard = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card className='invoice-preview-card'>
         {/* Header */}
+        <CardHeader>
+          <CardTitle> Edit Client</CardTitle>
+        </CardHeader>
         <CardBody className='pb-0'>
           <Row>
             <Col md='6' className='mb-1'>
@@ -380,7 +383,7 @@ const EditCard = () => {
                         id='contact_info_name'
                         name={`contact_info[${i}].name`}
                         render={({ field }) => (
-                          <Input type='text' {...register(`contact_info.${i}.name`)} invalid={errors.contact_info?.[i]?.name && true} {...field} />
+                          <Input type='text' onChange={(val) => { field.onChange(val) }} invalid={errors.contact_info?.[i]?.name && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.name && <FormFeedback>{errors.contact_info?.[i]?.name.message}</FormFeedback>}
@@ -392,7 +395,7 @@ const EditCard = () => {
                         id='contact_info_email'
                         name={`contact_info[${i}].email`}
                         render={({ field }) => (
-                          <Input type='email' {...register(`contact_info.${i}.email`)} invalid={errors.contact_info?.[i]?.email && true} {...field} />
+                          <Input type='email' onChange={(val) => { field.onChange(val) }} invalid={errors.contact_info?.[i]?.email && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.email && <FormFeedback>{errors.contact_info?.[i]?.email.message}</FormFeedback>}
@@ -404,7 +407,7 @@ const EditCard = () => {
                         id='contact_info_contactnumber'
                         name={`contact_info[${i}].contactnumber`}
                         render={({ field }) => (
-                          <Input type='number'  {...register(`contact_info.${i}.contactnumber`)} invalid={errors.contact_info?.[i]?.contactnumber && true} {...field} />
+                          <Input type='number' onChange={(val) => { field.onChange(val) }} invalid={errors.contact_info?.[i]?.contactnumber && true} {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.contactnumber && <FormFeedback>{errors.contact_info?.[i]?.contactnumber.message}</FormFeedback>}
@@ -416,7 +419,7 @@ const EditCard = () => {
                         id='contact_info_designation'
                         name={`contact_info[${i}].designation`}
                         render={({ field }) => (
-                          <Input type='text' invalid={errors.contact_info?.[i]?.designation && true} {...register(`contact_info.${i}.designation`)} {...field} />
+                          <Input type='text' invalid={errors.contact_info?.[i]?.designation && true} onChange={(val) => { field.onChange(val) }}  {...field} />
                         )}
                       />
                       {errors.contact_info?.[i]?.designation && <FormFeedback>{errors.contact_info?.[i]?.designation.message}</FormFeedback>}
@@ -429,7 +432,7 @@ const EditCard = () => {
                           id='contact_info_primarystatus'
                           name={`contact_info[${i}].primarystatus`}
                           render={({ field }) => (
-                            <Input type='switch' {...register(`contact_info.${i}.primarystatus`)} {...field} />
+                            <Input type='switch' onChange={(val) => { field.onChange(val) }} {...field} defaultChecked={field.value} />
                           )}
                         />
                       </div>

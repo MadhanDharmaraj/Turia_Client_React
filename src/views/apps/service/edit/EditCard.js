@@ -9,7 +9,7 @@ import axios from '@src/configs/axios/axiosConfig'
 import classnames from 'classnames'
 
 // ** Reactstrap Importsz
-import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback } from 'reactstrap'
+import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback, CardHeader, CardTitle } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -31,22 +31,35 @@ const EditCard = () => {
   const [categoryOptions, setCateoryOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
   const [serviceDetails, setServiceDetails] = useState([])
+  const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
+  const [isTaxApplicable, setIsTaxApplicable] = useState(true)
 
   const schema = yup.object().shape({
+    id: yup.string().default(id),
     categoryId: yup.string().required("Please select a Category"),
-    categoryType : yup.number().default(1),
-    organizationId : yup.number().default(activeOrgId),
+    categoryType: yup.number().default(1),
+    organizationId: yup.number().default(activeOrgId),
     name: yup.string().required("Please Enter Service Name"),
     taxGroupId: yup.string().required("Please Select Tax Rate"),
+    isTaxApplicable: yup.boolean().default(true),
+    exemptionReasonId: yup.number()
+      .when(["isTaxApplicable"], { is: (isTaxApplicable) => !isTaxApplicable, then: yup.number().required('Please Select Exemption Reason') }).nullable(),
     sellingPrice: yup.string().required("Please Enter Professional Fee"),
     sacCode: yup.string().required("Please Enter SAC Code")
   })
 
 
-  const { handleSubmit, control, reset, formState: { errors } } = useForm({
+  const { handleSubmit, control, reset, formState: { errors }, setValue } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
+
+  const getExemptionReason = () => {
+    axios.post('/exemptionreasons/dropdown').then(response => {
+      const arr = response.data
+      setExemptionReasonOptions(arr.exemptionreasons)
+    })
+  }
 
   const getTaxGroups = () => {
     axios.post('/taxgroups/dropdown').then(response => {
@@ -65,7 +78,17 @@ const EditCard = () => {
   const getServiceData = async () => {
     const service = await dispatch(getService(id))
     setServiceDetails(service.payload)
+  }
 
+  const showExemption = (val) => {
+    if (val.nontaxableflag) {
+      setIsTaxApplicable(false)
+      setValue('isTaxApplicable', false)
+    } else {
+      setIsTaxApplicable(true)
+      setValue('isTaxApplicable', true)
+      setValue('exemptionReasonId', null)
+    }
   }
 
   useEffect(() => {
@@ -77,9 +100,13 @@ const EditCard = () => {
         organizationId: serviceDetails.organizationid,
         sellingPrice: serviceDetails.sellingprice,
         sacCode: serviceDetails.saccode,
-        taxGroupId: serviceDetails.taxGroupId,
-        description: serviceDetails.description
+        taxGroupId: serviceDetails.taxgroupid,
+        description: serviceDetails.description,
+        isTaxApplicable: serviceDetails.istaxapplicable,
+        exemptionReasonId: serviceDetails.exemptionreasonid
       })
+
+      setIsTaxApplicable(serviceDetails.istaxapplicable)
     }
 
   }, [serviceDetails])
@@ -87,14 +114,16 @@ const EditCard = () => {
   useEffect(() => {
     getTaxGroups()
     getCategories()
+    getExemptionReason()
 
-    getServiceData()
+    if (id !== undefined) {
+      getServiceData()
+    }
   }, [])
 
   const onSubmit = async (data) => {
-    const datatemp = await dispatch(updateService({ data, id }))
-    const seviceId = datatemp.payload.services.id
-    navigate(`/service/view/${seviceId}`)
+    await dispatch(updateService(data))
+    navigate(`/service/view/${id}`)
   }
 
 
@@ -137,7 +166,7 @@ const EditCard = () => {
                 classNamePrefix='select'
                 options={options}
                 value={options.find(c => { return c.id === field.value })}
-                onChange={val => field.onChange(val.id)}
+                onChange={val => { field.onChange(val.id); if (fieldName === 'taxGroupId') { showExemption(val) } }}
                 getOptionLabel={(option) => option.name}
                 getOptionValue={(option) => option.id}
               />
@@ -155,6 +184,9 @@ const EditCard = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card className='invoice-preview-card'>
         {/* Header */}
+        <CardHeader>
+          <CardTitle>Edit Service</CardTitle>
+        </CardHeader>
         <CardBody className='pb-0'>
           <Row>
             <Col md='6' className='mb-1'>
@@ -182,6 +214,13 @@ const EditCard = () => {
               {getSelectRow('Tax Rate', 'taxGroupId', taxGroupOptions, true)}
             </Col>
           </Row>
+          {!isTaxApplicable &&
+            <Row>
+              <Col md='6' className='mb-1'>
+                {getSelectRow('Exemption Reason', 'exemptionReasonId', exemptionReasonOptions, true)}
+              </Col>
+            </Row>
+          }
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>

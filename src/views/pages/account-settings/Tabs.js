@@ -22,7 +22,7 @@ const Tabs = ({ activeTab, toggleTab }) => {
       <NavItem>
         <NavLink active={activeTab === '3'} onClick={() => toggleTab('3')}>
           <PenTool size={18} className='me-50' />
-          <span className='fw-bold'>Appearence</span>
+          <span className='fw-bold'>Invoice</span>
         </NavLink>
       </NavItem>
       <NavItem>

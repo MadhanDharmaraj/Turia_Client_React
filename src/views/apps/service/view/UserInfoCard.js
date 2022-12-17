@@ -88,6 +88,12 @@ const UserInfoCard = ({ selectedService }) => {
                   <span className='fw-bolder col-6'>Tax Rate:</span>
                   <span className='col-6 text-end'>{selectedService.taxgroupsname}</span>
                 </li>
+                {!selectedService.istaxapplicable &&
+                  <li className='mb-75 row'>
+                    <span className='fw-bolder col-6'>Exemption Reason:</span>
+                    <span className='col-6 text-end'>{selectedService.taxgroupsname}</span>
+                  </li>
+                }
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Status:</span>
                   <span className='col-6 text-end'>
@@ -101,7 +107,7 @@ const UserInfoCard = ({ selectedService }) => {
             ) : null}
           </div>
           <div className='d-flex justify-content-center pt-2'>
-            <Button color='primary'>
+            <Button color='primary' tag={Link} to={`/service/edit/${selectedService.id}`}>
               Edit
             </Button>
             <Button className='ms-1' color='danger' outline tag={Link} to={`/service/list`}>

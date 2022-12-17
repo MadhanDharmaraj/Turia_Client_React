@@ -13,7 +13,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Row, Col, Card, Input, Label, Button, CardBody, CardText, InputGroup, InputGroupText, FormFeedback } from 'reactstrap'
 import classnames from 'classnames'
 
-import { getClient, getInvoiceItems, deleteInvoiceItem } from '../store/index' //updateInvoice, updateInvoiceTax, updateInvoiceItems, updateInvoiceItemTax,
+import { updateInvoice, updateInvoiceTax, updateInvoiceItems, updateInvoiceItemTax, getClient, getInvoiceItems, deleteInvoiceItem } from '../store/index'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -51,6 +51,7 @@ const AddCard = (data) => {
   const [selectedClient, setSelectedClient] = useState({})
   const [taxValues, setTaxValues] = useState([])
 
+  const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -80,6 +81,12 @@ const AddCard = (data) => {
     })
   }
 
+  const getExemptionReason = () => {
+    axios.post('/exemptionreasons/dropdown').then(response => {
+      const arr = response.data
+      setExemptionReasonOptions(arr.exemptionreasons)
+    })
+  }
 
   const getStates = () => {
     axios.post('/states/list').then(response => {
@@ -132,7 +139,7 @@ const AddCard = (data) => {
     getServices()
     getTaxGroups()
     getStates()
-
+    getExemptionReason()
   }, [])
 
   const getClientData = async (id) => {
@@ -151,7 +158,7 @@ const AddCard = (data) => {
     subTotalAmount: yup.string(),
     totalAmount: yup.string(),
     totalTaxAmount: yup.string(),
-    organizationId: yup.number().default(activeOrgId),
+    organizationId: yup.number().default(parseInt(activeOrgId)),
     isRcmApplicable: yup.boolean().default(false),
     dueAmount: yup.string(),
     billingAddressLine1: yup.string(),
@@ -187,7 +194,8 @@ const AddCard = (data) => {
         sacCode: yup.string(),
         price: yup.string(),
         organizationId: yup.number().default(activeOrgId),
-        exemptioReasonId: yup.number(),
+        exemptionReasonId: yup.number().nullable(),
+        isTaxApplicable: yup.boolean().default(true),
         actualPrice: yup.string().required(),
         taxGroupId: yup.number().required("Pleace Select Tax"),
         subTotalAmount: yup.string().required(1)
@@ -203,44 +211,47 @@ const AddCard = (data) => {
   const { fields, append, remove, update } = useFieldArray({ control, name: 'rows', keyName: 'rowid' })
 
   const onSubmit = async data => {
-    const temp = invoice.rows
+    const temp = data.rows
     temp.map(obj => delete obj.taxes)
     setInvoiceItems(predata => ([...predata, ...temp]))
-    delete invoice.rows
-    await dispatch(addInvoice(data))
+    delete data.rows
+    await dispatch(updateInvoice(data))
   }
 
   const InvoiceTax = async (id) => {
     invoiceTaxes.forEach((obj, key) => {
       invoiceTaxes[key].invoiceId = id
     })
-    await dispatch(addInvoiceTax(invoiceTaxes))
+    await dispatch(updateInvoiceTax(invoiceTaxes))
   }
 
   const InvoiceItems = async (id) => {
     invoiceItems.forEach((obj, key) => {
       invoiceItems[key].invoiceId = id
     })
-    await dispatch(addInvoiceItems(invoiceItems))
+    await dispatch(updateInvoiceItems(invoiceItems))
   }
 
   const InvoiceItemTax = async () => {
 
-    await dispatch(addInvoiceItemTax(invoiceItemTaxes))
+    await dispatch(updateInvoiceItemTax(invoiceItemTaxes))
     navigate(`/invoice/view/${store.invoiceId}`)
   }
 
   const addItem = (() => {
-    append({ itemId: '', invoiceId: 0, organizationId: activeOrgId, serviceId: '', sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '' })
+    append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', exemptionReasonId: 0, isTaxApplicable: true, sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '' })
   })
 
   useEffect(() => {
     addItem()
   }, [])
 
+
   useEffect(async () => {
     if (store.invoiceId !== null) {
-      await InvoiceTax(store.invoiceId)
+      if (invoiceTaxes.length > 0) {
+        await InvoiceTax(store.invoiceId)
+      }
 
       await InvoiceItems(store.invoiceId)
     }
@@ -283,7 +294,7 @@ const AddCard = (data) => {
         if (existItem) {
           existItem.taxAmount = parseFloat(existItem.taxAmount) + parseFloat(item.taxAmount)
         } else {
-          acc.push(item)
+          acc.push(Object.assign({}, item))
         }
       }
       return acc
@@ -294,8 +305,6 @@ const AddCard = (data) => {
   }
 
   const ItemFinalTotalAmount = () => {
-
-    calculateInvoiceTax()
 
     const items = control._formValues.rows
     let finalTotal = 0
@@ -314,6 +323,7 @@ const AddCard = (data) => {
 
     setFinalTotal(finalTotal)
     setFinalSubTotal(finalsubTotalAmount)
+    calculateInvoiceTax()
   }
 
   const removeItem = async (ind) => {
@@ -330,23 +340,26 @@ const AddCard = (data) => {
 
   const loadItemData = (ind, desFlg = false, priceFlg = false, sacFlg = false, taxFlg = false, itemFlg = false) => {
     const eachObj = control._formValues.rows[ind]
-    const items = eachObj
     if (eachObj.serviceId === undefined || eachObj.serviceId === '') {
       return false
     }
     const selectedService = serviceOptions.find((a) => a.id === eachObj.serviceId)
     if (itemFlg) {
-      items['sacCode'] = selectedService.saccode
-      items['actualPrice'] = selectedService.sellingprice | 0
-      items['price'] = String(selectedService.sellingprice) | 0
-      items['taxGroupId'] = selectedService.taxgroupid
-      items['description'] = selectedService.description
+      eachObj['sacCode'] = selectedService.saccode
+      eachObj['actualPrice'] = selectedService.sellingprice | 0
+      eachObj['price'] = String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = selectedService.taxgroupid
+      eachObj['description'] = selectedService.description
+      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
+      eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
     } else {
-      items['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
-      items['price'] = priceFlg ? eachObj.price : selectedService.sellingprice | 0
-      items['actualPrice'] = String(selectedService.sellingprice) | 0
-      items['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
-      items['description'] = desFlg ? eachObj.description : selectedService.description
+      eachObj['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
+      eachObj['price'] = priceFlg ? eachObj.price : selectedService.sellingprice | 0
+      eachObj['actualPrice'] = String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
+      eachObj['description'] = desFlg ? eachObj.description : selectedService.description
+      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
+      eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
     }
 
     let calculateTaxAmount = 0
@@ -354,8 +367,8 @@ const AddCard = (data) => {
     const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
     if (taxGroups !== undefined) {
       taxValues.forEach(obj => {
-        if (obj.taxid === items['taxGroupId']) {
-          const temp = calculateTax(items.price, obj.percentage, 2)
+        if (obj.taxid === eachObj['taxGroupId']) {
+          const temp = calculateTax(eachObj.price, obj.percentage, 2)
           calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
           const dataTemp = {}
           dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
@@ -363,7 +376,7 @@ const AddCard = (data) => {
           dataTemp["organizationId"] = parseInt(activeOrgId)
           dataTemp["invoiceItemId"] = ''
           dataTemp["taxNameValue"] = obj.name
-          dataTemp["serviceId"] = items.serviceId
+          dataTemp["serviceId"] = eachObj.serviceId
           dataTemp["taxPercentage"] = String(obj.percentage)
           dataTemp["taxAmount"] = String(temp)
 
@@ -372,13 +385,14 @@ const AddCard = (data) => {
       })
     }
 
-    items['rowid'] = items.rowid
-    items['organizationId'] = eachObj.organizationId
-    items['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(items.price)).toFixed(2))
-    items['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
-    items['taxes'] = invoice_item_taxes
+    eachObj['rowid'] = eachObj.rowid
+    eachObj['id'] = eachObj.id
+    eachObj['organizationId'] = eachObj.organizationId
+    eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(eachObj.price)).toFixed(2))
+    eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
+    eachObj['taxes'] = invoice_item_taxes
 
-    update(ind, items)
+    update(ind, eachObj)
 
     ItemFinalTotalAmount()
 
@@ -468,7 +482,7 @@ const AddCard = (data) => {
         bankAccountBankName: invoice.bankaccountbankname,
         bankAccountBranchName: invoice.bankaccountbranchname,
         bankAccountHolderName: invoice.bankaccountholdername,
-        bankAccountId: invoice.bankaccountid,
+        bankAccountId: invoice.bankaccountid | 0,
         bankAccountIfscCode: invoice.bankaccountifsccode,
         bankAccountNumber: invoice.bankaccountnumber,
         organizationAddressLine1: invoice.organizationaddressline1,
@@ -779,6 +793,26 @@ const AddCard = (data) => {
                                 )}
                               />
                               {errors.rows?.[index]?.taxGroupId && <FormFeedback>{errors.rows?.[index]?.taxGroupId.message}</FormFeedback>}
+                              {
+                                !item.isTaxApplicable && <Controller
+                                  control={control}
+                                  name={`rows[${index}].exemptionReasonId`}
+                                  rules={{ required: true }}
+                                  render={({ field, ref }) => (
+                                    <Select
+                                      {...field}
+                                      inputRef={ref}
+                                      className={classnames('react-select mt-1', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
+                                      classNamePrefix='select'
+                                      options={exemptionReasonOptions}
+                                      value={exemptionReasonOptions.find(c => c.id === field.value)}
+                                      onChange={(val) => { field.onChange(val.id) }}
+                                      getOptionLabel={(option) => option.name}
+                                      getOptionValue={(option) => option.id}
+                                    />
+                                  )}
+                                />
+                              }
                             </Col>
                             <Col className='my-lg-0 mt-2' lg='1' sm='12'>
                               <CardText className='col-title mb-md-50 mb-0'>Amount</CardText>
