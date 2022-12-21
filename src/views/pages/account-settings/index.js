@@ -9,7 +9,6 @@ import { Row, Col, TabContent, TabPane } from 'reactstrap'
 
 // ** Demo Components
 import Tabs from './Tabs'
-import Breadcrumbs from '@components/breadcrumbs'
 import BillingTabContent from './BillingTabContent'
 import AccountTabContent from './AccountTabContent'
 import SecurityTabContent from './SecurityTabContent'
@@ -35,7 +34,7 @@ const AccountSettings = () => {
 
   return (
     <Fragment>
-      <Breadcrumbs title='Account Settings' data={[{ title: 'Pages' }, { title: 'Account Settings' }]} />
+      {/* <Breadcrumbs title='Account Settings' data={[{ title: 'Pages' }, { title: 'Account Settings' }]} /> */}
       {data !== null ? (
         <Row>
           <Col xs={12}>

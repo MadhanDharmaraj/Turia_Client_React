@@ -76,7 +76,6 @@ const PaymentMethods = () => {
   const [cardType, setCardType] = useState('')
   const [selected, setSelected] = useState(null)
   const [modalCardType, setModalCardType] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('card')
 
   // ** Hooks
   const {
@@ -105,127 +104,93 @@ const PaymentMethods = () => {
   return (
     <Fragment>
       <Card>
-        <CardHeader className='border-bottom'>
-          <CardTitle tag='h4'>Payment Methods</CardTitle>
-        </CardHeader>
-        <CardBody className='my-1 py-25'>
+        <CardBody className='py-25'>
           <Row className='gx-4'>
             <Col lg='6'>
               <Row tag={Form} className='gx-2 gy-1' onSubmit={handleSubmit(onSubmit)}>
-                <Col xs={12}>
-                  <div className='form-check mb-1'>
-                    <Input
-                      type='radio'
-                      value='card'
-                      id='card-radio'
-                      name='payment-method-radio'
-                      checked={paymentMethod === 'card'}
-                      onChange={() => setPaymentMethod('card')}
-                    />
-                    <Label className='form-check-label' for='card-radio'>
-                      Credit/Debit/ATM Card
-                    </Label>
-                  </div>
-                  <div className='form-check mb-1'>
-                    <Input
-                      type='radio'
-                      value='paypal'
-                      id='paypal-radio'
-                      name='payment-method-radio'
-                      checked={paymentMethod === 'paypal'}
-                      onChange={() => setPaymentMethod('paypal')}
-                    />
-                    <Label className='form-check-label' for='paypal-radio'>
-                      PayPal account
-                    </Label>
-                  </div>
-                </Col>
-                {paymentMethod === 'card' && (
-                  <Fragment>
-                    <Col xs={12}>
-                      <Label className='form-label' for='credit-card'>
-                        Card Number
-                      </Label>
-                      <InputGroup>
-                        <Controller
-                          id='credit-card'
+
+                <Col xs={6}>
+                  <Label className='form-label' for='credit-card'>
+                    Account Name
+                  </Label>
+                  <InputGroup>
+                    <Controller
+                      id='credit-card'
+                      name='cardInput'
+                      control={control}
+                      placeholder='1356 3215 6548 7898'
+                      render={({ field }) => (
+                        <Cleave
+                          {...field}
                           name='cardInput'
-                          control={control}
-                          placeholder='1356 3215 6548 7898'
-                          render={({ field }) => (
-                            <Cleave
-                              {...field}
-                              name='cardInput'
-                              className={classnames('form-control', { 'is-invalid': errors.cardInput })}
-                              options={{ creditCard: true, onCreditCardTypeChanged: type => setCardType(type) }}
-                            />
-                          )}
+                          className={classnames('form-control', { 'is-invalid': errors.cardInput })}
+                          options={{ creditCard: true, onCreditCardTypeChanged: type => setCardType(type) }}
                         />
-                        {cardType !== '' && cardType !== 'unknown' ? (
-                          <InputGroupText>
-                            <img height='24' alt='card-type' src={cardsObj[cardType]} />
-                          </InputGroupText>
-                        ) : null}
-                      </InputGroup>
-                      {errors.cardInput ? (
-                        <FormFeedback className='d-block'>{errors.cardInput.message}</FormFeedback>
-                      ) : null}
-                    </Col>
-                    <Col md={6}>
-                      <Label className='form-label' for='card-name'>
-                        Name On Card
-                      </Label>
-                      <Input id='card-name' placeholder='John Doe' />
-                    </Col>
-                    <Col xs={6} md={3}>
-                      <Label className='form-label' for='exp-date'>
-                        Exp. Date
-                      </Label>
-                      <Cleave
-                        id='exp-date'
-                        placeholder='MM/YY'
-                        className='form-control'
-                        options={{ delimiter: '/', blocks: [2, 2] }}
-                      />
-                    </Col>
-                    <Col xs={6} md={3}>
-                      <Label className='form-label' for='cvv'>
-                        CVV
-                      </Label>
-                      <Cleave id='cvv' placeholder='654' className='form-control' options={{ blocks: [3] }} />
-                    </Col>
-                    <Col xs={12}>
-                      <div className='d-flex align-items-center'>
-                        <div className='form-switch w-100'>
-                          <Input defaultChecked type='switch' name='save-card' id='save-card' />
-                          <Label className='form-check-label' for='save-card'>
-                            <span className='switch-icon-left'>
-                              <Check size={14} />
-                            </span>
-                            <span className='switch-icon-right'>
-                              <X size={14} />
-                            </span>
-                          </Label>
-                          <Label className='form-check-label' className='fw-bolder ms-1' for='save-card'>
-                            Save Card for future billing?
-                          </Label>
-                        </div>
-                      </div>
-                    </Col>
-                    <Col className='mt-2 pt-1' xs={12}>
-                      <Button type='submit' className='me-1' color='primary'>
-                        Submit
-                      </Button>
-                      <Button color='secondary' outline>
-                        Cancel
-                      </Button>
-                    </Col>
-                  </Fragment>
-                )}
+                      )}
+                    />
+                    {cardType !== '' && cardType !== 'unknown' ? (
+                      <InputGroupText>
+                        <img height='24' alt='card-type' src={cardsObj[cardType]} />
+                      </InputGroupText>
+                    ) : null}
+                  </InputGroup>
+                  {errors.cardInput ? (
+                    <FormFeedback className='d-block'>{errors.cardInput.message}</FormFeedback>
+                  ) : null}
+                </Col>
+                <Col md={6}>
+                  <Label className='form-label' for='card-name'>
+                    Bank Name
+                  </Label>
+                  <Input id='card-name' placeholder='' />
+                </Col>
+                <Col md={6}>
+                  <Label className='form-label' for='card-name'>
+                    Account Number
+                  </Label>
+                  <Input id='card-name' placeholder='' />
+                </Col>
+                <Col md={6}>
+                  <Label className='form-label' for='card-name'>
+                    IFSC Code
+                  </Label>
+                  <Input id='card-name' placeholder='' />
+                </Col>
+                <Col md={6}>
+                  <Label className='form-label' for='card-name'>
+                    Branch Name
+                  </Label>
+                  <Input id='card-name' placeholder='' />
+                </Col>
+
+                <Col md={6}>
+                  <Label className='form-label' for='card-name'>
+                    Account Type
+                  </Label>
+                  <Input id='card-name' placeholder='' />
+                </Col>
+
+                <Col md={12}>
+                  <Label className='form-label' for='card-name'>
+                    Description
+                  </Label>
+                  <Input id='card-name' placeholder='' type='textarea' />
+                </Col>
+
+                
+                <Col className='mt-2 pt-1' xs={12}>
+                  <Button type='submit' className='me-1' color='primary'>
+                    Submit
+                  </Button>
+                  <Button color='secondary' outline>
+                    Cancel
+                  </Button>
+                </Col>
+
               </Row>
             </Col>
             <Col lg='6' className='mt-2 mt-lg-0'>
-              <h6 className='fw-bolder mb-2'>My Cards</h6>
+              <h6 className='fw-bolder mb-2'>My Accounts</h6>
               <div className='added-cards'>
                 {data.map((card, index) => {
                   const isLastCard = index === data[data.length - 1]
@@ -258,7 +223,6 @@ const PaymentMethods = () => {
                             </Button>
                             <Button outline>Delete</Button>
                           </div>
-                          <span className='mt-2'>Card expires at {card.expiryDate}</span>
                         </div>
                       </div>
                     </div>
@@ -310,7 +274,7 @@ const PaymentMethods = () => {
               <Label className='form-label' for='card-name'>
                 Name On Card
               </Label>
-              <Input id='card-name' placeholder='John Doe' defaultValue={selectedCondition ? selected.name : ''} />
+              <Input id='card-name' placeholder='' defaultValue={selectedCondition ? selected.name : ''} />
             </Col>
             <Col xs={6} md={3}>
               <Label className='form-label' for='exp-date'>

@@ -7,17 +7,8 @@ import Select from 'react-select'
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
+import axios from '@src/configs/axios/axiosConfig'
 
-const options = [
-  { value: 'uk', label: 'UK' },
-  { value: 'usa', label: 'USA' },
-  { value: 'france', label: 'France' },
-  { value: 'russia', label: 'Russia' },
-  { value: 'canada', label: 'Canada' }
-]
-
-// ** Reactstrap Imports
-//import { selectThemeColors } from '@utils'
 import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
@@ -25,32 +16,59 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
+import { useEffect, useState } from 'react'
+import { activeOrganizationid } from '@src/helper/sassHelper'
+import moment from 'moment'
+const activeOrgId = activeOrganizationid()
 
 const AddCard = () => {
 
   // ** States
   const schema = yup.object().shape({
-    first_name: yup.string().required("Please Enter a First Name"),
-    last_name: yup.string().required("Please Enter a Last Name"),
-    contact_no: yup.string().required("Please Enter a Conatct No").max(10).min(10, "Invalid Contact No"),
+    organizationId : yup.string().default(activeOrgId),
+    firstName: yup.string().required("Please Enter a First Name"),
+    lastName: yup.string().required("Please Enter a Last Name"),
+    conatctNo: yup.string().required("Please Enter a Conatct No").max(10).min(10, "Invalid Contact No"),
+    userTypeId : yup.string().default(4),
     email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
-    designation_id: yup.string().required("Please Select Designation"),
-    role_id: yup.string().required("Please Select Role"),
-    department_id: yup.string().required("Please Select Department")
+    designationId: yup.string().required("Please Select Designation"),
+    roleId: yup.string().required("Please Select Role"),
+    invitedAt : yup.string().default(moment().unix()),
+    expiredAt : yup.string().default(moment().add(5, 'days').unix()),
+    departmentId: yup.string().required("Please Select Department")
   })
 
   const { handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      first_name: '',
-      last_name: '',
-      contact_no: '',
-      email: '',
-      designation_id: '',
-      role_id: '',
-      department_id: '',
-      permissions: []
-    }
+    defaultValues: schema.cast()
+  })
+
+  const [departmentOptions, setDepartmentOptions] = useState([])
+  const [designationOptions, setDesignationOptions] = useState([])
+  const [rolesOptions, setRolesOptions] = useState([])
+
+  const getDesignation = () => {
+    axios.post('/designations/dropdown').
+    then((res) => { 
+      setDesignationOptions(res.data.designations) 
+    }).catch(() => { })
+  }
+
+  const getDepartment = () => {
+    axios.post('/departments/dropdown')
+    .then((res) => { 
+      setDepartmentOptions(res.data.departments)
+     }).catch(() => { })
+  }
+
+  const getRoles = () => {
+    axios.post('/roles/dropdown').then((res) => { setRolesOptions(res.data.roles) }).catch(() => { })
+  }
+
+  useEffect(() => {
+    getDesignation()
+    getDepartment()
+    getRoles()
   })
 
   const onSubmit = data => console.log(data)
@@ -65,35 +83,35 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='first_name'>
+                <Label sm='3' size='lg' className='form-label' for='firstName'>
                   First Name
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='first_name'
-                    name='first_name'
+                    id='firstName'
+                    name='firstName'
                     control={control}
-                    render={({ field }) => <Input invalid={errors.first_name && true} {...field} />}
+                    render={({ field }) => <Input invalid={errors.firstName && true} {...field} />}
                   />
-                  {errors.first_name && <FormFeedback>{errors.first_name.message}</FormFeedback>}
+                  {errors.firstName && <FormFeedback>{errors.firstName.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='last_name'>
+                <Label sm='3' size='lg' className='form-label' for='lastName'>
                   Last Name
                 </Label>
                 <Col sm='9'>
                   <Controller
                     control={control}
-                    id='last_name'
-                    name='last_name'
+                    id='lastName'
+                    name='lastName'
                     render={({ field }) => (
-                      <Input type='text' invalid={errors.last_name && true} {...field} />
+                      <Input type='text' invalid={errors.lastName && true} {...field} />
                     )}
                   />
-                  {errors.last_name && <FormFeedback>{errors.last_name.message}</FormFeedback>}
+                  {errors.lastName && <FormFeedback>{errors.lastName.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
@@ -101,17 +119,17 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='contact_no'>
+                <Label sm='3' size='lg' className='form-label' for='conatctNo'>
                   Conatct No
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='contact_no'
-                    name='contact_no'
+                    id='conatctNo'
+                    name='conatctNo'
                     control={control}
-                    render={({ field }) => <Input invalid={errors.contact_no && true} {...field} />}
+                    render={({ field }) => <Input invalid={errors.conatctNo && true} {...field} />}
                   />
-                  {errors.contact_no && <FormFeedback>{errors.contact_no.message}</FormFeedback>}
+                  {errors.conatctNo && <FormFeedback>{errors.conatctNo.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
@@ -138,58 +156,62 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='designation_id'>
+                <Label sm='3' size='lg' className='form-label' for='designationId'>
                   Designation
                 </Label>
                 <Col sm='9'>
                   <Controller
                     control={control}
-                    name="designation_id"
-                    id="designation_id"
+                    name="designationId"
+                    id="designationId"
                     render={({ field, value, ref }) => (
                       <Select
                         {...field}
                         inputRef={ref}
-                        className={classnames('react-select', { 'is-invalid': errors.designation_id })}
+                        className={classnames('react-select', { 'is-invalid': errors.designationId })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
-                        value={options.find(c => { return c.value === value })}
-                        onChange={val => field.onChange(val.value)}
+                        options={designationOptions}
+                        value={designationOptions.find(c => { return c.id === value })}
+                        onChange={val => field.onChange(val.id)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
                       />
                     )}
 
                   />
-                  {errors.designation_id && <FormFeedback className='text-danger'>{errors.designation_id?.message}</FormFeedback>}
+                  {errors.designationId && <FormFeedback className='text-danger'>{errors.designationId?.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
 
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='role_id'>
+                <Label sm='3' size='lg' className='form-label' for='roleId'>
                   Role
                 </Label>
                 <Col sm='9'>
                   <Controller
                     control={control}
-                    name="role_id"
-                    id="role_id"
+                    name="roleId"
+                    id="roleId"
                     render={({ field, value, ref }) => (
                       <Select
                         {...field}
                         inputRef={ref}
-                        className={classnames('react-select', { 'is-invalid': errors.role_id })}
+                        className={classnames('react-select', { 'is-invalid': errors.roleId })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
-                        value={options.find(c => { return c.value === value })}
-                        onChange={val => field.onChange(val.value)}
+                        options={rolesOptions}
+                        value={rolesOptions.find(c => { return c.id === value })}
+                        onChange={val => field.onChange(val.id)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
                       />
                     )}
 
                   />
-                  {errors.role_id && <FormFeedback className='text-danger'>{errors.role_id?.message}</FormFeedback>}
+                  {errors.roleId && <FormFeedback className='text-danger'>{errors.roleId?.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
@@ -197,29 +219,31 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='department_id'>
+                <Label sm='3' size='lg' className='form-label' for='departmentId'>
                   Department
                 </Label>
                 <Col sm='9'>
                   <Controller
                     control={control}
-                    name="department_id"
-                    id="department_id"
+                    name="departmentId"
+                    id="departmentId"
                     render={({ field, value, ref }) => (
                       <Select
                         {...field}
                         inputRef={ref}
-                        className={classnames('react-select', { 'is-invalid': errors.department_id })}
+                        className={classnames('react-select', { 'is-invalid': errors.departmentId })}
                         {...field}
                         classNamePrefix='select'
-                        options={options}
-                        value={options.find(c => { return c.value === value })}
-                        onChange={val => field.onChange(val.value)}
+                        options={departmentOptions}
+                        value={departmentOptions.find(c => { return c.id === value })}
+                        onChange={val => field.onChange(val.id)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
                       />
                     )}
 
                   />
-                  {errors.department_id && <FormFeedback className='text-danger'>{errors.department_id?.message}</FormFeedback>}
+                  {errors.departmentId && <FormFeedback className='text-danger'>{errors.departmentId?.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>

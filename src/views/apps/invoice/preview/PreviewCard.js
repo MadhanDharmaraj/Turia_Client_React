@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Card, CardBody, CardText, Row, Col, Table } from 'reactstrap'
-import { getInvoiceItems, getInvoiceTaxes, getInvoiceItemTaxes } from '../store'
+import { getInvoiceItems } from '../store'
 // ** Custom Components
 import Avatar from '@components/avatar'
 
@@ -14,7 +14,6 @@ const PreviewCard = ({ data }) => {
   const dispatch = useDispatch()
   const [invoiceItems, setInvoiceItems] = useState([])
   const [invoiceTaxes, setInvoiceTaxes] = useState([])
-  const [invoiceItemTaxes, setInvoiceItemTaxes] = useState([])
 
   const dateFormat = (value) => {
     return moment.unix(value).format("MMM DD, YYYY")
@@ -29,16 +28,12 @@ const PreviewCard = ({ data }) => {
   }
 
   useEffect(async () => {
+
+    setInvoiceTaxes(JSON.parse(data.calculatetaxes.replace(/\\/g, '')))
+
     const res = await dispatch(getInvoiceItems(id))
     setInvoiceItems(res.payload)
-
-    const res1 = await dispatch(getInvoiceTaxes(id))
-    setInvoiceTaxes(res1.payload)
-
-    const res2 = await dispatch(getInvoiceItemTaxes(id))
-    setInvoiceItemTaxes(res2.payload)
-
-  }, [])
+  }, [data])
 
   return data !== null ? (
     <Card className='invoice-preview-card'>
@@ -167,26 +162,22 @@ const PreviewCard = ({ data }) => {
                 <td className='py-1'>
                   <span className='fw-bold'>{item.price}</span>
                 </td>
-                {
-                  invoiceItemTaxes.length > 0 &&
-                  <td className='py-1'>
-                    <span className='fw-bold'>
-                      {
-                        item.isTaxApplicable === 'true' &&
-                        invoiceItemTaxes.map((obj, k) => {
-                          if (item.serviceId === obj.serviceid) {
-                            return (<Row key={k}><span>{obj.taxname} - {obj.taxamount}</span></Row>)
-                          }
-                        })
-                      }
-                      {
-                        item.isTaxApplicable === 'false' && (<Row>
-                          <span>{item.taxGroupName}</span>
-                          <span>{item.exemptionReasonName}</span></Row>)
-                      }
-                    </span>
-                  </td>
-                }
+                <td className='py-1'>
+                  <span className='fw-bold'>
+                    {
+                      item.isTaxApplicable === 'true' &&
+                      JSON.parse(item.taxes.replace(/\\/g, '')).map((obj, k) => {
+                        return (<Row key={k}><span>{obj.taxName} - {obj.taxAmount}</span></Row>)
+
+                      })
+                    }
+                    {
+                      item.isTaxApplicable === 'false' && (<Row>
+                        <span>{item.taxGroupName}</span>
+                        <span>{item.exemptionReasonName}</span></Row>)
+                    }
+                  </span>
+                </td>
                 <td className='py-1'>
                   <span className='fw-bold'>{item.subTotalAmount}</span>
                 </td>
@@ -214,12 +205,12 @@ const PreviewCard = ({ data }) => {
                 <p className='invoice-total-title'>Pre Tax Amount:</p>
                 <p className='invoice-total-amount'>{data.subtotalamount}</p>
               </div>
-              {
+              { invoiceTaxes.length > 0 &&
                 invoiceTaxes.map((obj, key) => {
                   return (
                     <div className='invoice-total-item' key={key}>
-                      <p className='invoice-total-title'>{obj.taxname}</p>
-                      <p className='invoice-total-amount'>{obj.taxamount}</p>
+                      <p className='invoice-total-title'>{obj.taxName}</p>
+                      <p className='invoice-total-amount'>{obj.taxAmount}</p>
                     </div>
                   )
                 })

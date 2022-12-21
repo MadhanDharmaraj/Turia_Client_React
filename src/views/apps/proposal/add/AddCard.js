@@ -1,476 +1,843 @@
 // ** React Imports
 import { Fragment, useState, useEffect } from 'react'
 
-// ** Custom Components
-import Sidebar from '@components/sidebar'
-import Repeater from '@components/repeater'
-
 // ** Third Party Components
-import axios from 'axios'
+import axios from '@src/configs/axios/axiosConfig'
 import Flatpickr from 'react-flatpickr'
-import { SlideDown } from 'react-slidedown'
 import { X, Plus, Hash } from 'react-feather'
-import Select, { components } from 'react-select'
-import { useForm, useFieldArray } from "react-hook-form"
+import Select from 'react-select'
+import { useForm, useFieldArray, Controller } from "react-hook-form"
+import * as yup from "yup"
+import { yupResolver } from "@hookform/resolvers/yup"
 // ** Reactstrap Imports
-import { selectThemeColors } from '@utils'
-import { Row, Col, Card, Form, Input, Label, Button, CardBody, CardText, InputGroup, InputGroupText } from 'reactstrap'
+import { Row, Col, Card, Input, Label, Button, CardBody, CardText, InputGroup, InputGroupText, FormFeedback } from 'reactstrap'
+import classnames from 'classnames'
+
+import { addInvoice, addInvoiceTax, addInvoiceItems, addInvoiceItemTax, getClient } from '../store/index'
+import Avatar from '@components/avatar'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
+import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
+import { calculateTax } from '../helper/hepler'
+import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+
+const activeOrgId = activeOrganizationid()
+const activeOrg = activeOrganization()
+
+const noteText =
+  'It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
+
 
 const AddCard = () => {
-  // ** States
-  const [value, setValue] = useState({})
-  const [open, setOpen] = useState(false)
-  const [clients, setClients] = useState(null)
-  const [selected, setSelected] = useState(null)
-  const [picker, setPicker] = useState(new Date())
-  const [invoiceNumber, setInvoiceNumber] = useState(false)
-  const [dueDatepicker, setDueDatePicker] = useState(new Date())
-  const [options, setOptions] = useState([
-    {
-      value: 'add-new',
-      label: 'Add New Customer',
-      type: 'button',
-      color: 'flat-success'
+
+  const [clientOptions, setClientOptions] = useState([])
+  const [serviceOptions, setServiceOptions] = useState([])
+  const [taxGroupOptions, setTaxGroupOptions] = useState([])
+  const [stateOptions, setStateOptions] = useState([])
+
+  const [finalTotal, setFinalTotal] = useState(0)
+  const [finalSubTotal, setFinalSubTotal] = useState(0)
+
+  const [invoiceItems, setInvoiceItems] = useState([])
+  const [selectedClient, setSelectedClient] = useState({})
+  const [taxValues, setTaxValues] = useState([])
+
+  const [invoiceTaxes, setInvoiceTaxes] = useState([])
+  const [invoiceItemTaxes, setInvoiceItemTaxes] = useState([])
+  const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const store = useSelector(state => state.invoice)
+  const getClients = () => {
+    axios.post('/clients/dropdown').then(response => {
+      const arr = response.data
+      setClientOptions(arr.clients)
+    })
+  }
+
+  const getServices = () => {
+    axios.post('/services/dropdown').then(response => {
+      const arr = response.data
+      setServiceOptions(arr.services)
+    })
+  }
+
+  const getTaxValue = (taxType) => {
+    const data = {
+      type: taxType
     }
-  ])
-  const { register, control, formState: { errors } } = useForm({
-    defaultValues: {
-      clientId: '',
-      invoice_items: []
-    }
-  })
-  const { fields, append, remove } = useFieldArray({ name: 'invoice_items', control })
-  // /const onSubmit = data => console.log(data)
+    axios.post('/taxvalues/list', data).then(response => {
+      const arr = response.data
+      setTaxValues(arr.taxvalues)
+    })
+  }
+
+  const getExemptionReason = () => {
+    axios.post('/exemptionreasons/dropdown').then(response => {
+      const arr = response.data
+      setExemptionReasonOptions(arr.exemptionreasons)
+    })
+  }
+
+  const getStates = () => {
+    axios.post('/states/list').then(response => {
+      const arr = response.data
+      setStateOptions(arr.states)
+    })
+  }
+
+  const getTaxGroups = () => {
+    axios.post('/taxgroups/dropdown').then(response => {
+      const arr = response.data
+      setTaxGroupOptions(arr.taxgroups)
+    })
+  }
 
   useEffect(() => {
     // ** Get Clients
-    axios.get('/api/invoice/clients').then(response => {
-      const arr = options
-      response.data.map(item => arr.push({ value: item.name, label: item.name }))
-      setOptions([...arr])
-      setClients(response.data)
-    })
+    getClients()
+    getServices()
+    getTaxGroups()
+    getExemptionReason()
+    getStates()
 
-    // ** Get Invoices & Set Invoice Number
-    axios
-      .get('/invoice/invoices', {
-        q: '',
-        page: 1,
-        status: '',
-        sort: 'asc',
-        perPage: 10,
-        sortColumn: 'id'
-      })
-      .then(response => {
-        const lastInvoiceNumber = Math.max.apply(
-          Math,
-          response.data.allData.map(i => i.id)
-        )
-        setInvoiceNumber(lastInvoiceNumber + 1)
-      })
   }, [])
 
-  // ** Function to toggle sidebar
-  const toggleSidebar = () => setOpen(!open)
-
-  // ** Vars
-  const countryOptions = [
-    { value: 'australia', label: 'Australia' },
-    { value: 'canada', label: 'Canada' },
-    { value: 'russia', label: 'Russia' },
-    { value: 'saudi-arabia', label: 'Saudi Arabia' },
-    { value: 'singapore', label: 'Singapore' },
-    { value: 'sweden', label: 'Sweden' },
-    { value: 'switzerland', label: 'Switzerland' },
-    { value: 'united-kingdom', label: 'United Kingdom' },
-    { value: 'united-arab-emirates', label: 'United Arab Emirates' },
-    { value: 'united-states-of-america', label: 'United States of America' }
-  ]
-
-  // ** Custom Options Component
-  const OptionComponent = ({ data, ...props }) => {
-    if (data.type === 'button') {
-      return (
-        <Button className='text-start rounded-0 px-50' color={data.color} block onClick={() => setOpen(true)}>
-          <Plus className='font-medium-1 me-50' />
-          <span className='align-middle'>{data.label}</span>
-        </Button>
-      )
-    } else {
-      return <components.Option {...props}> {data.label} </components.Option>
-    }
+  const getClientData = async (id) => {
+    const res = await dispatch(getClient(id))
+    setSelectedClient(res.payload)
   }
 
-  // ** Invoice To OnChange
-  const handleInvoiceToChange = data => {
-    setValue(data)
-    setSelected(clients.filter(i => i.name === data.value)[0])
+  const schema = yup.object().shape({
+    contactId: yup.number().required("Please select a Client"),
+    uniqueIdentity: yup.string(),
+    contactEmail: yup.string(),
+    contactName: yup.string(),
+    invoiceDate: yup.number(),
+    paymentDue: yup.number(),
+    placeOfSupplyId: yup.number().required("Please select a Place Of Supply"),
+    subTotalAmount: yup.string(),
+    totalAmount: yup.string(),
+    totalTaxAmount: yup.string(),
+    organizationId: yup.number().default(activeOrgId),
+    isRcmApplicable: yup.boolean().default(false),
+    dueAmount: yup.string(),
+    billingAddressLine1: yup.string(),
+    billingAddressLine2: yup.string(),
+    billingAddressState: yup.string(),
+    billingAddressCity: yup.string(),
+    billingAddressZipCode: yup.string(),
+    billingCurrencyId: yup.number(),
+    bankAccountBankName: yup.string(),
+    bankAccountBranchName: yup.string(),
+    bankAccountHolderName: yup.string(),
+    bankAccountId: yup.string(),
+    bankAccountIfscCode: yup.string(),
+    bankAccountNumber: yup.string(),
+    organizationAddressLine1: yup.string().default(activeOrg.addressline1),
+    organizationAddressLine2: yup.string().default(activeOrg.addressline2),
+    organizationCity: yup.string().default(activeOrg.organizationcity),
+    organizationState: yup.string().default(activeOrg.statename),
+    organizationZipCode: yup.string().default(activeOrg.pinzipcode),
+    organizationName: yup.string().default(activeOrg.name),
+    organizationImageUrl: yup.string().default(''),
+    organizationStateCode: yup.string().default(activeOrg.stateshortname),
+    organizationGstin: yup.string().default(activeOrg.gstin),
+    gstin: yup.string(),
+    note: yup.string().default(noteText),
+    status: yup.number().default(1),
+    paymentStatus: yup.number().default(11),
+    rows: yup.array().of(
+      yup.object().shape({
+        serviceId: yup.number().required("Please Select Service Item"),
+        invoiceId: yup.number(),
+        sacCode: yup.string(),
+        price: yup.string(),
+        organizationId: yup.number().default(activeOrgId),
+        exemptionReasonId: yup.number().nullable(),
+        isTaxApplicable: yup.boolean().default(true),
+        actualPrice: yup.string().required(),
+        taxGroupId: yup.number().required("Pleace Select Tax"),
+        subTotalAmount: yup.string().required(1)
+      })
+    )
+  })
+
+  const { handleSubmit, formState: { errors }, control, setValue } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: schema.cast()
+  })
+
+  const { fields, append, remove, update } = useFieldArray({ control, name: 'rows' })
+
+  const onSubmit = async data => {
+    const temp = data.rows
+    temp.map(obj => delete obj.taxes)
+    setInvoiceItems(predata => ([...predata, ...temp]))
+    delete data.rows
+    await dispatch(addInvoice(data))
+  }
+
+  const InvoiceTax = async (id) => {
+    invoiceTaxes.forEach((obj, key) => {
+      invoiceTaxes[key].invoiceId = id
+    })
+    await dispatch(addInvoiceTax(invoiceTaxes))
+  }
+
+  const InvoiceItems = async (id) => {
+    invoiceItems.forEach((obj, key) => {
+      invoiceItems[key].invoiceId = id
+    })
+    await dispatch(addInvoiceItems(invoiceItems))
+  }
+
+  const InvoiceItemTax = async () => {
+    if (invoiceItemTaxes.length > 0) {
+      await dispatch(addInvoiceItemTax(invoiceItemTaxes))
+    }
+    navigate(`/invoice/view/${store.invoiceId}`)
   }
 
   const addItem = (() => {
-    append({ name: '', email: '', contactNo: '', issuedDate: '', expiryDate: '', password: '' })
-  })
-
-  const removeItem = ((val) => {
-    remove(val)
+    append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', exemptionReasonId: 0, isTaxApplicable: true, sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '' })
   })
 
   useEffect(() => {
     addItem()
   }, [])
 
-  const note =
-    'It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
+  useEffect(async () => {
+    if (store.invoiceId !== null) {
+      if (invoiceTaxes.length > 0) {
+        await InvoiceTax(store.invoiceId)
+      }
+
+      await InvoiceItems(store.invoiceId)
+    }
+  }, [store.invoiceId])
+
+  useEffect(async () => {
+    if (store.invoiceItems.length > 0) {
+      const inputArray = control._formValues.rows.map(a => a.taxes)
+      const temp = inputArray.flat()
+      store.invoiceItems.forEach(async (obj) => {
+        temp.forEach((object, key) => {
+          if (object.serviceId === obj.serviceid) {
+            temp[key].invoiceItemId = obj.id
+          }
+          temp[key].invoiceId = store.invoiceId
+        })
+      })
+
+      setInvoiceItemTaxes(temp)
+    }
+  }, [store.invoiceItems])
+
+  useEffect(async () => {
+    if (invoiceItemTaxes.length > 0) {
+      await InvoiceItemTax()
+    }
+  }, [invoiceItemTaxes])
+
+  const calculateInvoiceTax = () => {
+
+    const inputArray = control._formValues.rows.map(a => a.taxes)
+    let temp = []
+    temp = inputArray.flat()
+    let output = []
+    output = temp.reduce((acc, item) => {
+      if (item !== undefined) {
+        const existItem = acc.find((obj) => {
+          return item.taxName === obj.taxName
+        })
+        if (existItem) {
+          existItem.taxAmount = parseFloat(existItem.taxAmount) + parseFloat(item.taxAmount)
+        } else {
+          acc.push(Object.assign({}, item))
+        }
+      }
+      return acc
+    }, [])
+
+    setInvoiceTaxes(output)
+
+  }
+
+  const ItemFinalTotalAmount = () => {
+
+    const items = control._formValues.rows
+    let finalTotal = 0
+    let finalsubTotalAmount = 0
+    let finalTaxAmount = 0
+    items.forEach(obj => {
+      finalTotal = parseFloat(obj.subTotalAmount) + parseFloat(finalTotal)
+      finalsubTotalAmount = parseFloat(obj.price) + parseFloat(finalsubTotalAmount)
+      finalTaxAmount = parseFloat(finalTaxAmount) + parseFloat(obj.taxPrice)
+    })
+
+    control._formValues.subTotalAmount = finalsubTotalAmount
+    control._formValues.totalAmount = finalTotal
+    control._formValues.dueAmount = finalTotal
+    control._formValues.totalTaxAmount = finalTaxAmount
+
+    setFinalTotal(finalTotal)
+    setFinalSubTotal(finalsubTotalAmount)
+
+    calculateInvoiceTax()
+  }
+
+  const removeItem = ((ind) => {
+    remove(ind)
+    ItemFinalTotalAmount()
+  })
+
+  const loadItemData = (ind, desFlg = false, priceFlg = false, sacFlg = false, taxFlg = false, itemFlg = false) => {
+    const eachObj = control._formValues.rows[ind]
+    if (eachObj.serviceId === undefined || eachObj.serviceId === '') {
+      return false
+    }
+
+    const selectedService = serviceOptions.find((a) => a.id === eachObj.serviceId)
+
+    if (itemFlg) {
+      eachObj['sacCode'] = selectedService.saccode
+      eachObj['actualPrice'] = selectedService.sellingprice | 0
+      eachObj['price'] = String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = selectedService.taxgroupid
+      eachObj['description'] = selectedService.description
+      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
+      eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
+    } else {
+      eachObj['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
+      eachObj['price'] = priceFlg ? eachObj.price : selectedService.sellingprice | 0
+      eachObj['actualPrice'] = String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
+      eachObj['description'] = desFlg ? eachObj.description : selectedService.description
+      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
+      eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
+    }
+
+    let calculateTaxAmount = 0
+    const invoice_item_taxes = []
+    if (selectedService.istaxapplicable) {
+      const taxGroup = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
+      if (taxGroup !== undefined) {
+        taxValues.forEach(obj => {
+          if (obj.taxid === eachObj['taxGroupId']) {
+            let temp = 0
+            temp = calculateTax(eachObj.price, obj.percentage, 2)
+            calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
+            const dataTemp = {}
+            dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
+            dataTemp["taxId"] = parseInt(obj.id)
+            dataTemp["organizationId"] = parseInt(activeOrgId)
+            dataTemp["invoiceItemId"] = ''
+            dataTemp["taxNameValue"] = obj.name
+            dataTemp["serviceId"] = eachObj.serviceId
+            dataTemp["taxPercentage"] = String(obj.percentage)
+            dataTemp["taxAmount"] = String(temp)
+
+            invoice_item_taxes.push(dataTemp)
+          }
+        })
+      }
+    }
+
+    //eachObj['id'] = eachObj.id
+    eachObj['organizationId'] = eachObj.organizationId
+    eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount | 0) + parseFloat(eachObj.price | 0)).toFixed(2))
+    eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
+    eachObj['taxes'] = invoice_item_taxes
+
+    update(ind, eachObj)
+
+    ItemFinalTotalAmount()
+
+  }
+
+  const taxvaluefn = () => {
+    let taxtype = 1
+    if (activeOrg.stateid === control._formValues.placeOfSupplyId) {
+      taxtype = 2
+    }
+
+    getTaxValue(taxtype)
+
+  }
+
+  useEffect(() => {
+    if (taxValues.length > 0) {
+      control._formValues.rows.forEach((obj, ind) => {
+        loadItemData(ind, false, false, false, false, false)
+      })
+    }
+  }, [taxValues])
+
+
+  useEffect(() => {
+    if (Object.keys(selectedClient).length > 0) {
+      setValue('billingAddressCity', selectedClient.billingaddresscity)
+      setValue('billingAddressLine1', selectedClient.billingaddressline1)
+      setValue('billingAddressLine2', selectedClient.billingaddressline1)
+      setValue('billingAddressState', selectedClient.billingaddressstatesname)
+      setValue('billingAddressZipCode', selectedClient.billingaddresszip)
+      setValue('billingCurrencyId', parseInt(selectedClient.currencyid))
+      setValue('billingCurrencySymbol', selectedClient.currenciessymbol)
+      setValue('billingCurrencyShortName', selectedClient.currenciescode)
+      setValue('billingCurrencyName', selectedClient.currenciesname)
+      setValue('contactEmail', selectedClient.email)
+      setValue('gstin', selectedClient.gstin)
+      setValue('contactName', selectedClient.name)
+      setValue('placeOfSupplyId', selectedClient.placeofsupplyid)
+      taxvaluefn()
+    }
+
+  }, [selectedClient])
+
+  const renderError = () => {
+    const keys = Object.keys(errors)
+    const ErrorText = []
+    if (Array.isArray(keys)) {
+      keys.forEach((key) => {
+        if (key !== 'rows') {
+          ErrorText.push(<FormFeedback key={key}>${errors[key]?.message}</FormFeedback>)
+        }
+      })
+    }
+    return ErrorText
+  }
+
+  const renderOrg = name => {
+    const stateNum = Math.floor(Math.random() * 6),
+      states = ['light-success', 'light-danger', 'light-warning', 'light-info', 'light-primary', 'light-secondary'],
+      color = states[stateNum]
+    return <Avatar color={color} className='me-50' content={name !== null ? name.charAt(0) : ''} />
+
+  }
 
   return (
-    <Fragment>
-      <Card className='invoice-preview-card'>
-        {/* Header */}
-        <CardBody className='invoice-padding pb-0'>
-          <div className='d-flex justify-content-between flex-md-row flex-column invoice-spacing mt-0'>
-            <div>
-              <div className='logo-wrapper'>
-                <svg viewBox='0 0 139 95' version='1.1' height='24'>
-                  <defs>
-                    <linearGradient id='invoice-linearGradient-1' x1='100%' y1='10.5120544%' x2='50%' y2='89.4879456%'>
-                      <stop stopColor='#000000' offset='0%'></stop>
-                      <stop stopColor='#FFFFFF' offset='100%'></stop>
-                    </linearGradient>
-                    <linearGradient
-                      id='invoice-linearGradient-2'
-                      x1='64.0437835%'
-                      y1='46.3276743%'
-                      x2='37.373316%'
-                      y2='100%'
-                    >
-                      <stop stopColor='#EEEEEE' stopOpacity='0' offset='0%'></stop>
-                      <stop stopColor='#FFFFFF' offset='100%'></stop>
-                    </linearGradient>
-                  </defs>
-                  <g stroke='none' strokeWidth='1' fill='none' fillRule='evenodd'>
-                    <g transform='translate(-400.000000, -178.000000)'>
-                      <g transform='translate(400.000000, 178.000000)'>
-                        <path
-                          className='text-primary'
-                          d='M-5.68434189e-14,2.84217094e-14 L39.1816085,2.84217094e-14 L69.3453773,32.2519224 L101.428699,2.84217094e-14 L138.784583,2.84217094e-14 L138.784199,29.8015838 C137.958931,37.3510206 135.784352,42.5567762 132.260463,45.4188507 C128.736573,48.2809251 112.33867,64.5239941 83.0667527,94.1480575 L56.2750821,94.1480575 L6.71554594,44.4188507 C2.46876683,39.9813776 0.345377275,35.1089553 0.345377275,29.8015838 C0.345377275,24.4942122 0.230251516,14.560351 -5.68434189e-14,2.84217094e-14 Z'
-                          style={{ fill: 'currentColor' }}
-                        ></path>
-                        <path
-                          d='M69.3453773,32.2519224 L101.428699,1.42108547e-14 L138.784583,1.42108547e-14 L138.784199,29.8015838 C137.958931,37.3510206 135.784352,42.5567762 132.260463,45.4188507 C128.736573,48.2809251 112.33867,64.5239941 83.0667527,94.1480575 L56.2750821,94.1480575 L32.8435758,70.5039241 L69.3453773,32.2519224 Z'
-                          fill='url(#invoice-linearGradient-1)'
-                          opacity='0.2'
-                        ></path>
-                        <polygon
-                          fill='#000000'
-                          opacity='0.049999997'
-                          points='69.3922914 32.4202615 32.8435758 70.5039241 54.0490008 16.1851325'
-                        ></polygon>
-                        <polygon
-                          fill='#000000'
-                          opacity='0.099999994'
-                          points='69.3922914 32.4202615 32.8435758 70.5039241 58.3683556 20.7402338'
-                        ></polygon>
-                        <polygon
-                          fill='url(#invoice-linearGradient-2)'
-                          opacity='0.099999994'
-                          points='101.428699 0 83.0667527 94.1480575 130.378721 47.0740288'
-                        ></polygon>
-                      </g>
-                    </g>
-                  </g>
-                </svg>
-                <h3 className='text-primary invoice-logo'>Vuexy</h3>
-              </div>
-              <p className='card-text mb-25'>Office 149, 450 South Brand Brooklyn</p>
-              <p className='card-text mb-25'>San Diego County, CA 91905, USA</p>
-              <p className='card-text mb-0'>+1 (123) 456 7891, +44 (876) 543 2198</p>
-            </div>
-            <div className='invoice-number-date mt-md-0 mt-2'>
-              <div className='d-flex align-items-center justify-content-md-end mb-1'>
-                <h4 className='invoice-title'>Invoice</h4>
-                <InputGroup className='input-group-merge invoice-edit-input-group disabled'>
-                  <InputGroupText>
-                    <Hash size={15} />
-                  </InputGroupText>
-                  <Input
-                    type='number'
-                    className='invoice-edit-input'
-                    value={invoiceNumber || 3171}
-                    placeholder='53634'
-                    disabled
-                  />
-                </InputGroup>
-              </div>
-              <div className='d-flex align-items-center mb-1'>
-                <span className='title'>Date:</span>
-                <Flatpickr
-                  value={picker}
-                  onChange={date => setPicker(date)}
-                  className='form-control invoice-edit-input date-picker'
-                />
-              </div>
-              <div className='d-flex align-items-center'>
-                <span className='title'>Due Date:</span>
-                <Flatpickr
-                  value={dueDatepicker}
-                  onChange={date => setDueDatePicker(date)}
-                  className='form-control invoice-edit-input due-date-picker'
-                />
-              </div>
-            </div>
-          </div>
-        </CardBody>
-        {/* /Header */}
 
-        <hr className='invoice-spacing' />
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Row className='invoice-add'>
+        <Fragment>
+          <Col xl={10} md={8} sm={12}>
 
-        {/* Address and Contact */}
-        <CardBody className='invoice-padding pt-0'>
-          <Row className='row-bill-to invoice-spacing'>
-            <Col className='col-bill-to ps-0' xl='8'>
-              <h6 className='invoice-to-title'>Invoice To:</h6>
-              <div className='invoice-customer'>
-                {clients !== null ? (
-                  <Fragment>
-                    <Select
-                      className='react-select'
-                      classNamePrefix='select'
-                      id='label'
-                      value={value}
-                      options={options}
-                      theme={selectThemeColors}
-                      components={{
-                        Option: OptionComponent
-                      }}
-                      onChange={handleInvoiceToChange}
-                    />
-                    {selected !== null ? (
-                      <div className='customer-details mt-1'>
-                        <p className='mb-25'>{selected.name}</p>
-                        <p className='mb-25'>{selected.company}</p>
-                        <p className='mb-25'>{selected.address}</p>
-                        <p className='mb-25'>{selected.country}</p>
-                        <p className='mb-0'>{selected.contact}</p>
-                        <p className='mb-0'>{selected.companyEmail}</p>
-                      </div>
-                    ) : null}
-                  </Fragment>
-                ) : null}
-              </div>
-            </Col>
-            <Col className='pe-0 mt-xl-0 mt-2' xl='4'>
-              <h6 className='mb-2'>Payment Details:</h6>
-              <table>
-                <tbody>
-                  <tr>
-                    <td className='pe-1'>Total Due:</td>
-                    <td>
-                      <span className='fw-bolder'>$12,110.55</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className='pe-1'>Bank name:</td>
-                    <td>American Bank</td>
-                  </tr>
-                  <tr>
-                    <td className='pe-1'>Country:</td>
-                    <td>United States</td>
-                  </tr>
-                  <tr>
-                    <td className='pe-1'>IBAN:</td>
-                    <td>ETD95476213874685</td>
-                  </tr>
-                  <tr>
-                    <td className='pe-1'>SWIFT code:</td>
-                    <td>BR91905</td>
-                  </tr>
-                </tbody>
-              </table>
-            </Col>
-          </Row>
-        </CardBody>
-        {/* /Address and Contact */}
+            <Card className='invoice-preview-card'>
 
-        {/* Product Details */}
-        <CardBody className='invoice-padding invoice-product-details'>
-          {fields.map((item, i) => (
-
-            <div key={i} className='repeater-wrapper'>
-              <Row>
-                <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
-                  <Row className='w-100 pe-lg-0 pe-1 py-2'>
-                    <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-4 col-sm-12'>
-                      <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
-                      <Select
-                        id='label'
-                        value={value}
-                        theme={selectThemeColors}
-                        className={`react-select ${errors.invoice_items?.[i]?.taxGroupId ? 'is-invalid' : ''}`}
-                        classNamePrefix='Select Tax Rate'
-                        options={countryOptions}
-                        isClearable={false}
-                        {...register(`invoice_items.${i}.taxGroupId`, { required: true })} />
-                    </Col>
-                    <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
-                      <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
-                      <input type='email' {...register(`invoice_items.${i}.email`, { required: true })} className={`form-control ${errors.invoice_items?.[i]?.email ? 'is-invalid' : ''}`} />
-                      <div className="invalid-feedback">{errors.invoice_items?.[i]?.email?.message}</div>
-                    </Col>
-                    <Col className='my-lg-0 my-2' lg='2' sm='12'>
-                      <CardText className='col-title mb-md-2 mb-0'>Price</CardText>
-                      <input className='form-control' type='number' placeholder='' {...register(`invoice_items.${i}.contactNo`)} />
-                    </Col>
-                    <Col className='my-lg-0 mt-2' lg='2' sm='12'>
-                      <CardText className='col-title mb-md-50 mb-0'>Tax Rate</CardText>
-                      <Select
-                        id='label'
-                        value={value}
-                        theme={selectThemeColors}
-                        className={`react-select ${errors.invoice_items?.[i]?.taxGroupId ? 'is-invalid' : ''}`}
-                        classNamePrefix='Select Tax Rate'
-                        options={countryOptions}
-                        isClearable={false}
-                        {...register(`invoice_items.${i}.taxGroupId`, { required: true })} />
-                    </Col>
-                    <Col className='my-lg-0 mt-2' lg='1' sm='12'>
-                      <CardText className='col-title mb-md-50 mb-0'>Amount</CardText>
-
-                    </Col>
-                  </Row>
-                  <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                    <X size={18} className='cursor-pointer' onClick={() => removeItem(i)} />
+              {/* Header */}
+              <CardBody className='invoice-padding pb-0'>
+                {
+                  renderError()
+                }
+                <div className='d-flex justify-content-between flex-md-row flex-column invoice-spacing mt-0'>
+                  <div>
+                    <div className='logo-wrapper'>
+                      {renderOrg(activeOrg.name)}
+                    </div>
+                    <h3 className='text-primary invoice-logo'>{activeOrg.name}</h3>
+                    <p className='card-text mb-25'>{activeOrg.addressline1}</p>
+                    <p className='card-text mb-25'>{activeOrg.addressline2}</p>
+                    <p className='card-text mb-0'>{activeOrg.organizationcity} - {activeOrg.pinzipcode}</p>
+                    <p className='card-text mb-0'>{activeOrg.statename}</p>
                   </div>
-                </Col>
-              </Row>
+                  <div className='invoice-number-date mt-md-0 mt-2'>
+                    <div className='d-flex align-items-center justify-content-md-end mb-1'>
+                      <h4 className='invoice-title'>Invoice</h4>
+                      <InputGroup className='input-group-merge invoice-edit-input-group disabled'>
+                        <InputGroupText>
+                          <Hash size={15} />
+                        </InputGroupText>
+                        <Input
+                          type='number'
+                          className='invoice-edit-input'
+                          value={3171}
+                          placeholder='53634'
+                          disabled
+                        />
+                      </InputGroup>
+                    </div>
+                    <div className='d-flex align-items-center mb-1'>
+                      <span className='title'>Invoice Date:</span>
+                      <Controller
+                        control={control}
+                        name={`invoiceDate`}
+                        id='invoiceDate'
+                        render={({ field }) => (
+                          <Flatpickr
+                            value={field.value}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "M j, Y", dateFormat: "U" }}
+                            className='form-control invoice-edit-input date-picker'
+                          />
+                        )}
+                      />
+                    </div>
+                    <div className='d-flex align-items-center'>
+                      <span className='title'>Due Date:</span>
+                      <Controller
+                        control={control}
+                        name={`paymentDue`}
+                        id='paymentDue'
+                        render={({ field }) => (
+                          <Flatpickr
+                            value={field.value}
+                            onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                            options={{ altInput: true, altFormat: "M j, Y", dateFormat: "U" }}
+                            className='form-control invoice-edit-input due-date-picker'
+                          />
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardBody>
+              {/* /Header */}
+
+              <hr className='invoice-spacing' />
+
+              {/* Address and Contact */}
+              <CardBody className='invoice-padding pt-0'>
+                <Row className='row-bill-to invoice-spacing'>
+                  <Col className='col-bill-to ps-0' xl='8'>
+                    <h6 className='invoice-to-title'>Invoice To:</h6>
+                    <div className='invoice-customer'>
+                      <Controller
+                        control={control}
+                        name={`contactId`}
+                        id={`contactId`}
+                        render={({ field, ref }) => (
+                          <Select
+                            inputRef={ref}
+                            className={classnames('react-select', { 'is-invalid': errors['contactId'] })}
+                            {...field}
+                            classNamePrefix='select'
+                            options={clientOptions}
+                            value={clientOptions.find(c => { return c.id === field.value })}
+                            onChange={val => { field.onChange(val.id); getClientData(val.id) }}
+                            getOptionLabel={(option) => option.name}
+                            getOptionValue={(option) => option.id}
+                          />
+                        )}
+                      />
+                    </div>
+                    <Col className='pe-0 mt-xl-2' xl='4'>
+                      <table>
+                        <tbody>
+                          <tr>
+                            <td>{selectedClient.billingaddressline1}</td>
+                          </tr>
+                          <tr>
+                            <td>{selectedClient.billingaddressline2}</td>
+                          </tr>
+                          <tr>
+                            <td>{selectedClient.billingaddresscity} {selectedClient.billingaddresszip && `-`}  {selectedClient.billingaddresszip}</td>
+                          </tr>
+                          <tr>
+                            <td>{selectedClient.billingaddressstatesname}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </Col>
+                  </Col>
+                  <Col className='pe-0 mt-xl-0 mt-2' xl='4'>
+                    <h6 className='mb-2'>Payment Details:</h6>
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td className='pe-1'>Bank Name:</td>
+                          <td>
+                            <span className='fw-bolder'>$12,110.55</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className='pe-1'>Account name:</td>
+                          <td>American Bank</td>
+                        </tr>
+                        <tr>
+                          <td className='pe-1'>Branch Name:</td>
+                          <td>United States</td>
+                        </tr>
+                        <tr>
+                          <td className='pe-1'>IFSC Code:</td>
+                          <td>ETD95476213874685</td>
+                        </tr>
+                        <tr>
+                          <td className='pe-1'>Currency code:</td>
+                          <td>{selectedClient.currenciescode}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </Col>
+                </Row>
+                <Row className='row-bill-to invoice-spacing'>
+                  <Col className='col-bill-to ps-0' xl='8'>
+                    <h6 className='invoice-to-title mt-2'>Place Of Supply:</h6>
+                    <div className='invoice-customer'>
+                      <Controller
+                        control={control}
+                        name={`placeOfSupplyId`}
+                        id={`placeOfSupplyId`}
+                        render={({ field, ref }) => (
+                          <Select
+                            inputRef={ref}
+                            className={classnames('react-select', { 'is-invalid': errors['placeOfSupplyId'] })}
+                            {...field}
+                            classNamePrefix='select'
+                            options={stateOptions}
+                            value={stateOptions.find(c => { return c.id === field.value })}
+                            onChange={val => { field.onChange(val.id); taxvaluefn() }}
+                            getOptionLabel={(option) => option.name}
+                            getOptionValue={(option) => option.id}
+                          />
+                        )}
+                      />
+                    </div>
+                    {(selectedClient.gstin !== '' && selectedClient.gstin !== undefined) && <div className='mt-1'> GSTIN : {selectedClient.gstin}</div>}
+                  </Col>
+                  <Col className='pe-0 mt-xl-0 mt-2' xl='4'>
+                    <table>
+                      <tbody>
+                        <tr>
+                          <td className='pe-1'>RCM Applicable:</td>
+                          <td>
+                            <div className='form-switch form-check-success'>
+                              <Controller
+                                control={control}
+                                name={`isRcmApplicable`}
+                                id='isRcmApplicable'
+                                render={({ }) => (
+                                  <Input type='switch' id='switch-success' defaultChecked />
+                                )}
+                              />
+                            </div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </Col>
+                </Row>
+              </CardBody>
+              {/* /Address and Contact */}
+
+              {/* Product Details */}
+              <CardBody className='invoice-padding invoice-product-details'>
+                {fields.map((item, index) => {
+                  return (
+                    <div key={item.id} className='repeater-wrapper'>
+                      <Row>
+                        <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
+                          <Row className='w-100 pe-lg-0 pe-1 py-2'>
+                            <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-4 col-sm-12'>
+                              <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
+                              <Controller
+                                control={control}
+                                name={`rows[${index}].serviceId`}
+                                rules={{ required: true }}
+                                render={({ field, ref }) => (
+                                  <Select
+                                    {...field}
+                                    inputRef={ref}
+                                    className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.serviceId })}
+                                    classNamePrefix='select'
+                                    options={serviceOptions}
+                                    value={serviceOptions.find(c => c.id === field.value)}
+                                    onChange={val => { field.onChange(val.id); loadItemData(index, false, false, false, false, true) }}
+                                    getOptionLabel={(option) => option.name}
+                                    getOptionValue={(option) => option.id}
+                                  />
+                                )}
+                              />
+                              {errors.rows?.[index]?.serviceId && <FormFeedback>{errors.rows?.[index]?.serviceId.message}</FormFeedback>}
+                              <Controller
+                                id={`rows_${index}_description`}
+                                name={`rows[${index}].description`}
+                                control={control}
+                                render={({ field }) => <Input className='mt-1' invalid={errors.rows?.[index]?.description && true} onInput={(val) => { field.onChange(val); loadItemData(index, true, false, false, false, false) }} {...field} />}
+                              />
+                            </Col>
+                            <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
+                              <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
+                              <Controller
+                                id={`rows_${index}_sacCode`}
+                                name={`rows[${index}].sacCode`}
+                                control={control}
+                                render={({ field }) => <Input type='text' invalid={errors.rows?.[index]?.sacCode && true} onInput={(val) => { field.onChange(val); loadItemData(index, false, true, true, false, false) }} {...field} />}
+                              />
+                              {errors.rows?.[index]?.sacCode && <FormFeedback>{errors.rows?.[index]?.sacCode.message}</FormFeedback>}
+                            </Col>
+                            <Col className='my-lg-0 my-2' lg='2' sm='12'>
+                              <CardText className='col-title mb-md-2 mb-0'>Price</CardText>
+                              <Controller
+                                id={`rows_${index}_price`}
+                                name={`rows[${index}].price`}
+                                control={control}
+                                render={({ field }) => <Input type='number' id={`input_rows_${index}_price`} onInput={(val) => { field.onChange(val); console.log(val); loadItemData(index, false, true, false, false, false) }} {...field} invalid={errors.rows?.[index]?.price && true} />}
+                              />
+                              {errors.rows?.[index]?.price && <FormFeedback>{errors.rows?.[index]?.price.message}</FormFeedback>}
+                            </Col>
+                            <Col className='my-lg-0 mt-2' lg='2' sm='12'>
+                              <CardText className='col-title mb-md-50 mb-0'>Tax Rate</CardText>
+                              <Controller
+                                control={control}
+                                name={`rows[${index}].taxGroupId`}
+                                rules={{ required: true }}
+                                render={({ field, ref }) => (
+                                  <Select
+                                    {...field}
+                                    inputRef={ref}
+                                    className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
+                                    classNamePrefix='select'
+                                    options={taxGroupOptions}
+                                    value={taxGroupOptions.find(c => c.id === field.value)}
+                                    onChange={(val) => { field.onChange(val.id); loadItemData(index, false, true, false, true, false) }}
+                                    getOptionLabel={(option) => option.name}
+                                    getOptionValue={(option) => option.id}
+                                  />
+                                )}
+                              />
+                              {errors.rows?.[index]?.taxGroupId && <FormFeedback>{errors.rows?.[index]?.taxGroupId.message}</FormFeedback>}
+
+                              {
+                                !item.isTaxApplicable && <Controller
+                                  control={control}
+                                  name={`rows[${index}].exemptionReasonId`}
+                                  rules={{ required: true }}
+                                  render={({ field, ref }) => (
+                                    <Select
+                                      {...field}
+                                      inputRef={ref}
+                                      className={classnames('react-select mt-1', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
+                                      classNamePrefix='select'
+                                      options={exemptionReasonOptions}
+                                      value={exemptionReasonOptions.find(c => c.id === field.value)}
+                                      onChange={(val) => { field.onChange(val.id) }}
+                                      getOptionLabel={(option) => option.name}
+                                      getOptionValue={(option) => option.id}
+                                    />
+                                  )}
+                                />
+                              }
+
+                            </Col>
+                            <Col className='my-lg-0 mt-2' lg='1' sm='12'>
+                              <CardText className='col-title mb-md-50 mb-0'>Amount</CardText>
+                              {item.subTotalAmount}
+                            </Col>
+                          </Row>
+                          <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
+                            <X size={18} className='cursor-pointer' onClick={() => { removeItem(index) }} />
+                          </div>
+                        </Col>
+                      </Row>
+                    </div>
+                  )
+                })}
+                <Row className='mt-1'>
+                  <Col sm='12' className='px-0'>
+                    <Button color='primary' size='sm' className='btn-add-new' onClick={() => addItem()}>
+                      <Plus size={14} className='me-25'></Plus> <span className='align-middle'>Add Item</span>
+                    </Button>
+                  </Col>
+                </Row>
+              </CardBody>
+
+              {/* /Product Details */}
+
+              {/* Invoice Total */}
+              <CardBody className='invoice-padding'>
+                <Row className='invoice-sales-total-wrapper'>
+                  <Col className='mt-md-0 mt-3' md={{ size: '6', order: 1 }} xs={{ size: 12, order: 2 }}>
+
+                  </Col>
+                  <Col className='d-flex justify-content-end' md={{ size: '6', order: 2 }} xs={{ size: 12, order: 1 }}>
+                    <div className='invoice-total-wrapper'>
+                      <div className='invoice-total-item'>
+                        <p className='invoice-total-title'>Pre Tax Amount:</p>
+                        <p className='invoice-total-amount'>{finalSubTotal}</p>
+                      </div>
+                      {
+                        invoiceTaxes.map((obj, ind) => {
+                          return (<div key={ind} className='invoice-total-item'>
+                            <p className='invoice-total-title'>{obj?.taxName}</p>
+                            <p className='invoice-total-amount'>{obj?.taxAmount}</p>
+                          </div>)
+                        })
+                      }
+                      <hr className='my-50' />
+                      <div className='invoice-total-item'>
+                        <p className='invoice-total-title'>Total Payable:</p>
+                        <p className='invoice-total-amount'>{finalTotal}</p>
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </CardBody>
+              {/* /Invoice Total */}
+
+              <hr className='invoice-spacing mt-0' />
+
+              {/* Invoice Note */}
+              <CardBody className='invoice-padding py-0'>
+                <Row>
+                  <Col>
+                    <div className='mb-2'>
+                      <Label for='note' className='form-label fw-bold'>
+                        Note:
+                      </Label>
+                      <Controller
+                        id='note'
+                        name='note'
+                        control={control}
+                        render={({ field }) => <Input type="textarea" value={field.value} invalid={errors.note && true} {...field} />}
+                      />
+                    </div>
+                  </Col>
+                </Row>
+              </CardBody>
+              {/* /Invoice Note */}
+            </Card>
+
+          </Col>
+          <Col xl={2} md={4} sm={12}>
+            <Card className='invoice-action-wrapper'>
+              <CardBody>
+                {/* <Button color='primary' block className='mb-75' disabled>
+            Send Invoice
+          </Button>
+          <Button tag={Link} to='/invoice/preview' color='primary' block outline className='mb-75'>
+            Preview
+          </Button> */}
+                <Button color='primary' type='submit' block outline className='mb-75'>
+                  Save
+                </Button>
+                <Button color='warning' block outline tag={Link} to='/invoice/list'>
+                  Cancel
+                </Button>
+              </CardBody>
+            </Card>
+            <div className='mt-2'>
+              <div className='invoice-payment-option'>
+                <p className='mb-50'>Accept payments via</p>
+                <Input type='select' id='payment-select'>
+                  <option>Cash</option>
+                  <option>HDFC XXXX0172</option>
+                  <option>SBI XXXX4412</option>
+                  <option>IOB XXXX3212</option>
+                </Input>
+              </div>
             </div>
-          ))}
-          <Row className='mt-1'>
-            <Col sm='12' className='px-0'>
-              <Button color='primary' size='sm' className='btn-add-new' onClick={() => addItem()}>
-                <Plus size={14} className='me-25'></Plus> <span className='align-middle'>Add Item</span>
-              </Button>
-            </Col>
-          </Row>
-        </CardBody>
+          </Col>
+        </Fragment >
+      </Row>
+    </form >
 
-        {/* /Product Details */}
-
-        {/* Invoice Total */}
-        <CardBody className='invoice-padding'>
-          <Row className='invoice-sales-total-wrapper'>
-            <Col className='mt-md-0 mt-3' md={{ size: '6', order: 1 }} xs={{ size: 12, order: 2 }}>
-              <div className='d-flex align-items-center mb-1'>
-                <Label for='salesperson' className='form-label'>
-                  Salesperson:
-                </Label>
-                <Input type='text' className='ms-50' id='salesperson' placeholder='Edward Crowley' />
-              </div>
-            </Col>
-            <Col className='d-flex justify-content-end' md={{ size: '6', order: 2 }} xs={{ size: 12, order: 1 }}>
-              <div className='invoice-total-wrapper'>
-                <div className='invoice-total-item'>
-                  <p className='invoice-total-title'>Subtotal:</p>
-                  <p className='invoice-total-amount'>$1800</p>
-                </div>
-                <div className='invoice-total-item'>
-                  <p className='invoice-total-title'>Discount:</p>
-                  <p className='invoice-total-amount'>$28</p>
-                </div>
-                <div className='invoice-total-item'>
-                  <p className='invoice-total-title'>Tax:</p>
-                  <p className='invoice-total-amount'>21%</p>
-                </div>
-                <hr className='my-50' />
-                <div className='invoice-total-item'>
-                  <p className='invoice-total-title'>Total:</p>
-                  <p className='invoice-total-amount'>$1690</p>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </CardBody>
-        {/* /Invoice Total */}
-
-        <hr className='invoice-spacing mt-0' />
-
-        {/* Invoice Note */}
-        <CardBody className='invoice-padding py-0'>
-          <Row>
-            <Col>
-              <div className='mb-2'>
-                <Label for='note' className='form-label fw-bold'>
-                  Note:
-                </Label>
-                <Input type='textarea' rows='2' id='note' defaultValue={note} />
-              </div>
-            </Col>
-          </Row>
-        </CardBody>
-        {/* /Invoice Note */}
-      </Card>
-
-      <Sidebar
-        size='lg'
-        open={open}
-        title='Add Payment'
-        headerClassName='mb-1'
-        contentClassName='p-0'
-        toggleSidebar={toggleSidebar}
-      >
-        <Form>
-          <div className='mb-2'>
-            <Label for='customer-name' className='form-label'>
-              Customer Name
-            </Label>
-            <Input id='customer-name' placeholder='John Doe' />
-          </div>
-          <div className='mb-2'>
-            <Label for='customer-email' className='form-label'>
-              Customer Email
-            </Label>
-            <Input type='email' id='customer-email' placeholder='example@domain.com' />
-          </div>
-          <div className='mb-2'>
-            <Label for='customer-address' className='form-label'>
-              Customer Address
-            </Label>
-            <Input type='textarea' cols='2' rows='2' id='customer-address' placeholder='1307 Lady Bug Drive New York' />
-          </div>
-          <div className='mb-2'>
-            <Label for='country' className='form-label'>
-              Country
-            </Label>
-            <Select
-              theme={selectThemeColors}
-              className='react-select'
-              classNamePrefix='select'
-              options={countryOptions}
-              isClearable={false}
-            />
-          </div>
-          <div className='mb-2'>
-            <Label for='customer-contact' className='form-label'>
-              Contact
-            </Label>
-            <Input type='number' id='customer-contact' placeholder='763-242-9206' />
-          </div>
-          <div className='d-flex flex-wrap my-2'>
-            <Button className='me-1' color='primary' onClick={() => setOpen(false)}>
-              Add
-            </Button>
-            <Button color='secondary' onClick={() => setOpen(false)} outline>
-              Cancel
-            </Button>
-          </div>
-        </Form>
-      </Sidebar>
-    </Fragment>
   )
 }
 

@@ -13,7 +13,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Row, Col, Card, Input, Label, Button, CardBody, CardText, InputGroup, InputGroupText, FormFeedback } from 'reactstrap'
 import classnames from 'classnames'
 
-import { updateInvoice, updateInvoiceTax, updateInvoiceItems, updateInvoiceItemTax, getClient, getInvoiceItems, deleteInvoiceItem } from '../store/index'
+import { updateInvoice, updateInvoiceItems, getClient, getInvoiceItems, deleteInvoiceItem } from '../store/index'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -22,7 +22,7 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
 import { calculateTax } from '../helper/hepler'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
@@ -35,6 +35,7 @@ const noteText =
 
 const AddCard = (data) => {
 
+  const { id } = useParams()
   const MySwal = withReactContent(Swal)
   const [clientOptions, setClientOptions] = useState([])
   const [serviceOptions, setServiceOptions] = useState([])
@@ -46,7 +47,6 @@ const AddCard = (data) => {
 
   const [invoiceItems, setInvoiceItems] = useState([])
   const [invoiceTaxes, setInvoiceTaxes] = useState([])
-  const [invoiceItemTaxes, setInvoiceItemTaxes] = useState([])
 
   const [selectedClient, setSelectedClient] = useState({})
   const [taxValues, setTaxValues] = useState([])
@@ -148,6 +148,7 @@ const AddCard = (data) => {
   }
 
   const schema = yup.object().shape({
+    id: yup.string().default(id),
     contactId: yup.number().required("Please select a Client"),
     uniqueIdentity: yup.string(),
     contactEmail: yup.string(),
@@ -212,17 +213,10 @@ const AddCard = (data) => {
 
   const onSubmit = async data => {
     const temp = data.rows
-    temp.map(obj => delete obj.taxes)
-    setInvoiceItems(predata => ([...predata, ...temp]))
+    setInvoiceItems(temp)
     delete data.rows
     await dispatch(updateInvoice(data))
-  }
 
-  const InvoiceTax = async (id) => {
-    invoiceTaxes.forEach((obj, key) => {
-      invoiceTaxes[key].invoiceId = id
-    })
-    await dispatch(updateInvoiceTax(invoiceTaxes))
   }
 
   const InvoiceItems = async (id) => {
@@ -230,13 +224,15 @@ const AddCard = (data) => {
       invoiceItems[key].invoiceId = id
     })
     await dispatch(updateInvoiceItems(invoiceItems))
-  }
-
-  const InvoiceItemTax = async () => {
-
-    await dispatch(updateInvoiceItemTax(invoiceItemTaxes))
     navigate(`/invoice/view/${store.invoiceId}`)
   }
+
+  useEffect(async () => {
+    if (store.invoiceId !== null && invoiceItems.length > 0) {
+      await InvoiceItems(store.invoiceId)
+    }
+  }, [store.invoiceId])
+
 
   const addItem = (() => {
     append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', exemptionReasonId: 0, isTaxApplicable: true, sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '' })
@@ -246,43 +242,9 @@ const AddCard = (data) => {
     addItem()
   }, [])
 
-
-  useEffect(async () => {
-    if (store.invoiceId !== null) {
-      if (invoiceTaxes.length > 0) {
-        await InvoiceTax(store.invoiceId)
-      }
-
-      await InvoiceItems(store.invoiceId)
-    }
-  }, [store.invoiceId])
-
-  useEffect(async () => {
-    if (store.invoiceItems.length > 0) {
-      const inputArray = control._formValues.rows.map(a => a.taxes)
-      const temp = inputArray.flat()
-      store.invoiceItems.forEach(async (obj) => {
-        temp.forEach((object, key) => {
-          if (object.serviceId === obj.serviceid) {
-            temp[key].invoiceItemId = obj.id
-          }
-          temp[key].invoiceId = store.invoiceId
-        })
-      })
-
-      setInvoiceItemTaxes(temp)
-    }
-  }, [store.invoiceItems])
-
-  useEffect(async () => {
-    if (invoiceItemTaxes.length > 0) {
-      await InvoiceItemTax()
-    }
-  }, [invoiceItemTaxes])
-
   const calculateInvoiceTax = () => {
 
-    const inputArray = control._formValues.rows.map(a => a.taxes)
+    const inputArray = control._formValues.rows.map(a => JSON.parse(a.taxes.replace(/\\/g, '')))
     let temp = []
     temp = inputArray.flat()
     let output = []
@@ -293,6 +255,7 @@ const AddCard = (data) => {
         })
         if (existItem) {
           existItem.taxAmount = parseFloat(existItem.taxAmount) + parseFloat(item.taxAmount)
+          existItem.taxAmount = String(existItem.taxAmount)
         } else {
           acc.push(Object.assign({}, item))
         }
@@ -350,7 +313,6 @@ const AddCard = (data) => {
       eachObj['price'] = String(selectedService.sellingprice) | 0
       eachObj['taxGroupId'] = selectedService.taxgroupid
       eachObj['description'] = selectedService.description
-      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
       eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
     } else {
       eachObj['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
@@ -358,39 +320,40 @@ const AddCard = (data) => {
       eachObj['actualPrice'] = String(selectedService.sellingprice) | 0
       eachObj['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
       eachObj['description'] = desFlg ? eachObj.description : selectedService.description
-      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
       eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
     }
-
+    const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
+    eachObj['isTaxApplicable'] = taxGroups !== undefined ? !taxGroups.nontaxableflag : selectedService.istaxapplicable
     let calculateTaxAmount = 0
     const invoice_item_taxes = []
-    const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
-    if (taxGroups !== undefined) {
-      taxValues.forEach(obj => {
-        if (obj.taxid === eachObj['taxGroupId']) {
-          const temp = calculateTax(eachObj.price, obj.percentage, 2)
-          calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
-          const dataTemp = {}
-          dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
-          dataTemp["taxId"] = parseInt(obj.id)
-          dataTemp["organizationId"] = parseInt(activeOrgId)
-          dataTemp["invoiceItemId"] = ''
-          dataTemp["taxNameValue"] = obj.name
-          dataTemp["serviceId"] = eachObj.serviceId
-          dataTemp["taxPercentage"] = String(obj.percentage)
-          dataTemp["taxAmount"] = String(temp)
+    if (eachObj.isTaxApplicable) {
+      if (taxGroups !== undefined) {
+        taxValues.forEach(obj => {
+          if (obj.taxid === eachObj['taxGroupId']) {
+            const temp = calculateTax(eachObj.price, obj.percentage, 2)
+            calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
+            const dataTemp = {}
+            dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
+            dataTemp["taxId"] = parseInt(obj.id)
+            dataTemp["organizationId"] = parseInt(activeOrgId)
+            dataTemp["invoiceItemId"] = eachObj.id
+            dataTemp["invoiceId"] = id
+            dataTemp["taxNameValue"] = obj.name
+            dataTemp["serviceId"] = eachObj.serviceId
+            dataTemp["taxPercentage"] = String(obj.percentage)
+            dataTemp["taxAmount"] = String(temp)
 
-          invoice_item_taxes.push(dataTemp)
-        }
-      })
+            invoice_item_taxes.push(dataTemp)
+          }
+        })
+      }
     }
 
-    eachObj['rowid'] = eachObj.rowid
     eachObj['id'] = eachObj.id
     eachObj['organizationId'] = eachObj.organizationId
     eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(eachObj.price)).toFixed(2))
     eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
-    eachObj['taxes'] = invoice_item_taxes
+    eachObj['taxes'] = JSON.stringify(invoice_item_taxes)
 
     update(ind, eachObj)
 
@@ -411,7 +374,7 @@ const AddCard = (data) => {
   useEffect(() => {
     if (taxValues.length > 0) {
       control._formValues.rows.forEach((obj, ind) => {
-        loadItemData(ind, false, false, false, false, false)
+        loadItemData(ind, true, true, true, true, false)
       })
     }
   }, [taxValues])
@@ -559,7 +522,7 @@ const AddCard = (data) => {
                           <Flatpickr
                             value={field.value}
                             onChange={(date, dateStr) => { field.onChange(dateStr) }}
-                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                            options={{ altInput: true, altFormat: "M j, Y", dateFormat: "U" }}
                             className='form-control invoice-edit-input date-picker'
                           />
                         )}
@@ -575,7 +538,7 @@ const AddCard = (data) => {
                           <Flatpickr
                             value={field.value}
                             onChange={(date, dateStr) => { field.onChange(dateStr) }}
-                            options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                            options={{ altInput: true, altFormat: "M j, Y", dateFormat: "U" }}
                             className='form-control invoice-edit-input due-date-picker'
                           />
                         )}
