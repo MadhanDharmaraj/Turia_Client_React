@@ -90,11 +90,12 @@ const AddCard = () => {
   const [invoiceFlag, setinvoiceFlag] = useState(true)
   const [taxValues, setTaxValues] = useState([])
   const [selectedClient, setSelectedClient] = useState({})
+  const [invoiceData, setInvoiceData] = useState({})
   const { fields, append, remove } = useFieldArray({ name: 'invoice_items', keyName: 'rowid', control })
-
 
   const onSubmit = async data => {
     console.log(data)
+    console.log(invoiceData)
     await dispatch(addTask(data))
   }
 
@@ -184,6 +185,7 @@ const AddCard = () => {
       Invoicedata['organizationStateCode'] = activeOrg.stateshortname
       Invoicedata['organizationGstin'] = activeOrg.gstin
 
+      setInvoiceData(Invoicedata)
       taxvaluefn()
     }
 

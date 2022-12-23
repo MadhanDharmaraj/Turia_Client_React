@@ -18,6 +18,13 @@ import ecommerce from '@src/views/apps/ecommerce/store'
 import dataTables from '@src/views/tables/data-tables/store'
 import permissions from '@src/views/apps/roles-permissions/store'
 
+import invoiceaccount from '@src/views/pages/account-settings/Invoice/store/invoiceaccount'
+import exemptionreason from '@src/views/pages/account-settings/Invoice/store/exemptionreason'
+import designation from '@src/views/pages/account-settings/RolesAndDesignation/store/designation'
+import department from '@src/views/pages/account-settings/RolesAndDesignation/store/department'
+import role from '@src/views/pages/account-settings/RolesAndDesignation/store/roles'
+import dashboard from '@src/views/dashboard/analytics/store/index.js'
+
 const rootReducer = {
   auth,
   todo,
@@ -36,7 +43,14 @@ const rootReducer = {
   calendar,
   ecommerce,
   dataTables,
-  permissions
+  permissions,
+
+  invoiceaccount,
+  exemptionreason,
+  designation,
+  department,
+  role,
+  dashboard
 }
 
 export default rootReducer

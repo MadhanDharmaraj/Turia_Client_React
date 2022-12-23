@@ -22,7 +22,7 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
-import { calculateTax } from '../helper/hepler'
+import { calculateTax, parser } from '../helper/hepler'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -209,7 +209,7 @@ const AddCard = () => {
 
   const calculateInvoiceTax = () => {
 
-    const inputArray = control._formValues.rows.map(a => JSON.parse(a.taxes.replace(/\\/g, '')))
+    const inputArray = control._formValues.rows.map(a => parser(a.taxes))
     let temp = []
     temp = inputArray.flat()
     let output = []

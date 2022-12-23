@@ -10,7 +10,7 @@ import Breadcrumbs from '@components/breadcrumbs'
 // ** Demo Components
 import CardJob from './CardJob'
 import CardChat from './CardChat'
-import CardMedal from './CardMedal'
+import CardAttendance from './CardAttendance'
 import CardMeetup from './CardMeetup'
 import CardPayment from './CardPayment'
 import CardProfile from './CardProfile'
@@ -39,7 +39,7 @@ const Cards = () => {
           <CardCongratulations />
         </Col>
         <Col md='6' lg='5' sm='12'>
-          <CardMedal />
+          <CardAttendance />
         </Col>
       </Row>
       <Row className='match-height'>

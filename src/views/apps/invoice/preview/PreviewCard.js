@@ -5,6 +5,9 @@ import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { Card, CardBody, CardText, Row, Col, Table } from 'reactstrap'
 import { getInvoiceItems } from '../store'
+
+import { parser } from '../helper/hepler'
+
 // ** Custom Components
 import Avatar from '@components/avatar'
 
@@ -29,7 +32,7 @@ const PreviewCard = ({ data }) => {
 
   useEffect(async () => {
 
-    setInvoiceTaxes(JSON.parse(data.calculatetaxes.replace(/\\/g, '')))
+    setInvoiceTaxes(parser(data.calculatetaxes))
 
     const res = await dispatch(getInvoiceItems(id))
     setInvoiceItems(res.payload)
@@ -166,7 +169,7 @@ const PreviewCard = ({ data }) => {
                   <span className='fw-bold'>
                     {
                       item.isTaxApplicable === 'true' &&
-                      JSON.parse(item.taxes.replace(/\\/g, '')).map((obj, k) => {
+                      parser(item.taxes).map((obj, k) => {
                         return (<Row key={k}><span>{obj.taxName} - {obj.taxAmount}</span></Row>)
 
                       })

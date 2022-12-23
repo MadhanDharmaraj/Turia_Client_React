@@ -10,8 +10,8 @@ import { ThemeColors } from '@src/utility/context/ThemeColors'
 // ** Demo Components
 import CompanyTable from './CompanyTable'
 import Earnings from '@src/views/ui-elements/cards/analytics/Earnings'
-import CardMedal from '@src/views/ui-elements/cards/advance/CardMedal'
 import CardMeetup from '@src/views/ui-elements/cards/advance/CardMeetup'
+import CardAttendance from '../../ui-elements/cards/advance/CardAttendance'
 import StatsCard from '@src/views/ui-elements/cards/statistics/StatsCard'
 import GoalOverview from '@src/views/ui-elements/cards/analytics/GoalOverview'
 import RevenueReport from '@src/views/ui-elements/cards/analytics/RevenueReport'
@@ -35,7 +35,7 @@ const EcommerceDashboard = () => {
     <div id='dashboard-ecommerce'>
       <Row className='match-height'>
         <Col xl='4' md='6' xs='12'>
-          <CardMedal />
+          <CardAttendance />
         </Col>
         <Col xl='8' md='6' xs='12'>
           <StatsCard cols={{ xl: '2', sm: '6' }} />

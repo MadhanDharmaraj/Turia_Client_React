@@ -42,28 +42,24 @@ const AccountSettings = () => {
                 <Tabs className='mb-2' activeTab={activeTab} toggleTab={toggleTab} />
 
                 <TabContent activeTab={activeTab}>
-                  <TabPane tabId='1'>
-                    <GeneralSetting data={data.general} />
+                  <TabPane tabId='general'>
+                    <GeneralSetting data={activeTab} />
                   </TabPane>
 
-                  <TabPane tabId='2'>
-                    <InvoiceAccounts data={data.general} />
+                  <TabPane tabId='invoiceaccount'>
+                    <InvoiceAccounts data={activeTab} />
+                  </TabPane>
+                  
+                  <TabPane tabId='taxrate'>
+                    <TaxRateSetting data={activeTab} />
                   </TabPane>
 
-                  <TabPane tabId='3'>
-                    <GSTSetting data={data.general} />
-                  </TabPane>
-
-                  <TabPane tabId='4'>
-                    <TaxRateSetting data={data.general} />
-                  </TabPane>
-
-                  <TabPane tabId='5'>
-                    <ExemptionReasonSetting data={data.general} />
+                  <TabPane tabId='exemptionreason'>
+                    <ExemptionReasonSetting data={activeTab} />
                   </TabPane>
 
                 </TabContent>
-                
+
               </Col>
             </Row>
           ) : null}

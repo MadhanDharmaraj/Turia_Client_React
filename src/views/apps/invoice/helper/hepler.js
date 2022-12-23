@@ -9,3 +9,9 @@ export const calculateTax = (amount, taxRateInPercentage, TaxType) => {
     }
     return parseFloat(calculatedTax)
 }
+
+export const parser = (str) => {
+
+    return JSON.parse(str.replace(/\\/g, ''))
+
+}

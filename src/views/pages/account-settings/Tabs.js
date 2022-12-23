@@ -27,20 +27,14 @@ const Tabs = ({ activeTab, toggleTab }) => {
       </NavItem>
       <NavItem>
         <NavLink active={activeTab === '4'} onClick={() => toggleTab('4')}>
-          <Bookmark size={18} className='me-50' />
-          <span className='fw-bold'>Billing & Plans</span>
+          <Bell size={18} className='me-50' />
+          <span className='fw-bold'>Roles and Designation</span>
         </NavLink>
       </NavItem>
       <NavItem>
         <NavLink active={activeTab === '5'} onClick={() => toggleTab('5')}>
-          <Bell size={18} className='me-50' />
-          <span className='fw-bold'>Notifications</span>
-        </NavLink>
-      </NavItem>
-      <NavItem>
-        <NavLink active={activeTab === '6'} onClick={() => toggleTab('6')}>
-          <Link size={18} className='me-50' />
-          <span className='fw-bold'>Connections</span>
+          <Bookmark size={18} className='me-50' />
+          <span className='fw-bold'>Billing & Plans</span>
         </NavLink>
       </NavItem>
     </Nav>
