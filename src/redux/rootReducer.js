@@ -19,6 +19,7 @@ import dataTables from '@src/views/tables/data-tables/store'
 import permissions from '@src/views/apps/roles-permissions/store'
 
 import invoiceaccount from '@src/views/pages/account-settings/Invoice/store/invoiceaccount'
+import invoicepayment from '@src/views/apps/invoice/preview/InvoicePayment/store/index.js'
 import exemptionreason from '@src/views/pages/account-settings/Invoice/store/exemptionreason'
 import designation from '@src/views/pages/account-settings/RolesAndDesignation/store/designation'
 import department from '@src/views/pages/account-settings/RolesAndDesignation/store/department'
@@ -46,6 +47,7 @@ const rootReducer = {
   permissions,
 
   invoiceaccount,
+  invoicepayment,
   exemptionreason,
   designation,
   department,

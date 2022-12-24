@@ -97,19 +97,19 @@ const PreviewCard = ({ data }) => {
                 </tr>
                 <tr>
                   <td className='pe-1'>Bank name:</td>
-                  <td>{''}</td>
+                  <td>{data.bankaccountbankname}</td>
                 </tr>
                 <tr>
                   <td className='pe-1'>Account Name:</td>
-                  <td>{''}</td>
+                  <td>{data.bankaccountholdername}</td>
                 </tr>
                 <tr>
                   <td className='pe-1'>Branch Name:</td>
-                  <td>{''}</td>
+                  <td>{data.bankaccountbranchname}</td>
                 </tr>
                 <tr>
                   <td className='pe-1'>IFSC code:</td>
-                  <td>{''}</td>
+                  <td>{data.bankaccountifsccode}</td>
                 </tr>
               </tbody>
             </table>

@@ -39,7 +39,16 @@ export const updateStatus = createAsyncThunk('appServices/updateStatus', async (
   console.log(getState().service)
   await dispatch(getData(getState().Service.service))
   return ''
+})
 
+export const addWokflow = createAsyncThunk('appServices/addWokflow', async (rows, { }) => {
+  const response = await axios.post('/workflows/create', rows)
+  return response.data.workflows
+})
+
+export const listWokflow = createAsyncThunk('appServices/listWokflow', async ({ id }, { }) => {
+  const response = await axios.post('/workflows/list', { serviceId : id })
+  return response.data.workflows
 })
 
 export const appServicesSlice = createSlice({
@@ -49,7 +58,8 @@ export const appServicesSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    selectedService: null
+    selectedService: null,
+    workFlowLists: []
   },
   reducers: {},
   extraReducers: builder => {
@@ -61,6 +71,12 @@ export const appServicesSlice = createSlice({
       })
       .addCase(getService.fulfilled, (state, action) => {
         state.selectedService = action.payload
+      })
+      .addCase(addWokflow.fulfilled, (state, action) => {
+        state.workFlowLists = action.payload
+      })
+      .addCase(listWokflow.fulfilled, (state, action) => {
+        state.workFlowLists = action.payload
       })
   }
 })

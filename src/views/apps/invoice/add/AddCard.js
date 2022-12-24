@@ -39,14 +39,14 @@ const AddCard = () => {
   const [serviceOptions, setServiceOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
-
+  const [accountOptions, setAccountOptions] = useState([])
   const [finalTotal, setFinalTotal] = useState(0)
   const [finalSubTotal, setFinalSubTotal] = useState(0)
 
   const [invoiceItems, setInvoiceItems] = useState([])
   const [selectedClient, setSelectedClient] = useState({})
   const [taxValues, setTaxValues] = useState([])
-
+  const [accDetails, setAccDetails] = useState([])
   const [invoiceTaxes, setInvoiceTaxes] = useState([])
   const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
 
@@ -99,12 +99,20 @@ const AddCard = () => {
     })
   }
 
+  const getBankAccounts = () => {
+    axios.post('/transactionaccounts/dropdown').then(response => {
+      const arr = response.data
+      setAccountOptions(arr.transactionaccounts)
+    })
+  }
+
   useEffect(() => {
     // ** Get Clients
     getClients()
     getServices()
     getTaxGroups()
     getExemptionReason()
+    getBankAccounts()
     getStates()
 
   }, [])
@@ -137,7 +145,7 @@ const AddCard = () => {
     bankAccountBankName: yup.string(),
     bankAccountBranchName: yup.string(),
     bankAccountHolderName: yup.string(),
-    bankAccountId: yup.string(),
+    bankAccountId: yup.string().required('Please Select Account'),
     bankAccountIfscCode: yup.string(),
     bankAccountNumber: yup.string(),
     organizationAddressLine1: yup.string().default(activeOrg.addressline1),
@@ -337,6 +345,16 @@ const AddCard = () => {
     }
   }, [taxValues])
 
+  const bankAccountfn = (id) => {
+    const acc = accountOptions.find((obj) => obj.id === id)
+    setAccDetails(acc)
+    setValue('bankAccountBankName', acc.bankName)
+    setValue('bankAccountBranchName', acc.branchAddress)
+    setValue('bankAccountHolderName', acc.accountHolderName)
+    setValue('bankAccountId', acc.id)
+    setValue('bankAccountIfscCode', acc.ifscCode)
+    setValue('bankAccountNumber', acc.accountNumber)
+  }
 
   useEffect(() => {
     if (Object.keys(selectedClient).length > 0) {
@@ -510,25 +528,27 @@ const AddCard = () => {
                         <tr>
                           <td className='pe-1'>Bank Name:</td>
                           <td>
-                            <span className='fw-bolder'>$12,110.55</span>
+                            {accDetails.bankName && <span className='fw-bolder'>{accDetails.bankName}</span>}
                           </td>
                         </tr>
                         <tr>
                           <td className='pe-1'>Account name:</td>
-                          <td>American Bank</td>
+                          <td>{accDetails.accountHolderName && <span className='fw-bolder'>{accDetails.accountHolderName}</span>}</td>
                         </tr>
                         <tr>
                           <td className='pe-1'>Branch Name:</td>
-                          <td>United States</td>
+                          <td> {accDetails.branchAddress && <span className='fw-bolder'>{accDetails.branchAddress}</span>}</td>
                         </tr>
                         <tr>
                           <td className='pe-1'>IFSC Code:</td>
-                          <td>ETD95476213874685</td>
+                          <td>{accDetails.ifscCode && <span className='fw-bolder'>{accDetails.ifscCode} </span>}</td>
                         </tr>
-                        <tr>
-                          <td className='pe-1'>Currency code:</td>
-                          <td>{selectedClient.currenciescode}</td>
-                        </tr>
+                        {selectedClient.currenciescode &&
+                          <tr>
+                            <td className='pe-1'>Currency code:</td>
+                            <td>{selectedClient.currenciescode}</td>
+                          </tr>
+                        }
                       </tbody>
                     </table>
                   </Col>
@@ -764,12 +784,6 @@ const AddCard = () => {
           <Col xl={2} md={4} sm={12}>
             <Card className='invoice-action-wrapper'>
               <CardBody>
-                {/* <Button color='primary' block className='mb-75' disabled>
-            Send Invoice
-          </Button>
-          <Button tag={Link} to='/invoice/preview' color='primary' block outline className='mb-75'>
-            Preview
-          </Button> */}
                 <Button color='primary' type='submit' block outline className='mb-75'>
                   Save
                 </Button>
@@ -781,12 +795,24 @@ const AddCard = () => {
             <div className='mt-2'>
               <div className='invoice-payment-option'>
                 <p className='mb-50'>Accept payments via</p>
-                <Input type='select' id='payment-select'>
-                  <option>Cash</option>
-                  <option>HDFC XXXX0172</option>
-                  <option>SBI XXXX4412</option>
-                  <option>IOB XXXX3212</option>
-                </Input>
+                <Controller
+                  control={control}
+                  name={`bankAccountId`}
+                  rules={{ required: true }}
+                  render={({ field, ref }) => (
+                    <Select
+                      {...field}
+                      inputRef={ref}
+                      className={classnames('react-select mt-1', { 'is-invalid': errors.bankAccountId })}
+                      classNamePrefix='select'
+                      options={accountOptions}
+                      value={accountOptions.find(c => c.id === field.value)}
+                      onChange={(val) => { field.onChange(val.id); bankAccountfn(val.id) }}
+                      getOptionLabel={(option) => option.accountHolderName}
+                      getOptionValue={(option) => option.id}
+                    />
+                  )}
+                />
               </div>
             </div>
           </Col>

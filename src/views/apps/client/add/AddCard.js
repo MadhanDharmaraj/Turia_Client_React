@@ -231,7 +231,7 @@ const AddCard = () => {
 
                       control={control}
                       render={({ field }) => (<Input name='clientType' id='clientType_2' type='radio'
-                        {...field} onChange={val => { return val.target.value }} value={1} />)}
+                        {...field} onInput={val => { return val.target.value }} value={1} />)}
                     />
                     <Label className='form-check-label' for='clientType_2'>
                       Business
@@ -243,7 +243,7 @@ const AddCard = () => {
                       id='clientType_1'
                       control={control}
                       render={({ field }) => (<Input name='clientType' id='clientType_1' type='radio'
-                        {...field} onChange={val => { return val.target.value }} value={2} />)}
+                        {...field} onInput={val => { return val.target.value }} value={2} />)}
                     />
                     <Label className='form-check-label' for='clientType_1'>
                       Individual

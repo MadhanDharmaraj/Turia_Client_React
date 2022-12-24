@@ -42,7 +42,7 @@ const AddCard = (data) => {
   const [serviceOptions, setServiceOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
-
+  const [accountOptions, setAccountOptions] = useState([])
   const [finalTotal, setFinalTotal] = useState(0)
   const [finalSubTotal, setFinalSubTotal] = useState(0)
 
@@ -51,7 +51,7 @@ const AddCard = (data) => {
 
   const [selectedClient, setSelectedClient] = useState({})
   const [taxValues, setTaxValues] = useState([])
-
+  const [accDetails, setAccDetails] = useState([])
   const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
 
   const navigate = useNavigate()
@@ -103,6 +103,14 @@ const AddCard = (data) => {
     })
   }
 
+
+  const getBankAccounts = () => {
+    axios.post('/transactionaccounts/dropdown').then(response => {
+      const arr = response.data
+      setAccountOptions(arr.transactionaccounts)
+    })
+  }
+
   const deletefun = (id) => {
 
     return MySwal.fire({
@@ -140,7 +148,9 @@ const AddCard = (data) => {
     getServices()
     getTaxGroups()
     getStates()
+    getBankAccounts()
     getExemptionReason()
+
   }, [])
 
   const getClientData = async (id) => {
@@ -172,7 +182,7 @@ const AddCard = (data) => {
     bankAccountBankName: yup.string(),
     bankAccountBranchName: yup.string(),
     bankAccountHolderName: yup.string(),
-    bankAccountId: yup.string(),
+    bankAccountId: yup.string().required('Please Select Account'),
     bankAccountIfscCode: yup.string(),
     bankAccountNumber: yup.string(),
     organizationAddressLine1: yup.string().default(activeOrg.addressline1),
@@ -369,7 +379,6 @@ const AddCard = (data) => {
     }
 
     getTaxValue(taxtype)
-
   }
 
   useEffect(() => {
@@ -380,6 +389,23 @@ const AddCard = (data) => {
     }
   }, [taxValues])
 
+  const bankAccountfn = (id) => {
+    const acc = accountOptions.find((obj) => obj.id === id)
+    if (acc !== undefined) {
+      setAccDetails(acc)
+      setValue('bankAccountBankName', acc.bankName)
+      setValue('bankAccountBranchName', acc.branchAddress)
+      setValue('bankAccountHolderName', acc.accountHolderName)
+      setValue('bankAccountIfscCode', acc.ifscCode)
+      setValue('bankAccountNumber', acc.accountNumber)
+    }
+  }
+
+  useEffect(() => {
+    if (accountOptions.length > 0) {
+        bankAccountfn(control._formValues.bankAccountId)
+    }
+  }, [accountOptions])
 
   useEffect(() => {
     if (Object.keys(selectedClient).length > 0) {
@@ -421,7 +447,7 @@ const AddCard = (data) => {
     }
   }
 
-  useEffect(() => {
+  useEffect(async () => {
     if (Object.keys(data).length > 0) {
       const invoice = data.data
       reset({
@@ -446,7 +472,7 @@ const AddCard = (data) => {
         bankAccountBankName: invoice.bankaccountbankname,
         bankAccountBranchName: invoice.bankaccountbranchname,
         bankAccountHolderName: invoice.bankaccountholdername,
-        bankAccountId: invoice.bankaccountid | 0,
+        bankAccountId: invoice.bankaccountid,
         bankAccountIfscCode: invoice.bankaccountifsccode,
         bankAccountNumber: invoice.bankaccountnumber,
         organizationAddressLine1: invoice.organizationaddressline1,
@@ -464,9 +490,8 @@ const AddCard = (data) => {
         paymentStatus: invoice.paymentstatus
 
       })
-      getClientData(invoice.contactid)
-      getInvoiceItemList(invoice.id)
-
+      await getClientData(invoice.contactid)
+      await getInvoiceItemList(invoice.id)
     }
   }, [data])
 
@@ -603,25 +628,27 @@ const AddCard = (data) => {
                         <tr>
                           <td className='pe-1'>Bank Name:</td>
                           <td>
-                            <span className='fw-bolder'>$12,110.55</span>
+                            {accDetails.bankName && <span className='fw-bolder'>{accDetails.bankName}</span>}
                           </td>
                         </tr>
                         <tr>
                           <td className='pe-1'>Account name:</td>
-                          <td>American Bank</td>
+                          <td>{accDetails.accountHolderName && <span className='fw-bolder'>{accDetails.accountHolderName}</span>}</td>
                         </tr>
                         <tr>
                           <td className='pe-1'>Branch Name:</td>
-                          <td>United States</td>
+                          <td> {accDetails.branchAddress && <span className='fw-bolder'>{accDetails.branchAddress}</span>}</td>
                         </tr>
                         <tr>
                           <td className='pe-1'>IFSC Code:</td>
-                          <td>ETD95476213874685</td>
+                          <td>{accDetails.ifscCode && <span className='fw-bolder'>{accDetails.ifscCode} </span>}</td>
                         </tr>
-                        <tr>
-                          <td className='pe-1'>Currency code:</td>
-                          <td>{selectedClient.currenciescode}</td>
-                        </tr>
+                        {selectedClient.currenciescode &&
+                          <tr>
+                            <td className='pe-1'>Currency code:</td>
+                            <td>{selectedClient.currenciescode}</td>
+                          </tr>
+                        }
                       </tbody>
                     </table>
                   </Col>
@@ -877,12 +904,24 @@ const AddCard = (data) => {
             <div className='mt-2'>
               <div className='invoice-payment-option'>
                 <p className='mb-50'>Accept payments via</p>
-                <Input type='select' id='payment-select'>
-                  <option>Cash</option>
-                  <option>HDFC XXXX0172</option>
-                  <option>SBI XXXX4412</option>
-                  <option>IOB XXXX3212</option>
-                </Input>
+                <Controller
+                  control={control}
+                  name={`bankAccountId`}
+                  rules={{ required: true }}
+                  render={({ field, ref }) => (
+                    <Select
+                      {...field}
+                      inputRef={ref}
+                      className={classnames('react-select mt-1', { 'is-invalid': errors.bankAccountId })}
+                      classNamePrefix='select'
+                      options={accountOptions}
+                      value={accountOptions.find(c => c.id === field.value)}
+                      onChange={(val) => { field.onChange(val.id); bankAccountfn(val.id) }}
+                      getOptionLabel={(option) => option.accountHolderName}
+                      getOptionValue={(option) => option.id}
+                    />
+                  )}
+                />
               </div>
             </div>
           </Col>

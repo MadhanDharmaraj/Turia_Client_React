@@ -314,7 +314,7 @@ const EditCard = () => {
                     <Controller
                       name='clientType'
                       control={control}
-                      render={({ field }) => <Input type='radio' id='clientType_1' defaultChecked value={2} {...field} onChange={() => setClientType(2)} />}
+                      render={({ field }) => <Input type='radio' id='clientType_1' defaultChecked value={2} {...field} onInput={() => setClientType(2)} />}
                     />
                     <Label className='form-check-label' for='clientType_1'>
                       Business
@@ -324,7 +324,7 @@ const EditCard = () => {
                     <Controller
                       name='clientType'
                       control={control}
-                      render={({ field }) => <Input id='clientType_2' type='radio' value={1} {...field} onChange={() => setClientType(1)} />}
+                      render={({ field }) => <Input id='clientType_2' type='radio' value={1} {...field} onInput={() => setClientType(1)} />}
                     />
                     <Label className='form-check-label' for='clientType_2'>
                       Individual

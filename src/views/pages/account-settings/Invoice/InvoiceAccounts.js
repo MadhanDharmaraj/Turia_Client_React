@@ -50,10 +50,10 @@ const InvoiceAccounts = (tabId) => {
     transactionAccountTypeId: yup.string().default(2),
     isPrimary: yup.boolean().default(false),
     bankCode: yup.string().default('1'),
-    accountHolderName: yup.string().default('Test')
+    accountHolderName: yup.string()
   })
 
-  const { handleSubmit, formState: { errors }, control, reset } = useForm({
+  const { handleSubmit, formState: { errors }, control, reset, setValue } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
@@ -111,6 +111,16 @@ const InvoiceAccounts = (tabId) => {
     setData(store.data)
   }, [store.data])
 
+  const formatAccountName = () => {
+    const name = control._formValues.bankName
+    const num = control._formValues.accountNumber
+    if (num) {
+      const temp = `${name} - XXXX${num.substr(-4, 4)}`
+      setValue('accountHolderName', temp)
+    }
+
+  }
+
   const accountTypeOptions = [{ id: 1, name: "Savings" }, { id: 2, name: "Current" }]
 
   const getRow = (fieldLabel, fieldName, reqflag = true) => {
@@ -124,7 +134,8 @@ const InvoiceAccounts = (tabId) => {
             id={fieldName}
             name={fieldName}
             control={control}
-            render={({ field }) => <Input invalid={errors[fieldName] && true} {...field} />}
+            render={({ field }) => <Input invalid={errors[fieldName] && true} {...field}
+              onInput={() => { if (fieldName === 'bankName' || fieldName === 'accountNumber') { formatAccountName() } }} />}
           />
           {errors[fieldName] && <FormFeedback>{errors[fieldName].message}</FormFeedback>}
         </Col>
