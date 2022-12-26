@@ -13,7 +13,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Row, Col, Card, Input, Label, Button, CardBody, CardText, InputGroup, InputGroupText, FormFeedback } from 'reactstrap'
 import classnames from 'classnames'
 
-import { updateInvoice, updateInvoiceTax, updateInvoiceItems, updateInvoiceItemTax, getClient, getInvoiceItems, deleteInvoiceItem } from '../store/index'
+import { updateInvoice, updateInvoiceItems, getClient, getInvoiceItems, deleteInvoiceItem } from '../store/index'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -21,11 +21,12 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
-import { calculateTax } from '../helper/hepler'
+import { calculateTax, parser } from '../helper/hepler'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
+
 const activeOrgId = activeOrganizationid()
 const activeOrg = activeOrganization()
 
@@ -35,23 +36,22 @@ const noteText =
 
 const AddCard = (data) => {
 
-  const {id} = useParams()
+  const { id } = useParams()
   const MySwal = withReactContent(Swal)
   const [clientOptions, setClientOptions] = useState([])
   const [serviceOptions, setServiceOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
-
+  const [accountOptions, setAccountOptions] = useState([])
   const [finalTotal, setFinalTotal] = useState(0)
   const [finalSubTotal, setFinalSubTotal] = useState(0)
 
   const [invoiceItems, setInvoiceItems] = useState([])
   const [invoiceTaxes, setInvoiceTaxes] = useState([])
-  const [invoiceItemTaxes, setInvoiceItemTaxes] = useState([])
 
   const [selectedClient, setSelectedClient] = useState({})
   const [taxValues, setTaxValues] = useState([])
-
+  const [accDetails, setAccDetails] = useState([])
   const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
 
   const navigate = useNavigate()
@@ -103,6 +103,14 @@ const AddCard = (data) => {
     })
   }
 
+
+  const getBankAccounts = () => {
+    axios.post('/transactionaccounts/dropdown').then(response => {
+      const arr = response.data
+      setAccountOptions(arr.transactionaccounts)
+    })
+  }
+
   const deletefun = (id) => {
 
     return MySwal.fire({
@@ -140,7 +148,9 @@ const AddCard = (data) => {
     getServices()
     getTaxGroups()
     getStates()
+    getBankAccounts()
     getExemptionReason()
+
   }, [])
 
   const getClientData = async (id) => {
@@ -172,7 +182,7 @@ const AddCard = (data) => {
     bankAccountBankName: yup.string(),
     bankAccountBranchName: yup.string(),
     bankAccountHolderName: yup.string(),
-    bankAccountId: yup.string(),
+    bankAccountId: yup.string().required('Please Select Account'),
     bankAccountIfscCode: yup.string(),
     bankAccountNumber: yup.string(),
     organizationAddressLine1: yup.string().default(activeOrg.addressline1),
@@ -214,17 +224,10 @@ const AddCard = (data) => {
 
   const onSubmit = async data => {
     const temp = data.rows
-    temp.map(obj => delete obj.taxes)
-    setInvoiceItems(predata => ([...predata, ...temp]))
+    setInvoiceItems(temp)
     delete data.rows
     await dispatch(updateInvoice(data))
-  }
 
-  const InvoiceTax = async (id) => {
-    invoiceTaxes.forEach((obj, key) => {
-      invoiceTaxes[key].invoiceId = id
-    })
-    await dispatch(updateInvoiceTax(invoiceTaxes))
   }
 
   const InvoiceItems = async (id) => {
@@ -232,13 +235,15 @@ const AddCard = (data) => {
       invoiceItems[key].invoiceId = id
     })
     await dispatch(updateInvoiceItems(invoiceItems))
-  }
-
-  const InvoiceItemTax = async () => {
-
-    await dispatch(updateInvoiceItemTax(invoiceItemTaxes))
     navigate(`/invoice/view/${store.invoiceId}`)
   }
+
+  useEffect(async () => {
+    if (store.invoiceId !== null && invoiceItems.length > 0) {
+      await InvoiceItems(store.invoiceId)
+    }
+  }, [store.invoiceId])
+
 
   const addItem = (() => {
     append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', exemptionReasonId: 0, isTaxApplicable: true, sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '' })
@@ -248,43 +253,9 @@ const AddCard = (data) => {
     addItem()
   }, [])
 
-
-  useEffect(async () => {
-    if (store.invoiceId !== null) {
-      if (invoiceTaxes.length > 0) {
-        await InvoiceTax(store.invoiceId)
-      }
-
-      await InvoiceItems(store.invoiceId)
-    }
-  }, [store.invoiceId])
-
-  useEffect(async () => {
-    if (store.invoiceItems.length > 0) {
-      const inputArray = control._formValues.rows.map(a => a.taxes)
-      const temp = inputArray.flat()
-      store.invoiceItems.forEach(async (obj) => {
-        temp.forEach((object, key) => {
-          if (object.serviceId === obj.serviceid) {
-            temp[key].invoiceItemId = obj.id
-          }
-          temp[key].invoiceId = store.invoiceId
-        })
-      })
-
-      setInvoiceItemTaxes(temp)
-    }
-  }, [store.invoiceItems])
-
-  useEffect(async () => {
-    if (invoiceItemTaxes.length > 0) {
-      await InvoiceItemTax()
-    }
-  }, [invoiceItemTaxes])
-
   const calculateInvoiceTax = () => {
 
-    const inputArray = control._formValues.rows.map(a => a.taxes)
+    const inputArray = control._formValues.rows.map(a => parser(a.taxes))
     let temp = []
     temp = inputArray.flat()
     let output = []
@@ -295,6 +266,7 @@ const AddCard = (data) => {
         })
         if (existItem) {
           existItem.taxAmount = parseFloat(existItem.taxAmount) + parseFloat(item.taxAmount)
+          existItem.taxAmount = String(existItem.taxAmount)
         } else {
           acc.push(Object.assign({}, item))
         }
@@ -352,7 +324,6 @@ const AddCard = (data) => {
       eachObj['price'] = String(selectedService.sellingprice) | 0
       eachObj['taxGroupId'] = selectedService.taxgroupid
       eachObj['description'] = selectedService.description
-      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
       eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
     } else {
       eachObj['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
@@ -360,39 +331,40 @@ const AddCard = (data) => {
       eachObj['actualPrice'] = String(selectedService.sellingprice) | 0
       eachObj['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
       eachObj['description'] = desFlg ? eachObj.description : selectedService.description
-      eachObj['isTaxApplicable'] = selectedService.istaxapplicable
       eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
     }
-
+    const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
+    eachObj['isTaxApplicable'] = taxGroups !== undefined ? !taxGroups.nontaxableflag : selectedService.istaxapplicable
     let calculateTaxAmount = 0
     const invoice_item_taxes = []
-    const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
-    if (taxGroups !== undefined) {
-      taxValues.forEach(obj => {
-        if (obj.taxid === eachObj['taxGroupId']) {
-          const temp = calculateTax(eachObj.price, obj.percentage, 2)
-          calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
-          const dataTemp = {}
-          dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
-          dataTemp["taxId"] = parseInt(obj.id)
-          dataTemp["organizationId"] = parseInt(activeOrgId)
-          dataTemp["invoiceItemId"] = ''
-          dataTemp["taxNameValue"] = obj.name
-          dataTemp["serviceId"] = eachObj.serviceId
-          dataTemp["taxPercentage"] = String(obj.percentage)
-          dataTemp["taxAmount"] = String(temp)
+    if (eachObj.isTaxApplicable) {
+      if (taxGroups !== undefined) {
+        taxValues.forEach(obj => {
+          if (obj.taxid === eachObj['taxGroupId']) {
+            const temp = calculateTax(eachObj.price, obj.percentage, 2)
+            calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
+            const dataTemp = {}
+            dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
+            dataTemp["taxId"] = parseInt(obj.id)
+            dataTemp["organizationId"] = parseInt(activeOrgId)
+            dataTemp["invoiceItemId"] = eachObj.id
+            dataTemp["invoiceId"] = id
+            dataTemp["taxNameValue"] = obj.name
+            dataTemp["serviceId"] = eachObj.serviceId
+            dataTemp["taxPercentage"] = String(obj.percentage)
+            dataTemp["taxAmount"] = String(temp)
 
-          invoice_item_taxes.push(dataTemp)
-        }
-      })
+            invoice_item_taxes.push(dataTemp)
+          }
+        })
+      }
     }
 
-    eachObj['rowid'] = eachObj.rowid
     eachObj['id'] = eachObj.id
     eachObj['organizationId'] = eachObj.organizationId
     eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(eachObj.price)).toFixed(2))
     eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
-    eachObj['taxes'] = invoice_item_taxes
+    eachObj['taxes'] = JSON.stringify(invoice_item_taxes)
 
     update(ind, eachObj)
 
@@ -407,17 +379,33 @@ const AddCard = (data) => {
     }
 
     getTaxValue(taxtype)
-
   }
 
   useEffect(() => {
     if (taxValues.length > 0) {
       control._formValues.rows.forEach((obj, ind) => {
-        loadItemData(ind, false, false, false, false, false)
+        loadItemData(ind, true, true, true, true, false)
       })
     }
   }, [taxValues])
 
+  const bankAccountfn = (id) => {
+    const acc = accountOptions.find((obj) => obj.id === id)
+    if (acc !== undefined) {
+      setAccDetails(acc)
+      setValue('bankAccountBankName', acc.bankName)
+      setValue('bankAccountBranchName', acc.branchAddress)
+      setValue('bankAccountHolderName', acc.accountHolderName)
+      setValue('bankAccountIfscCode', acc.ifscCode)
+      setValue('bankAccountNumber', acc.accountNumber)
+    }
+  }
+
+  useEffect(() => {
+    if (accountOptions.length > 0) {
+        bankAccountfn(control._formValues.bankAccountId)
+    }
+  }, [accountOptions])
 
   useEffect(() => {
     if (Object.keys(selectedClient).length > 0) {
@@ -459,7 +447,7 @@ const AddCard = (data) => {
     }
   }
 
-  useEffect(() => {
+  useEffect(async () => {
     if (Object.keys(data).length > 0) {
       const invoice = data.data
       reset({
@@ -484,7 +472,7 @@ const AddCard = (data) => {
         bankAccountBankName: invoice.bankaccountbankname,
         bankAccountBranchName: invoice.bankaccountbranchname,
         bankAccountHolderName: invoice.bankaccountholdername,
-        bankAccountId: invoice.bankaccountid | 0,
+        bankAccountId: invoice.bankaccountid,
         bankAccountIfscCode: invoice.bankaccountifsccode,
         bankAccountNumber: invoice.bankaccountnumber,
         organizationAddressLine1: invoice.organizationaddressline1,
@@ -502,9 +490,8 @@ const AddCard = (data) => {
         paymentStatus: invoice.paymentstatus
 
       })
-      getClientData(invoice.contactid)
-      getInvoiceItemList(invoice.id)
-
+      await getClientData(invoice.contactid)
+      await getInvoiceItemList(invoice.id)
     }
   }, [data])
 
@@ -641,25 +628,27 @@ const AddCard = (data) => {
                         <tr>
                           <td className='pe-1'>Bank Name:</td>
                           <td>
-                            <span className='fw-bolder'>$12,110.55</span>
+                            {accDetails.bankName && <span className='fw-bolder'>{accDetails.bankName}</span>}
                           </td>
                         </tr>
                         <tr>
                           <td className='pe-1'>Account name:</td>
-                          <td>American Bank</td>
+                          <td>{accDetails.accountHolderName && <span className='fw-bolder'>{accDetails.accountHolderName}</span>}</td>
                         </tr>
                         <tr>
                           <td className='pe-1'>Branch Name:</td>
-                          <td>United States</td>
+                          <td> {accDetails.branchAddress && <span className='fw-bolder'>{accDetails.branchAddress}</span>}</td>
                         </tr>
                         <tr>
                           <td className='pe-1'>IFSC Code:</td>
-                          <td>ETD95476213874685</td>
+                          <td>{accDetails.ifscCode && <span className='fw-bolder'>{accDetails.ifscCode} </span>}</td>
                         </tr>
-                        <tr>
-                          <td className='pe-1'>Currency code:</td>
-                          <td>{selectedClient.currenciescode}</td>
-                        </tr>
+                        {selectedClient.currenciescode &&
+                          <tr>
+                            <td className='pe-1'>Currency code:</td>
+                            <td>{selectedClient.currenciescode}</td>
+                          </tr>
+                        }
                       </tbody>
                     </table>
                   </Col>
@@ -915,12 +904,24 @@ const AddCard = (data) => {
             <div className='mt-2'>
               <div className='invoice-payment-option'>
                 <p className='mb-50'>Accept payments via</p>
-                <Input type='select' id='payment-select'>
-                  <option>Cash</option>
-                  <option>HDFC XXXX0172</option>
-                  <option>SBI XXXX4412</option>
-                  <option>IOB XXXX3212</option>
-                </Input>
+                <Controller
+                  control={control}
+                  name={`bankAccountId`}
+                  rules={{ required: true }}
+                  render={({ field, ref }) => (
+                    <Select
+                      {...field}
+                      inputRef={ref}
+                      className={classnames('react-select mt-1', { 'is-invalid': errors.bankAccountId })}
+                      classNamePrefix='select'
+                      options={accountOptions}
+                      value={accountOptions.find(c => c.id === field.value)}
+                      onChange={(val) => { field.onChange(val.id); bankAccountfn(val.id) }}
+                      getOptionLabel={(option) => option.accountHolderName}
+                      getOptionValue={(option) => option.id}
+                    />
+                  )}
+                />
               </div>
             </div>
           </Col>

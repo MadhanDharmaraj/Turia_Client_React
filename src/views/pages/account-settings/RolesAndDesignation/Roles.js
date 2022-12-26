@@ -19,27 +19,29 @@ import {
     UncontrolledTooltip
 } from 'reactstrap'
 
+import * as yup from "yup"
+import { yupResolver } from "@hookform/resolvers/yup"
 // ** Third Party Components
 import { Copy, Info } from 'react-feather'
 import { useForm, Controller } from 'react-hook-form'
 
 // ** Custom Components
 import AvatarGroup from '@components/avatar-group'
-import { getData, addRole } from './store/roles' //updateRole, deleteRole
+import { getData, addRole, updateRole } from './store/roles' //deleteRole
 // ** FAQ Illustrations
+import { activeOrganizationid } from '@src/helper/sassHelper'
 import illustration from '@src/assets/images/illustration/faq-illustrations.svg'
 import { useDispatch, useSelector } from 'react-redux'
-
+const activeOrgId = activeOrganizationid()
 const rolesArr = [
-    'User Management',
-    'Content Management',
-    'Disputes Management',
-    'Database Management',
-    'Financial Management',
-    'Reporting',
-    'API Control',
-    'Repository Management',
-    'Payroll'
+    'Client',
+    'Service',
+    'Sales',
+    'Task',
+    'Setting',
+    'Degital Signature',
+    'Category',
+    'Team'
 ]
 
 const Roles = (tabId) => {
@@ -47,33 +49,46 @@ const Roles = (tabId) => {
     const [show, setShow] = useState(false)
     const [data, setData] = useState([])
     const [modalType, setModalType] = useState('Add New')
-
     const store = useSelector(state => state.role)
     const dispatch = useDispatch()
 
     // ** Hooks
-    const {
-        reset,
-        control,
-        setValue,
-        handleSubmit,
-        formState: { errors }
-    } = useForm({ defaultValues: { name: '', description: '' } })
+    const schema = yup.object().shape({
+        organizationId: yup.number().default(parseInt(activeOrgId)),
+        name: yup.string().required('Please Enter Role'),
+        description: yup.string().nullable(),
+        panel: yup.string().default('client'),
+        isDefault: yup.number().default(1),
+        isAdminRole: yup.boolean().default(false)
+    })
 
-    const onSubmit = async data => {
-
-        await dispatch(addRole(data))
-
-    }
+    const { handleSubmit, formState: { errors }, control, reset } = useForm({
+        resolver: yupResolver(schema),
+        defaultValues: schema.cast()
+    })
 
     const onReset = () => {
         setShow(false)
-        reset({ name: '', description: '' })
+        reset({ id: '', name: '', description: '' })
+    }
+
+    const onSubmit = async data => {
+        if (modalType === 'Edit') {
+            await dispatch(updateRole(data))
+        } else {
+            await dispatch(addRole(data))
+        }
+        onReset()
+    }
+
+    const editRole = (role) => {
+        reset(role)
+        setModalType('Edit')
+        setShow(true)
     }
 
     const handleModalClosed = () => {
         setModalType('Add New')
-        setValue('name')
     }
 
     useEffect(async () => {
@@ -95,20 +110,20 @@ const Roles = (tabId) => {
                         <Col key={index} xl={4} md={6}>
                             <Card>
                                 <CardBody>
-                                    <div className='d-flex justify-content-between'>
+                                    {/* <div className='d-flex justify-content-between'>
                                         <span>{`Total ${item.totalUsers} users`}</span>
                                         <AvatarGroup data={item.users} />
-                                    </div>
+                                    </div> */}
                                     <div className='d-flex justify-content-between align-items-end mt-1 pt-25'>
                                         <div className='role-heading'>
-                                            <h4 className='fw-bolder'>{item.title}</h4>
+                                            <h4 className='fw-bolder'>{item.name}</h4>
+                                            <h6>{item.description}</h6>
                                             <Link
                                                 to='/'
                                                 className='role-edit-modal'
                                                 onClick={e => {
                                                     e.preventDefault()
-                                                    setModalType('Edit')
-                                                    setShow(true)
+                                                    editRole(item)
                                                 }}
                                             >
                                                 <small className='fw-bolder'>Edit Role</small>
@@ -171,23 +186,22 @@ const Roles = (tabId) => {
                                 name='name'
                                 control={control}
                                 render={({ field }) => (
-                                    <Input {...field} id='name' placeholder='Enter role name' invalid={errors.name && true} />
+                                    <Input {...field} id='name' placeholder='Enter Role name' invalid={errors.name && true} />
                                 )}
                             />
                             {errors.name && <FormFeedback>Please enter a valid role name</FormFeedback>}
                         </Col>
                         <Col xs={12} className='mt-1'>
-                            <Label className='form-label' for='name'>
+                            <Label className='form-label' for='description'>
                                 Description
                             </Label>
                             <Controller
                                 name='description'
                                 control={control}
                                 render={({ field }) => (
-                                    <Input type='text' {...field} id='name' placeholder='Enter Description' invalid={errors.name && true} />
+                                    <Input {...field} id='description' placeholder='Enter Description' invalid={errors.description && true} />
                                 )}
                             />
-                            {errors.name && <FormFeedback>Please enter a valid role name</FormFeedback>}
                         </Col>
                         <Col xs={12}>
                             <h4 className='mt-2 pt-50'>Role Permissions</h4>

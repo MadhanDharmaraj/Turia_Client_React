@@ -2,7 +2,7 @@
 import { lazy } from 'react'
 
 const Login = lazy(() => import('../../views/pages/authentication/Login'))
-const LoginBasic = lazy(() => import('../../views/pages/authentication/LoginBasic'))
+const InvitationRegister = lazy(() => import('../../views/pages/authentication/InvitationRegister'))
 const LoginCover = lazy(() => import('../../views/pages/authentication/LoginCover'))
 
 const Register = lazy(() => import('../../views/pages/authentication/Register'))
@@ -34,8 +34,8 @@ const AuthenticationRoutes = [
     }
   },
   {
-    path: '/pages/login-basic',
-    element: <LoginBasic />,
+    path: '/invitation-register/:uniquekey',
+    element: <InvitationRegister />,
     meta: {
       layout: 'blank'
     }

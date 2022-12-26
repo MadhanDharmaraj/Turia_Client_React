@@ -1,9 +1,6 @@
 // ** React Imports
-import { Link } from 'react-router-dom'
-
-// ** Icons Imports
-import { Facebook, Twitter, Mail, GitHub } from 'react-feather'
-
+import { Link, useParams } from 'react-router-dom'
+import axios from '@src/configs/axios/axiosConfig'
 // ** Custom Components
 import InputPasswordToggle from '@components/input-password-toggle'
 
@@ -12,8 +9,42 @@ import { Card, CardBody, CardTitle, CardText, Form, Label, Input, Button } from 
 
 // ** Styles
 import '@styles/react/pages/page-authentication.scss'
+import { useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 
-const LoginBasic = () => {
+const invitationRegister = () => {
+
+  const { uniquekey } = useParams()
+  const [invitaion, setInvitation] = useState({})
+
+  const defaultValues = {
+    email: invitaion.email,
+    password: '',
+    uniqueKey: uniquekey
+  }
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({ defaultValues })
+
+  const getInvitation = () => {
+    axios.post('/invitations/getinvitation', { uniquekey })
+      .then((res) => { setInvitation(res.data) })
+      .catch((err) => { console.log(err) })
+  }
+
+  const onSubmit = (data) => {
+      console.log(data)
+  }
+
+  useEffect(() => {
+    if (uniquekey) {
+      getInvitation()
+    }
+  }, [uniquekey])
+
   return (
     <div className='auth-wrapper auth-basic px-2'>
       <div className='auth-inner my-2'>
@@ -68,29 +99,47 @@ const LoginBasic = () => {
                   </g>
                 </g>
               </svg>
-              <h2 className='brand-text text-primary ms-1'>Vuexy</h2>
+              <h2 className='brand-text text-primary ms-1'>Turia</h2>
             </Link>
             <CardTitle tag='h4' className='mb-1'>
-              Welcome to Vuexy! 👋
+              Welcome to Turia! 👋
             </CardTitle>
             <CardText className='mb-2'>Please sign-in to your account and start the adventure</CardText>
-            <Form className='auth-login-form mt-2' onSubmit={e => e.preventDefault()}>
+            <Form className='auth-login-form mt-2' onSubmit={handleSubmit(onSubmit)}>
               <div className='mb-1'>
                 <Label className='form-label' for='login-email'>
                   Email
                 </Label>
-                <Input type='email' id='login-email' placeholder='john@example.com' autoFocus />
+                <Controller
+                  id='loginEmail'
+                  name='email'
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      autoFocus
+                      type='email'
+                      disabled
+                      placeholder='john@example.com'
+                      invalid={errors.loginEmail && true}
+                      {...field}
+                    />
+                  )}
+                />
               </div>
               <div className='mb-1'>
                 <div className='d-flex justify-content-between'>
                   <Label className='form-label' for='login-password'>
                     Password
                   </Label>
-                  <Link to='/pages/forgot-password-basic'>
-                    <small>Forgot Password?</small>
-                  </Link>
                 </div>
-                <InputPasswordToggle className='input-group-merge' id='login-password' />
+                <Controller
+                  id='password'
+                  name='password'
+                  control={control}
+                  render={({ field }) => (
+                    <InputPasswordToggle className='input-group-merge' invalid={errors.password && true} {...field} />
+                  )}
+                />
               </div>
               <div className='form-check mb-1'>
                 <Input type='checkbox' id='remember-me' />
@@ -102,29 +151,6 @@ const LoginBasic = () => {
                 Sign in
               </Button>
             </Form>
-            <p className='text-center mt-2'>
-              <span className='me-25'>New on our platform?</span>
-              <Link to='/pages/register-basic'>
-                <span>Create an account</span>
-              </Link>
-            </p>
-            <div className='divider my-2'>
-              <div className='divider-text'>or</div>
-            </div>
-            <div className='auth-footer-btn d-flex justify-content-center'>
-              <Button color='facebook'>
-                <Facebook size={14} />
-              </Button>
-              <Button color='twitter'>
-                <Twitter size={14} />
-              </Button>
-              <Button color='google'>
-                <Mail size={14} />
-              </Button>
-              <Button className='me-0' color='github'>
-                <GitHub size={14} />
-              </Button>
-            </div>
           </CardBody>
         </Card>
       </div>
@@ -132,4 +158,4 @@ const LoginBasic = () => {
   )
 }
 
-export default LoginBasic
+export default invitationRegister

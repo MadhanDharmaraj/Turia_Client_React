@@ -13,6 +13,12 @@ const InvoiceEdit = lazy(() => import('../../views/apps/invoice/edit'))
 const InvoicePrint = lazy(() => import('../../views/apps/invoice/print'))
 const InvoicePreview = lazy(() => import('../../views/apps/invoice/preview'))
 
+const ProposalAdd = lazy(() => import('../../views/apps/proposal/add'))
+const ProposalList = lazy(() => import('../../views/apps/proposal/list'))
+const ProposalEdit = lazy(() => import('../../views/apps/proposal/edit'))
+const ProposalPrint = lazy(() => import('../../views/apps/proposal/print'))
+const ProposalPreview = lazy(() => import('../../views/apps/proposal/preview'))
+
 const EcommerceShop = lazy(() => import('../../views/apps/ecommerce/shop'))
 const EcommerceDetail = lazy(() => import('../../views/apps/ecommerce/detail'))
 const EcommerceWishlist = lazy(() => import('../../views/apps/ecommerce/wishlist'))
@@ -154,6 +160,37 @@ const AppRoutes = [
   {
     path: '/invoice/print',
     element: <InvoicePrint />,
+    meta: {
+      layout: 'blank'
+    }
+  },
+  {
+    element: <ProposalList />,
+    path: '/proposal/list'
+  },
+  {
+    element: <ProposalPreview />,
+    path: '/proposal/view/:id'
+  },
+  {
+    path: '/proposal/view',
+    element: <Navigate to='/proposal/view/4987' />
+  },
+  {
+    element: <ProposalEdit />,
+    path: '/proposal/edit/:id'
+  },
+  {
+    path: '/proposal/edit',
+    element: <Navigate to='/proposal/edit/4987' />
+  },
+  {
+    element: <ProposalAdd />,
+    path: '/proposal/add'
+  },
+  {
+    path: '/proposal/print',
+    element: <ProposalPrint />,
     meta: {
       layout: 'blank'
     }

@@ -42,12 +42,17 @@ export const updateStatus = createAsyncThunk('appServices/updateStatus', async (
 })
 
 export const addWokflow = createAsyncThunk('appServices/addWokflow', async (rows, { }) => {
-  const response = await axios.post('/workflows/create', rows)
+  const response = await axios.post('/workflows/createandupdate', rows)
   return response.data.workflows
 })
 
 export const listWokflow = createAsyncThunk('appServices/listWokflow', async ({ id }, { }) => {
   const response = await axios.post('/workflows/list', { serviceId : id })
+  return response.data.workflows
+})
+
+export const deleteWokflow = createAsyncThunk('appServices/deleteWokflow', async ({ id }, { }) => {
+  const response = await axios.post('/workflows/delete', { id })
   return response.data.workflows
 })
 
@@ -76,6 +81,9 @@ export const appServicesSlice = createSlice({
         state.workFlowLists = action.payload
       })
       .addCase(listWokflow.fulfilled, (state, action) => {
+        state.workFlowLists = action.payload
+      })
+      .addCase(deleteWokflow.fulfilled, (state, action) => {
         state.workFlowLists = action.payload
       })
   }

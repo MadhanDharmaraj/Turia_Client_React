@@ -1,13 +1,17 @@
 // ** React Imports
 import { useEffect, useState } from 'react'
-import { Trash2 } from 'react-feather'
+import { Plus, Trash2 } from 'react-feather'
 import { useForm, Controller, useFieldArray } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { addWokflow, listWokflow } from '../store'
+import { addWokflow, listWokflow, deleteWokflow } from '../store'
 // ** Third Party Components
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { store } from '@store/store'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 
+import { activeOrganizationid } from '@src/helper/sassHelper'
+const MySwal = withReactContent(Swal)
 const activeOrgId = activeOrganizationid()
 
 // ** Reactstrap Imports
@@ -16,10 +20,41 @@ import { useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { ReactSortable } from 'react-sortablejs'
 
-
 const CheckList = () => {
 
-  const store = useSelector(state => state.service)
+
+  const deletefun = (id) => {
+
+    return MySwal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        confirmButton: 'btn btn-primary',
+        cancelButton: 'btn btn-outline-danger ms-1'
+      },
+      buttonsStyling: false
+    }).then(async (result) => {
+      if (result.value) {
+        await store.dispatch(deleteWokflow(id))
+        MySwal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Service has been deleted.',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        })
+        return true
+      } else if (result.dismiss === MySwal.DismissReason.cancel) {
+        return false
+      }
+    })
+  }
+
+  const storeLoc = useSelector(state => state.service)
   const [workflowList, setWorkflowList] = useState([])
   const [addFlag, setAddFLag] = useState(false)
 
@@ -49,23 +84,47 @@ const CheckList = () => {
     await dispatch(addWokflow(data))
   }
 
+  const addExisting = (() => {
+
+    remove()
+
+    if (workflowList.length > 0) {
+      workflowList.forEach((obj) => {
+        append(obj)
+      })
+    }
+
+    setAddFLag(true)
+
+  })
+
   const addItem = (() => {
 
     const obj = { id: '', name: '', description: '' }
+
     append(obj)
-    setAddFLag(!addFlag)
+    setAddFLag(true)
+
   })
 
-  const removeItem = ind => {
-    remove(ind)
+  const removeItem = async ind => {
+    const obj = control._formValues.rows[ind]
+    if (obj.id !== '') {
+      const flg = await deletefun(obj.id)
+      if (flg) {
+        remove(ind)
+        setAddFLag(false)
+      }
+    } else {
+      remove(ind)
+    }
   }
 
   useEffect(() => {
-    setWorkflowList(store.workFlowLists)
-  }, [store.workFlowLists])
+    setWorkflowList(storeLoc.workFlowLists)
+  }, [storeLoc.workFlowLists])
 
   useEffect(async () => {
-    addItem()
 
     await dispatch(listWokflow({ id }))
 
@@ -78,20 +137,42 @@ const CheckList = () => {
           <Row id='dd-with-handle'>
             <Row className='mb-1'>
               <Col sm='12' className='px-0 d-flex justify-content-end'>
-                <Button color='primary' onClick={() => addItem()}>Add New</Button>
                 {!addFlag &&
-                  <Button color='primary' className='ms-1' type='submit'>Save</Button>
+                  < Button color='primary' onClick={() => addExisting()} outline size='sm'>Add or Edit</Button>
+                }
+                {addFlag &&
+                  <div>
+                    <Button color='warning' className='ms-1' outline size='sm' onClick={() => setAddFLag(false)}>Cancel</Button>
+
+                    <Button color='primary' outline className='ms-1' size='sm' type='submit'>Save</Button>
+                  </div>
                 }
               </Col>
             </Row>
+            {workflowList.length > 0 && !addFlag &&
+              <ReactSortable tag='ul' className='list-group' list={workflowList} setList={setWorkflowList}>
+                {workflowList.map(item => {
+                  return (
+                    <ListGroupItem className='draggable' key={item.name}>
+                      <div className='d-flex align-items-center'>
+                        <div>
+                          <h5 className='mt-0'>{item.name}</h5>
+                          {item.description}
+                        </div>
+                      </div>
+                    </ListGroupItem>
+                  )
+                })}
+              </ReactSortable>
+            }
 
-            {workflowList.length === 0 &&
+            {addFlag &&
               <Col md='12' sm='12'>
 
                 {
                   fields.map((item, i) => {
                     return (
-                      <ListGroupItem className='draggable repeater-wrapper' key={item.rowid}>
+                      <ListGroupItem className='border-0 list-group-item mt-1 p-0' key={item.rowid}>
                         <Row md={12}>
                           <Col sm='12' className='px-2 d-flex justify-content-between'>
                             <span className='handle'>Step {i + 1}</span>
@@ -122,25 +203,18 @@ const CheckList = () => {
               </Col>
             }
           </Row>
-          {workflowList.length > 0 &&
-            <ReactSortable tag='ul' className='list-group' list={workflowList} setList={setWorkflowList}>
-              {workflowList.map(item => {
-                return (
-                  <ListGroupItem className='draggable' key={item.name}>
-                    <div className='d-flex align-items-center'>
-                      <div>
-                        <h5 className='mt-0'>{item.name}</h5>
-                        {item.description}
-                      </div>
-                    </div>
-                  </ListGroupItem>
-                )
-              })}
-            </ReactSortable>
-          }
+          <Row className='mt-1'>
+            <Col>
+              {addFlag &&
+                <Button color='primary' size='sm' className='btn-add-new' onClick={() => addItem()}>
+                  <Plus size={14} className='me-25'></Plus> <span className='align-middle'>Add Item</span>
+                </Button>
+              }
+            </Col>
+          </Row>
         </CardBody>
       </Card >
-    </form>
+    </form >
   )
 }
 

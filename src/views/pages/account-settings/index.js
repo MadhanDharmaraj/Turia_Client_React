@@ -9,7 +9,9 @@ import { Row, Col, TabContent, TabPane } from 'reactstrap'
 
 // ** Demo Components
 import Tabs from './Tabs'
+import SecurityContetTab from './SecurityContetTab'
 import InvoiceSettings from './InvoiceSettings'
+import Attendance from './Attendance'
 import AccountTabContent from './AccountTabContent'
 import RolesandDesignationContent from './RolesandDesignationContent'
 import NotificationsTabContent from './NotificationsTabContent'
@@ -44,15 +46,18 @@ const AccountSettings = () => {
                 <AccountTabContent data={data.general} />
               </TabPane>
               <TabPane tabId='2'>
-                <NotificationsTabContent />
+                <SecurityContetTab />
               </TabPane>
               <TabPane tabId='3'>
                 <InvoiceSettings />
               </TabPane>
               <TabPane tabId='4'>
-                <RolesandDesignationContent />
+                <Attendance />
               </TabPane>
               <TabPane tabId='5'>
+                <RolesandDesignationContent />
+              </TabPane>
+              <TabPane tabId='6'>
                 <NotificationsTabContent />
               </TabPane>
             </TabContent>

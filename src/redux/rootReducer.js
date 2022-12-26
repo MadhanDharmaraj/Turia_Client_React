@@ -7,6 +7,7 @@ import chat from '@src/views/apps/chat/store'
 import users from '@src/views/apps/user/store'
 import email from '@src/views/apps/email/store'
 import invoice from '@src/views/apps/invoice/store'
+import team from '@src/views/apps/team/store'
 import task from '@src/views/apps/task/store'
 import register from '@src/views/pages/authentication/register-multi-steps/store'
 import client from '@src/views/apps/client/store'
@@ -50,6 +51,7 @@ const rootReducer = {
   invoicepayment,
   exemptionreason,
   designation,
+  team,
   department,
   role,
   dashboard

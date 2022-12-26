@@ -9,11 +9,10 @@ import { Row, Col, TabContent, TabPane, Card, CardHeader } from 'reactstrap'
 
 // ** Demo Components
 import Tabs from './Tabs'
-import GeneralSetting from './GeneralSetting'
-import InvoiceAccounts from './InvoiceAccounts'
-import GSTSetting from './GSTSetting'
-import TaxRateSetting from './TaxRateSetting'
-import ExemptionReasonSetting from './ExemptionReasonSetting'
+import AttendanceScore from './AttendanceScore'
+import BusinessHours from './BusinessHours'
+import Holidays from './Holidays'
+import LeaveSetting from './LeaveSetting'
 
 // ** Styles
 import '@styles/react/libs/flatpickr/flatpickr.scss'
@@ -21,7 +20,7 @@ import '@styles/react/pages/page-account-settings.scss'
 
 const AccountSettings = () => {
   // ** States
-  const [activeTab, setActiveTab] = useState('invoiceaccount')
+  const [activeTab, setActiveTab] = useState('attendancescore')
   const [data, setData] = useState(null)
 
   const toggleTab = tab => {
@@ -42,20 +41,20 @@ const AccountSettings = () => {
                 <Tabs className='mb-2' activeTab={activeTab} toggleTab={toggleTab} />
 
                 <TabContent activeTab={activeTab}>
-                  {/* <TabPane tabId='general'>
-                    <GeneralSetting data={activeTab} />
-                  </TabPane> */}
+                  <TabPane tabId='attendancescore'>
+                    <AttendanceScore data={activeTab} />
+                  </TabPane>
 
-                  <TabPane tabId='invoiceaccount'>
-                    <InvoiceAccounts data={activeTab} />
+                  <TabPane tabId='businesshours'>
+                    <BusinessHours data={activeTab} />
                   </TabPane>
                   
-                  <TabPane tabId='taxrate'>
-                    <TaxRateSetting data={activeTab} />
+                  <TabPane tabId='holidays'>
+                    <Holidays data={activeTab} />
                   </TabPane>
 
-                  <TabPane tabId='exemptionreason'>
-                    <ExemptionReasonSetting data={activeTab} />
+                  <TabPane tabId='leavesetting'>
+                    <LeaveSetting data={activeTab} />
                   </TabPane>
 
                 </TabContent>

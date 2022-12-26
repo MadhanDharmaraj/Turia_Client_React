@@ -22,28 +22,10 @@ export const addInvoice = createAsyncThunk('appInvoice/addInvoice', async (invoi
   }
 })
 
-export const addInvoiceTax = createAsyncThunk('appInvoice/addInvoiceTax', async (invoiceTax, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(`/invoicetaxes/create`, { rows: invoiceTax })
-    return { invoiceTaxes: response.data.taskinvoices }
-  } catch (ex) {
-    return rejectWithValue(getExceptionPayload(ex))
-  }
-})
-
 export const addInvoiceItems = createAsyncThunk('appInvoice/addInvoiceItems', async (invoiceItems, { rejectWithValue }) => {
   try {
     const response = await axios.post(`/taskinvoiceitems/create`, { rows: invoiceItems })
     return { invoiceItems: response.data.taskinvoiceitems }
-  } catch (ex) {
-    return rejectWithValue(getExceptionPayload(ex))
-  }
-})
-
-export const addInvoiceItemTax = createAsyncThunk('appInvoice/addInvoiceItemTax', async (invoiceItemTax, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(`/invoiceitemtaxes/create`, { rows: invoiceItemTax })
-    return { invoices: response.data.invoices }
   } catch (ex) {
     return rejectWithValue(getExceptionPayload(ex))
   }
@@ -78,28 +60,10 @@ export const updateInvoice = createAsyncThunk('appInvoice/updateInvoice', async 
   }
 })
 
-export const updateInvoiceTax = createAsyncThunk('appInvoice/updateInvoiceTax', async (invoiceTax, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(`/invoicetaxes/update`, { rows: invoiceTax })
-    return { invoiceTaxes: response.data.taskinvoices }
-  } catch (ex) {
-    return rejectWithValue(getExceptionPayload(ex))
-  }
-})
-
 export const updateInvoiceItems = createAsyncThunk('appInvoice/updateInvoiceItems', async (invoiceItems, { rejectWithValue }) => {
   try {
     const response = await axios.post(`/taskinvoiceitems/update`, { rows: invoiceItems })
     return { invoiceItems: response.data.taskinvoiceitems }
-  } catch (ex) {
-    return rejectWithValue(getExceptionPayload(ex))
-  }
-})
-
-export const updateInvoiceItemTax = createAsyncThunk('appInvoice/updateInvoiceItemTax', async (invoiceItemTax, { rejectWithValue }) => {
-  try {
-    const response = await axios.post(`/invoiceitemtaxes/update`, { rows: invoiceItemTax })
-    return { invoices: response.data.invoices }
   } catch (ex) {
     return rejectWithValue(getExceptionPayload(ex))
   }
@@ -111,13 +75,13 @@ export const getClient = createAsyncThunk('appInvoice/getClient', async id => {
 })
 
 export const deleteInvoice = createAsyncThunk('appInvoice/deleteInvoice', async (id, { dispatch, getState }) => {
-  await axios.delete('/invoices/delete', { id })
+  await axios.post('/invoices/delete', { id })
   await dispatch(getData(getState().invoice.params))
   return id
 })
 
 export const deleteInvoiceItem = createAsyncThunk('appInvoice/deleteInvoiceItem', async (id, {  }) => {
-  await axios.delete('/taskinvoiceitems/delete', { id })
+  await axios.post('/taskinvoiceitems/delete', { id })
   return []
 })
 

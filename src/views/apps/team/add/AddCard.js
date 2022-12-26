@@ -1,5 +1,5 @@
 // ** React Imports
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import classnames from 'classnames'
 // ** Third Party Components
 import RoleCards from './RoleCards'
@@ -9,6 +9,7 @@ import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import axios from '@src/configs/axios/axiosConfig'
 
+import { addUser } from '../store/index'
 import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
@@ -19,23 +20,30 @@ import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from 'react'
 import { activeOrganizationid } from '@src/helper/sassHelper'
 import moment from 'moment'
+import { useDispatch } from 'react-redux'
 const activeOrgId = activeOrganizationid()
 
 const AddCard = () => {
 
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
   // ** States
   const schema = yup.object().shape({
-    organizationId : yup.string().default(activeOrgId),
+    organizationId: yup.string().default(activeOrgId),
     firstName: yup.string().required("Please Enter a First Name"),
     lastName: yup.string().required("Please Enter a Last Name"),
-    conatctNo: yup.string().required("Please Enter a Conatct No").max(10).min(10, "Invalid Contact No"),
-    userTypeId : yup.string().default(4),
+    name: yup.string(),
+    contactNo: yup.string().required("Please Enter a Conatct No").max(10).min(10, "Invalid Contact No"),
+    userTypeId: yup.string().default(4),
     email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
     designationId: yup.string().required("Please Select Designation"),
     roleId: yup.string().required("Please Select Role"),
-    invitedAt : yup.string().default(moment().unix()),
-    expiredAt : yup.string().default(moment().add(5, 'days').unix()),
-    departmentId: yup.string().required("Please Select Department")
+    invitedAt: yup.string().default(moment().unix()),
+    expiryDate: yup.string().default(moment().add(5, 'days').unix()),
+    departmentId: yup.string().required("Please Select Department"),
+    isRegistered: yup.boolean().default(false),
+    invitedBy: yup.string().default('51')
   })
 
   const { handleSubmit, control, formState: { errors } } = useForm({
@@ -49,16 +57,16 @@ const AddCard = () => {
 
   const getDesignation = () => {
     axios.post('/designations/dropdown').
-    then((res) => { 
-      setDesignationOptions(res.data.designations) 
-    }).catch(() => { })
+      then((res) => {
+        setDesignationOptions(res.data.designations)
+      }).catch(() => { })
   }
 
   const getDepartment = () => {
     axios.post('/departments/dropdown')
-    .then((res) => { 
-      setDepartmentOptions(res.data.departments)
-     }).catch(() => { })
+      .then((res) => {
+        setDepartmentOptions(res.data.departments)
+      }).catch(() => { })
   }
 
   const getRoles = () => {
@@ -69,10 +77,14 @@ const AddCard = () => {
     getDesignation()
     getDepartment()
     getRoles()
-  })
+  }, [])
 
-  const onSubmit = data => console.log(data)
+  const onSubmit = async data => {
+    data['name'] = `${control._formValues.firstName} ${control._formValues.lastName}`
+    const res = await dispatch(addUser(data))
+    navigate(`/team/view/${res.id}`)
 
+  }
 
   return (
 
@@ -119,17 +131,17 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='conatctNo'>
+                <Label sm='3' size='lg' className='form-label' for='contactNo'>
                   Conatct No
                 </Label>
                 <Col sm='9'>
                   <Controller
-                    id='conatctNo'
-                    name='conatctNo'
+                    id='contactNo'
+                    name='contactNo'
                     control={control}
-                    render={({ field }) => <Input invalid={errors.conatctNo && true} {...field} />}
+                    render={({ field }) => <Input invalid={errors.contactNo && true} {...field} />}
                   />
-                  {errors.conatctNo && <FormFeedback>{errors.conatctNo.message}</FormFeedback>}
+                  {errors.contactNo && <FormFeedback>{errors.contactNo.message}</FormFeedback>}
                 </Col>
               </Row>
             </Col>
