@@ -10,10 +10,10 @@ import { store } from '@store/store'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 const MySwal = withReactContent(Swal)
 const activeOrgId = activeOrganizationid()
-
+const userId = orgUserId()
 // ** Reactstrap Imports
 import { Card, CardBody, Row, Col, ListGroupItem, Input, Label, Button, FormFeedback } from 'reactstrap'
 import { useParams } from 'react-router-dom'
@@ -64,6 +64,7 @@ const CheckList = () => {
   const schema = yup.object().shape({
     rows: yup.array().of(
       yup.object().shape({
+        createdBy: yup.string().default(userId),
         name: yup.string().required("Please Enter Name"),
         organizationId: yup.string().default(activeOrgId),
         serviceId: yup.string().default(id),

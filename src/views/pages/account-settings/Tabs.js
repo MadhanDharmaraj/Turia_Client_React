@@ -2,7 +2,7 @@
 import { Nav, NavItem, NavLink } from 'reactstrap'
 
 // ** Icons Imports
-import { User, Lock, Bookmark, Link, Bell, Home, PenTool } from 'react-feather'
+import { User, Lock, Bookmark, Bell, Home, PenTool } from 'react-feather'
 
 const Tabs = ({ activeTab, toggleTab }) => {
   return (
@@ -21,7 +21,7 @@ const Tabs = ({ activeTab, toggleTab }) => {
       </NavItem>
       <NavItem>
         <NavLink active={activeTab === '3'} onClick={() => toggleTab('3')}>
-          <PenTool size={18} className='me-50' />
+          <Lock   size={18} className='me-50' />
           <span className='fw-bold'>Invoice</span>
         </NavLink>
       </NavItem>

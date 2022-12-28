@@ -20,7 +20,7 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
-import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
+import { activeOrganizationid, activeOrganization, orgUserId } from '@src/helper/sassHelper'
 import { calculateTax, parser } from '../helper/hepler'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,7 +29,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const activeOrgId = activeOrganizationid()
 const activeOrg = activeOrganization()
-
+const userId = orgUserId()
 const noteText =
   'It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
 
@@ -159,6 +159,7 @@ const AddCard = (data) => {
   }
 
   const schema = yup.object().shape({
+    updatedBy: yup.string().default(userId),
     id: yup.string().default(id),
     contactId: yup.number().required("Please select a Client"),
     uniqueIdentity: yup.string(),
@@ -403,7 +404,7 @@ const AddCard = (data) => {
 
   useEffect(() => {
     if (accountOptions.length > 0) {
-        bankAccountfn(control._formValues.bankAccountId)
+      bankAccountfn(control._formValues.bankAccountId)
     }
   }, [accountOptions])
 

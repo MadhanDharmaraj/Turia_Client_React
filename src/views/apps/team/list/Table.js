@@ -1,18 +1,15 @@
 // ** React Imports
 import { Fragment, useState, useEffect } from 'react'
-import {Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 // ** Invoice List Sidebar
-import Sidebar from './Sidebar'
-
 // ** Table Columns
 import { columns } from './columns'
 
 // ** Store & Actions
-import { getData } from '../store'
+import { getInvitations } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 
 // ** Third Party Components
-import Select from 'react-select'
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
 import { ChevronDown, Share, Printer, FileText, File, Grid, Copy } from 'react-feather'
@@ -167,7 +164,7 @@ const CustomHeader = ({ store, handlePerPage, rowsPerPage, handleFilter, searchT
 const UsersList = () => {
   // ** Store Vars
   const dispatch = useDispatch()
-  const store = useSelector(state => state.users)
+  const store = useSelector(state => state.team)
 
   // ** States
   const [sort, setSort] = useState('desc')
@@ -175,18 +172,14 @@ const UsersList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState('id')
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentRole] = useState({ value: '', label: 'Select Role' })
   const [currentPlan] = useState({ value: '', label: 'Select Plan' })
   const [currentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
 
-  // ** Function to toggle sidebar
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen)
-  console.log(toggleSidebar)
   // ** Get data on mount
   useEffect(() => {
     dispatch(
-      getData({
+      getInvitations({
         sort,
         sortColumn,
         q: searchTerm,
@@ -202,7 +195,7 @@ const UsersList = () => {
   // ** Function in get data on page change
   const handlePagination = page => {
     dispatch(
-      getData({
+      getInvitations({
         sort,
         sortColumn,
         q: searchTerm,
@@ -220,7 +213,7 @@ const UsersList = () => {
   const handlePerPage = e => {
     const value = parseInt(e.currentTarget.value)
     dispatch(
-      getData({
+      getInvitations({
         sort,
         sortColumn,
         q: searchTerm,
@@ -238,7 +231,7 @@ const UsersList = () => {
   const handleFilter = val => {
     setSearchTerm(val)
     dispatch(
-      getData({
+      getInvitations({
         sort,
         q: val,
         sortColumn,
@@ -300,7 +293,7 @@ const UsersList = () => {
     setSort(sortDirection)
     setSortColumn(column.sortField)
     dispatch(
-      getData({
+      getInvitations({
         sort,
         sortColumn,
         q: searchTerm,
@@ -318,7 +311,7 @@ const UsersList = () => {
       <Card className='overflow-hidden'>
         <div className='react-dataTable'>
           <DataTable
-            noHeader  
+            noHeader
             subHeader
             sortServer
             pagination
@@ -336,15 +329,12 @@ const UsersList = () => {
                 searchTerm={searchTerm}
                 rowsPerPage={rowsPerPage}
                 handleFilter={handleFilter}
-                handlePerPage={handlePerPage}
-                toggleSidebar={toggleSidebar}
+                handlePerPage={handlePerPage}                
               />
             }
           />
         </div>
       </Card>
-
-      <Sidebar open={sidebarOpen} toggleSidebar={toggleSidebar} />
     </Fragment>
   )
 }

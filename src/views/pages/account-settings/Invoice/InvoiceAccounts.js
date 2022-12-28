@@ -19,13 +19,13 @@ import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { getData, addAccount, updateAccount, deleteAccount } from './store/invoiceaccount'
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
 const activeOrgId = activeOrganizationid()
-
+const userId = orgUserId()
 // ** Third Party Components
 import classnames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -50,7 +50,9 @@ const InvoiceAccounts = (tabId) => {
     transactionAccountTypeId: yup.string().default(2),
     isPrimary: yup.boolean().default(false),
     bankCode: yup.string().default('1'),
-    accountHolderName: yup.string()
+    accountHolderName: yup.string(),
+    updatedBy: yup.string().default(userId),
+    createdBy: yup.string().default(userId)
   })
 
   const { handleSubmit, formState: { errors }, control, reset, setValue } = useForm({

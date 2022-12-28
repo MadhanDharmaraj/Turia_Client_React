@@ -22,9 +22,10 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useDispatch, useSelector } from 'react-redux'
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 const AddCard = () => {
 
   const phoneRegExp = /^[0-9\- ]{10,10}$/
@@ -37,6 +38,7 @@ const AddCard = () => {
     rows: yup.array().of(
       yup.object().shape({
         name: yup.string().required("Please Enter Name"),
+        createdBy: yup.string().default(userId),
         organizationId: yup.string().default(activeOrgId),
         email: yup.string().email().required("Please Enter Email"),
         contact: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),

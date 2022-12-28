@@ -6,70 +6,40 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getUser, deleteUser } from '../store'
+import { getInvitations, deleteUser } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive, Eye, Edit } from 'react-feather'
+import { MoreVertical, Trash2, Eye, Edit } from 'react-feather'
 
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 
 // ** Renders Client Columns
 const renderClient = row => {
-  if (row.avatar.length) {
-    return <Avatar className='me-1' img={row.avatar} width='32' height='32' />
-  } else {
-    return (
-      <Avatar
-        initials
-        className='me-1'
-        color={row.avatarColor || 'light-primary'}
-        content={row.fullName || 'John Doe'}
-      />
-    )
-  }
+
+  return (
+    <Avatar
+      initials
+      className='me-1'
+      color={'light-primary'}
+      content={row.name || 'John Doe'}
+    />
+  )
+
 }
 
 // ** Renders Role Columns
-const renderRole = row => {
-  const roleObj = {
-    subscriber: {
-      class: 'text-primary',
-      icon: User
-    },
-    maintainer: {
-      class: 'text-success',
-      icon: Database
-    },
-    editor: {
-      class: 'text-info',
-      icon: Edit2
-    },
-    author: {
-      class: 'text-warning',
-      icon: Settings
-    },
-    admin: {
-      class: 'text-danger',
-      icon: Slack
-    }
-  }
+const statusObj = [
+  '',
+  'light-warning',
+  'light-success'
+]
 
-  const Icon = roleObj[row.role] ? roleObj[row.role].icon : Edit2
-
-  return (
-    <span className='text-truncate text-capitalize align-middle'>
-      <Icon size={18} className={`${roleObj[row.role] ? roleObj[row.role].class : ''} me-50`} />
-      {row.role}
-    </span>
-  )
-}
-
-const statusObj = {
-  pending: 'light-warning',
-  active: 'light-success',
-  inactive: 'light-secondary'
-}
+const statusArr = [
+  '',
+  'Invited',
+  'Active'
+]
 
 export const columns = [
   {
@@ -77,7 +47,7 @@ export const columns = [
     sortable: true,
     minWidth: '300px',
     sortField: 'fullName',
-    selector: row => row.fullName,
+    selector: row => row.name,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
         {renderClient(row)}
@@ -85,9 +55,9 @@ export const columns = [
           <Link
             to={`/team/view/${row.id}`}
             className='user_name text-truncate text-body'
-            onClick={() => store.dispatch(getUser(row.id))}
+            onClick={() => store.dispatch(getInvitations(row.id))}
           >
-            <span className='fw-bolder'>{row.fullName}</span>
+            <span className='fw-bolder'>{row.name}</span>
           </Link>
           <small className='text-truncate text-muted mb-0'>{row.email}</small>
         </div>
@@ -99,24 +69,24 @@ export const columns = [
     sortable: true,
     minWidth: '172px',
     sortField: 'role',
-    selector: row => row.role,
-    cell: row => renderRole(row)
+    selector: row => row.rolename,
+    cell: row => <span className='text-capitalize'>{row.rolename}</span>
   },
   {
     name: 'Designation',
     minWidth: '138px',
     sortable: true,
     sortField: 'designation',
-    selector: row => row.designation,
-    cell: row => <span className='text-capitalize'>{row.designation}</span>
+    selector: row => row.designationname,
+    cell: row => <span className='text-capitalize'>{row.designationname}</span>
   },
   {
     name: 'Department',
     minWidth: '230px',
     sortable: true,
     sortField: 'department',
-    selector: row => row.department,
-    cell: row => <span className='text-capitalize'>{row.department}</span>
+    selector: row => row.departmentname,
+    cell: row => <span className='text-capitalize'>{row.departmentname}</span>
   },
   {
     name: 'Status',
@@ -126,7 +96,7 @@ export const columns = [
     selector: row => row.status,
     cell: row => (
       <Badge className='text-capitalize' color={statusObj[row.status]} pill>
-        {row.status}
+        {statusArr[row.status]}
       </Badge>
     )
   },
@@ -137,13 +107,13 @@ export const columns = [
       <div className='column-action d-flex align-items-center'>
         <Col tag={Link} lg={4}
           to={`/team/view/${row.id}`}
-          onClick={() => store.dispatch(getUser(row.id))}>
+          onClick={() => store.dispatch(getInvitations(row.id))}>
           <Eye
             className='cursor-pointer mt-0' size={16} />
         </Col>
         <Col tag={Link} lg={4}
           to={`/team/edit/${row.id}`}
-          onClick={() => store.dispatch(getUser(row.id))} >
+          onClick={() => store.dispatch(getInvitations(row.id))} >
           <Edit
             className='cursor-pointer ms-1 mt-0' size={16} />
         </Col>

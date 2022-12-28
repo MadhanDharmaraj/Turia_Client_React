@@ -17,32 +17,39 @@ import {
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { getData, addAccount, updateAccount, deleteAccount } from './store/leavesettings'
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { getData, addHolidays, updateHolidays, deleteHolidays } from './store/holidays'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
 const activeOrgId = activeOrganizationid()
-
+const userId = orgUserId()
 // ** Third Party Components
 import classnames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
+import moment from 'moment'
 
-const InvoiceAccounts = (tabId) => {
+const Holidays = (tabId) => {
   const MySwal = withReactContent(Swal)
   const [data, setData] = useState([])
   const [selected, setSelected] = useState(null)
 
-  const store = useSelector(state => state.invoiceaccount)
+  const store = useSelector(state => state.holidays)
   const dispatch = useDispatch()
+
+  const dateFormat = (value) => {
+    return moment.unix(value).format("MMM DD, YYYY")
+  }
 
   const schema = yup.object().shape({
     organizationId: yup.number().default(parseInt(activeOrgId)),
     name: yup.string().required('Please Enter Name'),
     date: yup.string().required('Please Select Date'),
-    comments: yup.string().nullable(),
-    status: yup.boolean().default(true)
+    comments: yup.string().nullable().default(''),
+    status: yup.boolean().default(true),
+    updatedBy: yup.string().default(userId),
+    createdBy: yup.string().default(userId)
   })
 
   const { handleSubmit, formState: { errors }, control, reset } = useForm({
@@ -64,11 +71,11 @@ const InvoiceAccounts = (tabId) => {
       buttonsStyling: false
     }).then(async (result) => {
       if (result.value) {
-        await dispatch(deleteAccount(id))
+        await dispatch(deleteHolidays(id))
         MySwal.fire({
           icon: 'success',
           title: 'Deleted!',
-          text: 'Account has been deleted.',
+          text: 'Holidays has been deleted.',
           customClass: {
             confirmButton: 'btn btn-success'
           }
@@ -80,20 +87,22 @@ const InvoiceAccounts = (tabId) => {
     })
   }
 
+  const resetForm = () => {
+    reset({ name: '', date: null, comments: '', status: true, id: '' })
+  }
+
   const onSubmit = async data => {
     if (selected !== null) {
-      await dispatch(updateAccount(data))
-      reset({})
+      await dispatch(updateHolidays(data))
       setSelected(null)
     } else {
-      await dispatch(addAccount(data))
-      reset({})
+      await dispatch(addHolidays(data))
     }
-
+    resetForm()
   }
 
   useEffect(async () => {
-    if (tabId.data === 'invoiceaccount') {
+    if (tabId.data === 'holidays') {
       await dispatch(getData())
     }
 
@@ -127,7 +136,7 @@ const InvoiceAccounts = (tabId) => {
     reset({
       name: card.name,
       date: card.date,
-      id : card.id,
+      id: card.id,
       comments: card.comments,
       status: card.status
     })
@@ -203,6 +212,9 @@ const InvoiceAccounts = (tabId) => {
                   <Button type='submit' className='me-1' color='primary'>
                     Submit
                   </Button>
+                  <Button className='me-1' color='warning' onClick={() => resetForm()}>
+                    Reset
+                  </Button>
                 </Col>
 
               </Row>
@@ -218,17 +230,11 @@ const InvoiceAccounts = (tabId) => {
                     >
                       <div className='d-flex justify-content-between flex-sm-row flex-column'>
                         <div className='card-information'>
-                          <h5 className='text-primary'>{card.bankName}</h5>
+                          <h5 className='text-primary'>{card.name}</h5>
                           <div className='d-flex align-items-center mb-50'>
-                            <h6 className='mb-0'>{card.accountBusinessName}</h6>
-                            {index === 0 && (
-                              <Badge color='light-primary' className='ms-50'>
-                                Primary
-                              </Badge>
-                            )}
                           </div>
                           <span className='card-number '>
-                            {card.accountHolderName}
+                            {dateFormat(card.date)}
                           </span>
                         </div>
                         <div className='d-flex flex-column text-start text-lg-end'>
@@ -255,4 +261,4 @@ const InvoiceAccounts = (tabId) => {
   )
 }
 
-export default InvoiceAccounts
+export default Holidays

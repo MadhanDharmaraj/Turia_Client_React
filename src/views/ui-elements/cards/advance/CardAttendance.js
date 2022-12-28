@@ -6,14 +6,15 @@ import { Card, CardBody, CardText, Button, Row, Col } from 'reactstrap'
 import { LogIn, LogOut } from 'react-feather'
 
 // ** Custom Components
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 import Avatar from '@components/avatar'
-import { punchIn, punchOut } from '../../../dashboard/analytics/store'
+import { punchIn, punchOut, getAttendance } from '../../../dashboard/ecommerce/store'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment'
 
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 const CardAttendance = () => {
 
   const dispatch = useDispatch()
@@ -39,7 +40,7 @@ const CardAttendance = () => {
     const data = {
       organizationId: activeOrgId,
       punchIn: moment().unix(),
-      userId: '51'
+      userId
     }
     await dispatch(punchIn(data))
   }
@@ -65,7 +66,7 @@ const CardAttendance = () => {
     const datatemp = {
       organizationId: activeOrgId,
       punchOut: moment().unix(),
-      userId: '51',
+      userId,
       id: data.id
     }
     await dispatch(punchOut(datatemp))
@@ -96,12 +97,6 @@ const CardAttendance = () => {
         setPunchoutTime(moment.unix(temp.punchout).format('h:m a'))
       }
 
-      if (temp.punchout === null) {
-        setInterval(() => {
-          clockcounter()
-        }, 1000)
-      }
-
     }
 
   }, [])
@@ -118,13 +113,25 @@ const CardAttendance = () => {
         setLoggedIn(false)
         setPunchoutTime(moment.unix(temp.punchout).format('h:m a'))
       }
+      if (temp.punchout === null) {
+        setInterval(() => {
+          clockcounter()
+        }, 1000)
+      }
 
-      setInterval(() => {
-        clockcounter()
-      }, 1000)
-
+    } else {
+      localStorage.removeItem('loggedIn')
+      setData(null)
+      setLoggedIn(false)
+      setPunchoutTime(null)
+      setPunchInTime(null)
+      setPunchInTimeWithDate(null)
     }
   }, [store.data])
+
+  useEffect(async () => {
+    await dispatch(getAttendance({ userId }))
+  }, [])
 
   return (
     <Card className='card-congratulations-medal'>

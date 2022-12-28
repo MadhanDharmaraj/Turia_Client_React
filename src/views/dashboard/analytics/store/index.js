@@ -14,6 +14,11 @@ export const punchOut = createAsyncThunk('appDashboard/punchOut', async (data, {
   return response.data.employeeattendances
 })
 
+export const getAttendance = createAsyncThunk('appDashboard/getAttendance', async (data, { }) => {
+  const response = await axios.post('employeeattendances/flagget', data)
+  return response.data.employeeattendances
+})
+
 export const appDashboardSlice = createSlice({
   name: 'appInvoice',
   initialState: {

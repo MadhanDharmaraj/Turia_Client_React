@@ -13,6 +13,15 @@ export const register = createAsyncThunk('appUsers/createUser', async (user, { r
   }
 })
 
+export const inviteregister = createAsyncThunk('appUsers/inviteregister', async (user, { rejectWithValue }) => {
+  try {
+    const response = await axios.post('/users/inviteregister', user)
+    return { user: response.data.users }
+  } catch (error) {
+    return rejectWithValue(error.data)
+  }
+})
+
 export const generateCode = createAsyncThunk('appUsers/sendCode', async (email, { }) => {
   const response = await axios.post('/users/sendCode', email)
   return response
@@ -33,7 +42,6 @@ export const createOrganizationUser = createAsyncThunk('appUsers/createOrganizat
   return { organization: response.data.organizations }
 })
 
-
 export const appUsersSlice = createSlice({
   name: 'appUsers',
   initialState: {
@@ -49,6 +57,20 @@ export const appUsersSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
+      .addCase(inviteregister.fulfilled, (state, action) => {
+        const data = action.payload.user
+        data.role = 'admin'
+        data.ability = [
+          {
+            action: 'manage',
+            subject: 'all'
+          }
+        ]
+        state.loginUser = data
+      })
+      .addCase(inviteregister.rejected, (state, { error }) => {
+        state.loginError = error
+      })
       .addCase(register.fulfilled, (state, action) => {
         const data = action.payload.user
         data.role = 'admin'

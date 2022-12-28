@@ -17,9 +17,10 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from "react"
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 const AddCard = () => {
   // ** States
   const navigate = useNavigate({})
@@ -30,6 +31,7 @@ const AddCard = () => {
   const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
 
   const schema = yup.object().shape({
+    createdBy: yup.string().default(userId),
     categoryId: yup.string().required("Please select a Category"),
     categoryType: yup.number().default(1),
     name: yup.string().required("Please Enter Service Name"),
@@ -83,7 +85,7 @@ const AddCard = () => {
   const showExemption = (val) => {
     if (val.nontaxableflag) {
       setIsTaxApplicable(false)
-      setValue('isTaxApplicable', false)  
+      setValue('isTaxApplicable', false)
     } else {
       setIsTaxApplicable(true)
       setValue('exemptionReasonId', null)

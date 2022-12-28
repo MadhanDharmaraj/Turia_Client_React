@@ -22,11 +22,12 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
-import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
+import { activeOrganizationid, activeOrganization, orgUserId } from '@src/helper/sassHelper'
 import { useDispatch } from 'react-redux'
 
 const activeOrgId = activeOrganizationid()
 const activeOrg = activeOrganization()
+const userId = orgUserId()
 
 const AddCard = () => {
   // ** States
@@ -36,6 +37,7 @@ const AddCard = () => {
   const [date, setDate] = useState("")
 
   const schema = yup.object().shape({
+    createdBy: yup.string().default(userId),
     clientId: yup.number().required("Please select a Client"),
     serviceId: yup.number().required("Please select a Service"),
     assignee: yup.array().min(1, "Please select Assignee"),

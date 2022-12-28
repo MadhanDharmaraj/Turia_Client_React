@@ -43,7 +43,7 @@ const CustomHeader = ({ handleFilter, value, handlePerPage, rowsPerPage }) => {
             </Input>
           </div>
           <Button tag={Link} to='/invoice/add' color='primary'>
-            Add Record
+            Add Invoice
           </Button>
         </Col>
         <Col

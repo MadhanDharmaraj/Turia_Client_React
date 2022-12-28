@@ -36,6 +36,11 @@ const TeamView = lazy(() => import('../../views/apps/team/view'))
 const TeamAdd = lazy(() => import('../../views/apps/team/add'))
 const TeamEdit = lazy(() => import('../../views/apps/team/edit'))
 
+
+const AttendanceList = lazy(() => import('../../views/apps/attendance'))
+const LeaveList = lazy(() => import('../../views/apps/leave/list'))
+const TimeSheetList = lazy(() => import('../../views/apps/timesheet/list'))
+
 const ServiceList = lazy(() => import('../../views/apps/service/list'))
 const ServiceView = lazy(() => import('../../views/apps/service/view'))
 const ServiceAdd = lazy(() => import('../../views/apps/service/add'))
@@ -337,6 +342,22 @@ const AppRoutes = [
   {
     element: <TeamView />,
     path: '/team/view/:id'
+  },
+  {
+    element: <TeamEdit />,
+    path: '/team/edit/:id'
+  },
+  {
+    element: <AttendanceList />,
+    path: '/attendance/list'
+  },
+  {
+    element: <TimeSheetList />,
+    path: '/timesheet/list'
+  },
+  {
+    element: <LeaveList />,
+    path: '/leaves/list'
   },
   {
     element: <ComplianceAdd />,

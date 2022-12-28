@@ -17,9 +17,10 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from "react"
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 
 const EditCard = () => {
 
@@ -35,6 +36,7 @@ const EditCard = () => {
   const [isTaxApplicable, setIsTaxApplicable] = useState(true)
 
   const schema = yup.object().shape({
+    updatedBy: yup.string().default(userId),
     id: yup.string().default(id),
     categoryId: yup.string().required("Please select a Category"),
     categoryType: yup.number().default(1),

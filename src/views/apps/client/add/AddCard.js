@@ -12,7 +12,7 @@ import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 // ** Reactstrap Imports
 import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback, CardTitle, CardHeader } from 'reactstrap'
 
@@ -23,6 +23,7 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 const AddCard = () => {
 
   // ** States
@@ -42,6 +43,7 @@ const AddCard = () => {
 
   const schema = yup.object().shape({
     clientType: yup.number().default(2),
+    createdBy: yup.string().default(userId),
     organization: yup.number().default(activeOrgId),
     uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),

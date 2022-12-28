@@ -9,7 +9,7 @@ import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import axios from '@src/configs/axios/axiosConfig'
 
-import { addUser } from '../store/index'
+import { addUser, inviteMail } from '../store/index'
 import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
@@ -18,11 +18,11 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from 'react'
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 import moment from 'moment'
 import { useDispatch } from 'react-redux'
 const activeOrgId = activeOrganizationid()
-
+const userId = orgUserId()
 const AddCard = () => {
 
   const dispatch = useDispatch()
@@ -30,6 +30,7 @@ const AddCard = () => {
 
   // ** States
   const schema = yup.object().shape({
+    createdBy: yup.string().default(userId),
     organizationId: yup.string().default(activeOrgId),
     firstName: yup.string().required("Please Enter a First Name"),
     lastName: yup.string().required("Please Enter a Last Name"),
@@ -79,11 +80,15 @@ const AddCard = () => {
     getRoles()
   }, [])
 
+  const invitemail = async (id) => {
+    await dispatch(inviteMail(id))
+    navigate(`/team/view/${id}`)
+  }
+
   const onSubmit = async data => {
     data['name'] = `${control._formValues.firstName} ${control._formValues.lastName}`
     const res = await dispatch(addUser(data))
-    navigate(`/team/view/${res.id}`)
-
+    invitemail(res.payload.invitations.id)
   }
 
   return (

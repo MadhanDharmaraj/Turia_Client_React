@@ -12,7 +12,7 @@ import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 // ** Reactstrap Imports
 import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback, CardTitle, CardHeader } from 'reactstrap'
 
@@ -24,6 +24,7 @@ import '@styles/base/pages/app-invoice.scss'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 const EditCard = () => {
 
   // ** States
@@ -45,6 +46,7 @@ const EditCard = () => {
 
   const schema = yup.object().shape({
     clientType: yup.number(),
+    updatedBy : yup.string().default(userId),
     uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when(["clientType"], { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),

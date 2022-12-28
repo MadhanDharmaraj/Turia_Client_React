@@ -21,11 +21,11 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useDispatch, useSelector } from 'react-redux'
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
-
+const userId = orgUserId()
 const activeOrgId = activeOrganizationid()
 const EditCard = () => {
 
@@ -39,6 +39,7 @@ const EditCard = () => {
     rows: yup.array().of(
       yup.object().shape({
         name: yup.string().required("Please Enter Name"),
+        updatedBy: yup.string().default(userId),
         organizationId: yup.string().default(activeOrgId),
         email: yup.string().email().required("Please Enter Email"),
         contact: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),

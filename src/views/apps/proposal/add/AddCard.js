@@ -21,14 +21,14 @@ import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
-import { activeOrganizationid, activeOrganization } from '@src/helper/sassHelper'
+import { activeOrganizationid, activeOrganization, orgUserId } from '@src/helper/sassHelper'
 import { calculateTax, parser } from '../helper/hepler'
 import { Link, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 
 const activeOrgId = activeOrganizationid()
 const activeOrg = activeOrganization()
-
+const userId = orgUserId()
 const noteText =
   'It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
 
@@ -123,6 +123,7 @@ const AddCard = () => {
   }
 
   const schema = yup.object().shape({
+    createdBy: yup.string().default(userId),
     contactId: yup.number().required("Please select a Client"),
     uniqueIdentity: yup.string(),
     contactEmail: yup.string(),
@@ -161,7 +162,7 @@ const AddCard = () => {
     note: yup.string().default(noteText),
     status: yup.number().default(1),
     calculateTaxes: yup.string(),
-    paymentStatus: yup.number().default(11),
+    paymentStatus: yup.number().default(4),
     rows: yup.array().of(
       yup.object().shape({
         serviceId: yup.number().required("Please Select Service Item"),

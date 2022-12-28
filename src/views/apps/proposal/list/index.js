@@ -42,8 +42,8 @@ const CustomHeader = ({ handleFilter, value, handlePerPage, rowsPerPage }) => {
               <option value='50'>50</option>
             </Input>
           </div>
-          <Button tag={Link} to='/invoice/add' color='primary'>
-            Add Record
+          <Button tag={Link} to='/proposal/add' color='primary'>
+            Add Proposal
           </Button>
         </Col>
         <Col
@@ -67,7 +67,7 @@ const CustomHeader = ({ handleFilter, value, handlePerPage, rowsPerPage }) => {
   )
 }
 
-const InvoiceList = () => {
+const ProposalList = () => {
   // ** Store vars
   const dispatch = useDispatch()
   const store = useSelector(state => state.invoice)
@@ -292,4 +292,4 @@ const InvoiceList = () => {
   )
 }
 
-export default InvoiceList
+export default ProposalList

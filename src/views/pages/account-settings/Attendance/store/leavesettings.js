@@ -5,36 +5,36 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@src/configs/axios/axiosConfig'
 
 
-export const getData = createAsyncThunk('appInvoiceSetting/getData', async params => {
-  const response = await axios.post(`/transactionaccounts/list`, params)
+export const getData = createAsyncThunk('appLeaveTypes/getData', async params => {
+  const response = await axios.post(`/leavetypes/list`, params)
   return {
     params,
-    data: response.data.transactionaccounts
+    data: response.data.leavetypes
   }
 })
 
-export const addAccount = createAsyncThunk('appInvoiceSetting/addAccount', async (data, { dispatch, getState }) => {
+export const addLeaveTypes = createAsyncThunk('appLeaveTypes/addLeaveTypes', async (data, { dispatch, getState }) => {
 
-  await axios.post(`/transactionaccounts/create`, data)
+  await axios.post(`/leavetypes/create`, data)
   await dispatch(getData(getState().invoiceaccount.params))
   return []
 
 })
 
-export const updateAccount = createAsyncThunk('appInvoiceSetting/updateAccount', async (data, { dispatch, getState }) => {
-  await axios.post(`/transactionaccounts/update`, data)
+export const updateLeaveTypes = createAsyncThunk('appLeaveTypes/updateLeaveTypes', async (data, { dispatch, getState }) => {
+  await axios.post(`/leavetypes/update`, data)
   await dispatch(getData(getState().invoiceaccount.params))
   return []
 })
 
-export const deleteAccount = createAsyncThunk('appInvoiceSetting/updateAccount', async (id, { dispatch, getState }) => {
-  await axios.post('/transactionaccounts/delete', { id })
+export const deleteLeaveTypes = createAsyncThunk('appLeaveTypes/updateLeaveTypes', async (id, { dispatch, getState }) => {
+  await axios.post('/leavetypes/delete', { id })
   await dispatch(getData(getState().invoiceaccount.params))
   return id
 })
 
-export const appInvoiceAccountSlice = createSlice({
-  name: 'appInvoiceSetting',
+export const appLeaveTypesSlice = createSlice({
+  name: 'appLeaveTypes',
   initialState: {
     data: [],
     total: 1,
@@ -52,4 +52,4 @@ export const appInvoiceAccountSlice = createSlice({
   }
 })
 
-export default appInvoiceAccountSlice.reducer
+export default appLeaveTypesSlice.reducer

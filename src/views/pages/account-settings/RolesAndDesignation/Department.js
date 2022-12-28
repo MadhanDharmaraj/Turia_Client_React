@@ -17,13 +17,13 @@ import {
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 import { getData, addDepartment, updateDepartment, deleteDepartment } from './store/department'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
 const activeOrgId = activeOrganizationid()
-
+const userId = orgUserId()
 // ** Third Party Components
 import classnames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -38,7 +38,9 @@ const Department = (tabId) => {
 
   const schema = yup.object().shape({
     organizationId: yup.number().default(parseInt(activeOrgId)),
-    name: yup.string().required('Please Enter Department')
+    name: yup.string().required('Please Enter Department'),
+    updatedBy: yup.string().default(userId),
+    createdBy: yup.string().default(userId)
   })
 
   const { handleSubmit, formState: { errors }, control, reset } = useForm({

@@ -1,43 +1,117 @@
 // ** React Imports
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from '@src/configs/axios/axiosConfig'
 // ** Custom Components
 import InputPasswordToggle from '@components/input-password-toggle'
-
+import * as yup from 'yup'
+import { yupResolver } from '@hookform/resolvers/yup'
 // ** Reactstrap Imports
-import { Card, CardBody, CardTitle, CardText, Form, Label, Input, Button } from 'reactstrap'
-
+import { Card, CardBody, CardTitle, CardText, Form, Label, Input, Button, FormFeedback } from 'reactstrap'
+import useJwt from '@src/auth/jwt/useJwt'
 // ** Styles
+import { inviteregister, createOrganizationUser } from './register-multi-steps/store/index'
+import { AbilityContext } from '@src/utility/context/Can'
+import { handleLogin } from '@store/authentication'
 import '@styles/react/pages/page-authentication.scss'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import { useDispatch, useSelector } from 'react-redux'
+import { getHomeRouteForLoggedInUser } from '@utils'
+
+const passwordRegx = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
 
 const invitationRegister = () => {
 
   const { uniquekey } = useParams()
   const [invitaion, setInvitation] = useState({})
+  const dispatch = useDispatch()
+  const navigate = useNavigate({})
+  const ability = useContext(AbilityContext)
+  const store = useSelector(state => state.register)
 
-  const defaultValues = {
-    email: invitaion.email,
-    password: '',
-    uniqueKey: uniquekey
-  }
+  const SignupSchema = yup.object().shape({
+    uniquekey: yup.string().default(uniquekey),
+    name: yup.string(),
+    email: yup.string().email().required(),
+    password: yup.string().required().matches(
+      passwordRegx,
+      "Password must Contain 8 Characters, One Uppercase, One Lowercase, One Number and one special case Character"
+    )
+  })
 
   const {
     control,
     handleSubmit,
-    formState: { errors }
-  } = useForm({ defaultValues })
+    formState: { errors }, setValue
+  } = useForm({
+    defaultValues: SignupSchema.cast(),
+    resolver: yupResolver(SignupSchema)
+  })
 
   const getInvitation = () => {
     axios.post('/invitations/getinvitation', { uniquekey })
-      .then((res) => { setInvitation(res.data) })
+      .then((res) => {
+        setInvitation(res.data.invitation)
+        setValue('email', res.data.invitation.email)
+        setValue('name', `${res.data.invitation.firstname} ${res.data.invitation.lastname}`)
+      })
       .catch((err) => { console.log(err) })
   }
 
-  const onSubmit = (data) => {
-      console.log(data)
+  const onSubmit = async (data) => {
+    await dispatch(inviteregister(data))
+
+    useJwt
+      .login({ email: data.email, password: data.password })
+      .then(res => {
+        const data = res.data
+        data.role = 'admin'
+        data.ability = [
+          {
+            action: 'manage',
+            subject: 'all'
+          }
+        ]
+        dispatch(handleLogin(data))
+        ability.update(data.ability)
+
+        toast(t => (
+          <ToastContent t={t} name={data.name} />
+        ))
+      })
+      .catch(err => console.log(err))
+
   }
+
+  const createOrgUser = async (data) => {
+    await dispatch(createOrganizationUser(data))
+  }
+
+  useEffect(async () => {
+    if (store.registerSuccess) {
+      const user = store.loginUser
+      navigate(getHomeRouteForLoggedInUser(user.role))
+    }
+  }, [store.registerSuccess])
+
+  useEffect(async () => {
+    if (store.loginUser !== null) {
+      const OrgUser = {}
+      const fullname = `${invitaion.firstname} ${invitaion.lastname}`
+      OrgUser['name'] = fullname
+      OrgUser['email'] = invitaion.email
+      OrgUser['departmentId'] = invitaion.designationid
+      OrgUser['designationId'] = invitaion.departmentid
+      OrgUser['userTypeId'] = invitaion.usertypeid
+      OrgUser['organizationId'] = invitaion.organizationid
+      OrgUser['roleId'] = invitaion.roleid
+
+      createOrgUser(OrgUser)
+    }
+    if (store.loginError !== null) {
+      errors.email = store.loginError.email
+    }
+  }, [dispatch, store.loginUser, store.loginError])
 
   useEffect(() => {
     if (uniquekey) {
@@ -107,7 +181,7 @@ const invitationRegister = () => {
             <CardText className='mb-2'>Please sign-in to your account and start the adventure</CardText>
             <Form className='auth-login-form mt-2' onSubmit={handleSubmit(onSubmit)}>
               <div className='mb-1'>
-                <Label className='form-label' for='login-email'>
+                <Label className='form-label required' for='login-email'>
                   Email
                 </Label>
                 <Controller
@@ -128,7 +202,7 @@ const invitationRegister = () => {
               </div>
               <div className='mb-1'>
                 <div className='d-flex justify-content-between'>
-                  <Label className='form-label' for='login-password'>
+                  <Label className='form-label required' for='login-password'>
                     Password
                   </Label>
                 </div>
@@ -140,6 +214,7 @@ const invitationRegister = () => {
                     <InputPasswordToggle className='input-group-merge' invalid={errors.password && true} {...field} />
                   )}
                 />
+                {errors.password && <FormFeedback>{errors.password?.message}</FormFeedback>}
               </div>
               <div className='form-check mb-1'>
                 <Input type='checkbox' id='remember-me' />

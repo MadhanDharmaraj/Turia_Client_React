@@ -29,10 +29,11 @@ import { useForm, Controller } from 'react-hook-form'
 import AvatarGroup from '@components/avatar-group'
 import { getData, addRole, updateRole } from './store/roles' //deleteRole
 // ** FAQ Illustrations
-import { activeOrganizationid } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 import illustration from '@src/assets/images/illustration/faq-illustrations.svg'
 import { useDispatch, useSelector } from 'react-redux'
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 const rolesArr = [
     'Client',
     'Service',
@@ -59,7 +60,9 @@ const Roles = (tabId) => {
         description: yup.string().nullable(),
         panel: yup.string().default('client'),
         isDefault: yup.number().default(1),
-        isAdminRole: yup.boolean().default(false)
+        isAdminRole: yup.boolean().default(false),
+        updatedBy: yup.string().default(userId),
+        createdBy: yup.string().default(userId)
     })
 
     const { handleSubmit, formState: { errors }, control, reset } = useForm({

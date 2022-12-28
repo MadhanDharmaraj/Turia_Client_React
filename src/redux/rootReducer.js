@@ -25,7 +25,10 @@ import exemptionreason from '@src/views/pages/account-settings/Invoice/store/exe
 import designation from '@src/views/pages/account-settings/RolesAndDesignation/store/designation'
 import department from '@src/views/pages/account-settings/RolesAndDesignation/store/department'
 import role from '@src/views/pages/account-settings/RolesAndDesignation/store/roles'
-import dashboard from '@src/views/dashboard/analytics/store/index.js'
+import dashboard from '@src/views/dashboard/ecommerce/store/index.js'
+import attendance from '@src/views/apps/attendance/store/index.js'
+import holidays from '@src/views/pages/account-settings/Attendance/store/holidays.js'
+import leavesettings from '@src/views/pages/account-settings/Attendance/store/leavesettings.js'
 
 const rootReducer = {
   auth,
@@ -46,7 +49,7 @@ const rootReducer = {
   ecommerce,
   dataTables,
   permissions,
-
+  attendance,
   invoiceaccount,
   invoicepayment,
   exemptionreason,
@@ -54,7 +57,9 @@ const rootReducer = {
   team,
   department,
   role,
-  dashboard
+  dashboard,
+  holidays,
+  leavesettings
 }
 
 export default rootReducer

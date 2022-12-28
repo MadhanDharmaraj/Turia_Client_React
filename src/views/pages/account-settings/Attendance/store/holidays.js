@@ -4,37 +4,35 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
 
-
-export const getData = createAsyncThunk('appInvoiceSetting/getData', async params => {
-  const response = await axios.post(`/transactionaccounts/list`, params)
+export const getData = createAsyncThunk('appHolidays/getData', async params => {
+  const response = await axios.post(`/holidays/list`, params)
   return {
     params,
-    data: response.data.transactionaccounts
+    data: response.data.holidays
   }
 })
+export const addHolidays = createAsyncThunk('appHolidays/addHolidays', async (data, { dispatch, getState }) => {
 
-export const addExemption = createAsyncThunk('appInvoiceSetting/addAccount', async (data, { dispatch, getState }) => {
-
-  await axios.post(`/transactionaccounts/create`, data)
-  await dispatch(getData(getState().invoiceaccount.params))
+  await axios.post(`/holidays/create`, data)
+  await dispatch(getData(getState().holidays.params))
   return []
 
 })
 
-export const updateExemption = createAsyncThunk('appInvoiceSetting/updateAccount', async (data, { dispatch, getState }) => {
-  await axios.post(`/transactionaccounts/update`, data)
-  await dispatch(getData(getState().invoiceaccount.params))
+export const updateHolidays = createAsyncThunk('appHolidays/updateHolidays', async (data, { dispatch, getState }) => {
+  await axios.post(`/holidays/update`, data)
+  await dispatch(getData(getState().holidays.params))
   return []
 })
 
-export const deleteAccount = createAsyncThunk('appInvoiceSetting/updateAccount', async (id, { dispatch, getState }) => {
-  await axios.post('/transactionaccounts/delete', { id })
-  await dispatch(getData(getState().invoiceaccount.params))
+export const deleteHolidays = createAsyncThunk('appHolidays/deleteHolidays', async (id, { dispatch, getState }) => {
+  await axios.post('/holidays/delete', { id })
+  await dispatch(getData(getState().holidays.params))
   return id
 })
 
-export const appInvoiceAccountSlice = createSlice({
-  name: 'appInvoiceSetting',
+export const appHolidaysSlice = createSlice({
+  name: 'appHolidays',
   initialState: {
     data: [],
     total: 1,
@@ -52,4 +50,4 @@ export const appInvoiceAccountSlice = createSlice({
   }
 })
 
-export default appInvoiceAccountSlice.reducer
+export default appHolidaysSlice.reducer

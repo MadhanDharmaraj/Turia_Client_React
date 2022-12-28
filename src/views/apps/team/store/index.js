@@ -4,17 +4,22 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
 
-export const getData = createAsyncThunk('appUsers/getData', async params => {
-  const response = await axios.get('/teams/list', params)
+export const getInvitations = createAsyncThunk('appUsers/getInvitations', async params => {
+  const response = await axios.post('/invitations/list', params)
   return {
     params,
-    data: response.data.users,
+    data: response.data.invitations,
     totalPages: response.data.total
   }
 })
 
+export const inviteMail = createAsyncThunk('appUsers/inviteMail', async id => {
+  await axios.post('/invitations/invitationmail', { id })
+  return ''
+})
+
 export const getUser = createAsyncThunk('appUsers/getUser', async id => {
-  const response = await axios.get('/api/users/user', { id })
+  const response = await axios.post('/api/users/user', { id })
   return response.data.user
 })
 
@@ -42,7 +47,7 @@ export const appUsersSlice = createSlice({
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(getData.fulfilled, (state, action) => {
+      .addCase(getInvitations.fulfilled, (state, action) => {
         state.data = action.payload.data
         state.params = action.payload.params
         state.total = action.payload.totalPages

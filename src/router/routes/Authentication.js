@@ -37,7 +37,9 @@ const AuthenticationRoutes = [
     path: '/invitation-register/:uniquekey',
     element: <InvitationRegister />,
     meta: {
-      layout: 'blank'
+      layout: 'blank',
+      publicRoute: true,
+      restricted: true
     }
   },
   {
