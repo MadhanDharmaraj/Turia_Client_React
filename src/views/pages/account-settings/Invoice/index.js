@@ -42,9 +42,9 @@ const AccountSettings = () => {
                 <Tabs className='mb-2' activeTab={activeTab} toggleTab={toggleTab} />
 
                 <TabContent activeTab={activeTab}>
-                  {/* <TabPane tabId='general'>
+                  <TabPane tabId='general'>
                     <GeneralSetting data={activeTab} />
-                  </TabPane> */}
+                  </TabPane>
 
                   <TabPane tabId='invoiceaccount'>
                     <InvoiceAccounts data={activeTab} />

@@ -12,8 +12,7 @@ import { UncontrolledTooltip } from 'reactstrap'
 import {
   Eye,
   Send,
-  Download,
-  CloudLightning
+  Download
 } from 'react-feather'
 import moment from 'moment'
 
@@ -23,18 +22,6 @@ const dateFormat = (value) => {
   return moment.unix(value).format("MMM DD, YYYY")
 
 }
-
-const renderClient = row => {
-  return (
-    <Avatar
-      initials
-      className='me-1'
-      color={'light-primary'}
-      content={row.name.charAt(0).toUpperCase()}
-    />
-  )
-}
-
 // ** Table columns
 export const columns = [
   {
@@ -43,7 +30,7 @@ export const columns = [
     sortField: 'id',
     minWidth: '107px',
     selector: row => row.id,
-    cell: row => <span>{renderClient(row)} <span className='fw-bolder'>{row.name}</span></span>
+    cell: row => <span>{row.name}</span>
   },
   {
     name: 'Leave Type',
@@ -59,7 +46,7 @@ export const columns = [
     sortField: 'id',
     minWidth: '107px',
     selector: row => row.id,
-    cell: row => `${dateFormat(row.fromdate)} ${row.duration === 2 ? `- ${dateFormat(row.todate)}` : ''} `
+    cell: row => `${dateFormat(row.fromdate)} - ${dateFormat(row.todate)} `
   },
   {
     name: 'No of Days',
@@ -82,9 +69,21 @@ export const columns = [
     minWidth: '110px',
     cell: row => (
       <div className='column-action d-flex align-items-center'>
-        <CloudLightning className='text-body cursor-pointer' size={17} id={`send-tooltip-${row.id}`} />
+        <Send className='text-body cursor-pointer' size={17} id={`send-tooltip-${row.id}`} />
         <UncontrolledTooltip placement='top' target={`send-tooltip-${row.id}`}>
-          Leave Details
+          Send Mail
+        </UncontrolledTooltip>
+
+        <Link className='text-body' to={`/apps/invoice/preview/${row.id}`} id={`pw-tooltip-${row.id}`}>
+          <Eye size={17} className='mx-1' />
+        </Link>
+        <UncontrolledTooltip placement='top' target={`pw-tooltip-${row.id}`}>
+          Preview Invoice
+        </UncontrolledTooltip>
+
+        <Download className='text-body cursor-pointer' size={17} id={`download-tooltip-${row.id}`} />
+        <UncontrolledTooltip placement='top' target={`download-tooltip-${row.id}`}>
+          Download Invoice
         </UncontrolledTooltip>
       </div>
     )

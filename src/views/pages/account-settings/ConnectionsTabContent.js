@@ -1,151 +1,92 @@
-// ** Reactstrap Imports
-import { Row, Col, Card, CardHeader, CardBody, CardTitle, Input, Label, Button } from 'reactstrap'
-
-// ** Icons Imports
-import { Check, X, Link } from 'react-feather'
-
-const connectedAccounts = [
-  {
-    checked: true,
-    title: 'Google',
-    subtitle: 'Calendar and contacts',
-    logo: require('@src/assets/images/icons/social/google.png').default
-  },
-  {
-    checked: false,
-    title: 'Slack',
-    subtitle: 'Communication',
-    logo: require('@src/assets/images/icons/social/slack.png').default
-  },
-  {
-    checked: true,
-    title: 'Github',
-    subtitle: 'Git repositories',
-    logo: require('@src/assets/images/icons/social/github.png').default
-  },
-  {
-    checked: false,
-    title: 'Mailchimp',
-    subtitle: 'Email marketing service',
-    logo: require('@src/assets/images/icons/social/mailchimp.png').default
-  },
-  {
-    checked: false,
-    title: 'Asana',
-    subtitle: 'Communication',
-    logo: require('@src/assets/images/icons/social/asana.png').default
-  }
-]
-
-const socialAccounts = [
-  {
-    linked: false,
-    title: 'Facebook',
-    logo: require('@src/assets/images/icons/social/facebook.png').default
-  },
-  {
-    linked: true,
-    title: 'Twitter',
-    url: 'https://twitter.com/pixinvent',
-    logo: require('@src/assets/images/icons/social/twitter.png').default
-  },
-  {
-    linked: true,
-    title: 'Linkedin',
-    url: 'https://www.linkedin.com/company/pixinvent/',
-    logo: require('@src/assets/images/icons/social/linkedin.png').default
-  },
-  {
-    linked: false,
-    title: 'Dribbble',
-    logo: require('@src/assets/images/icons/social/dribbble.png').default
-  },
-  {
-    linked: false,
-    title: 'Behance',
-    logo: require('@src/assets/images/icons/social/behance.png').default
-  }
-]
+import React, { useState, useEffect } from 'react'
+import { GoogleLogin, GoogleLogout } from 'react-google-login'
+import { gapi } from 'gapi-script'
+import { Card, CardBody, CardHeader, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap'
+import { Mail, File } from 'react-feather'
 
 const ConnectionsTabContent = () => {
+  const [profile, setProfile] = useState([])
+  const clientId = '896819639652-rhg79p2c8kete06bjvnugbvfo9ijk66l.apps.googleusercontent.com'
+  useEffect(() => {
+    const initClient = () => {
+      gapi.client.init({
+        clientId,
+        scope: `https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.resource https://www.googleapis.com/auth/drive.metadata https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/drive.photos.readonly https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/userinfo.email`
+      })
+    }
+    gapi.load('client:auth2', initClient)
+  })
+
+  const onSuccess = (res) => {
+    setProfile(res.profileObj)
+  }
+
+  const onFailure = (err) => {
+    console.log('failed', err)
+  }
+
+  const logOut = () => {
+    setProfile(null)
+  }
+
+  const [active, setActive] = useState('1')
+
+  const toggleTab = tab => {
+    if (active !== tab) {
+      setActive(tab)
+    }
+  }
+
   return (
-    <Row>
-      <Col md='6'>
-        <Card>
-          <CardHeader className='border-bottom'>
-            <CardTitle tag='h4'>Connected accounts</CardTitle>
-          </CardHeader>
-          <CardBody className='pt-2'>
-            <p>Display content from your connected accounts on your site</p>
-            {connectedAccounts.map((item, index) => {
-              return (
-                <div className='d-flex mt-2' key={index}>
-                  <div className='flex-shrink-0'>
-                    <img className='me-1' src={item.logo} alt={item.title} height='38' width='38' />
-                  </div>
-                  <div className='d-flex align-item-center justify-content-between flex-grow-1'>
-                    <div className='me-1'>
-                      <p className='fw-bolder mb-0'>{item.title}</p>
-                      <span>{item.subtitle}</span>
-                    </div>
-                    <div className='mt-50 mt-sm-0'>
-                      <div className='form-switch'>
-                        <Input type='switch' defaultChecked={item.checked} id={`account-${item.title}`} />
-                        <Label className='form-check-label' for={`account-${item.title}`}>
-                          <span className='switch-icon-left'>
-                            <Check size={14} />
-                          </span>
-                          <span className='switch-icon-right'>
-                            <X size={14} />
-                          </span>
-                        </Label>
-                      </div>
-                    </div>
-                  </div>
+    <Card>
+      <CardHeader>
+        <Nav pills className='mb-2'>
+          <NavItem>
+            <NavLink active={active === '1'} onClick={() => toggleTab('1')}>
+              <Mail className='font-medium-3 me-50' />
+              <span className='fw-bold'>G Mail</span>
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink active={active === '2'} onClick={() => toggleTab('2')}>
+              <File className='font-medium-3 me-50' />
+              <span className='fw-bold'>Google Drive</span>
+            </NavLink>
+          </NavItem>
+        </Nav>
+      </CardHeader>
+      <CardBody>
+        <TabContent activeTab={active}>
+          <TabPane tabId='1'>
+
+          </TabPane>
+          <TabPane tabId='2'>
+            <div>
+              <h5>Google Drive Login</h5>
+              {Object.keys(profile).length > 0 ? (
+                <div>
+                  <h6>User Logged in</h6>
+                  <p>Name: {profile.name}</p>
+                  <p>Email Address: {profile.email}</p>
+                  <br />
+                  <br />
+                  <GoogleLogout clientId={clientId} buttonText="Log out" onLogoutSuccess={logOut} />
                 </div>
-              )
-            })}
-          </CardBody>
-        </Card>
-      </Col>
-      <Col md='6'>
-        <Card>
-          <CardHeader className='border-bottom'>
-            <CardTitle tag='h4'>Social accounts</CardTitle>
-          </CardHeader>
-          <CardBody className='pt-2'>
-            <p>Display content from social accounts on your site</p>
-            {socialAccounts.map((item, index) => {
-              return (
-                <div className='d-flex mt-2' key={index}>
-                  <div className='flex-shrink-0'>
-                    <img className='me-1' src={item.logo} alt={item.title} height='38' width='38' />
-                  </div>
-                  <div className='d-flex align-item-center justify-content-between flex-grow-1'>
-                    <div className='me-1'>
-                      <p className='fw-bolder mb-0'>{item.title}</p>
-                      {item.linked ? (
-                        <a href={item.url} target='_blank'>
-                          @pixinvent
-                        </a>
-                      ) : (
-                        <span>Not Connected</span>
-                      )}
-                    </div>
-                    <div className='mt-50 mt-sm-0'>
-                      <Button outline className='btn-icon'>
-                        {item.linked ? <X className='font-medium-3' /> : <Link className='font-medium-3' />}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </CardBody>
-        </Card>
-      </Col>
-    </Row>
+              ) : (
+                <GoogleLogin
+                  clientId={clientId}
+                  buttonText="Sign in with Google"
+                  onSuccess={onSuccess}
+                  onFailure={onFailure}
+                  cookiePolicy={'single_host_origin'}
+                  isSignedIn={true}
+                />
+              )}
+            </div>
+          </TabPane>
+        </TabContent>
+      </CardBody>
+    </Card>
   )
 }
-
 export default ConnectionsTabContent

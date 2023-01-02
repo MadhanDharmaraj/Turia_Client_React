@@ -58,6 +58,7 @@ const AddCard = () => {
     billingAddressZip: yup.string().matches(zipcodeExp, { message: 'Zip Code is not valid', excludeEmptyString: true }),
     contact_info: yup.array().of(
       yup.object().shape({
+        createdBy: yup.string().default(userId),
         name: yup.string().required("Please Enter A Name"),
         email: yup.string().email().required("Please Enter valid Email"),
         designation: yup.string().required("Please Enter Designation"),
@@ -101,7 +102,7 @@ const AddCard = () => {
     if (control._formValues.contact_info.length > 0) {
       primarytag = false
     }
-    append({ organizationId: activeOrgId, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: primarytag })
+    append({ createdBy: userId, organizationId: activeOrgId, contactId: 0, name: '', email: '', contactNumber: '', designation: '', primaryStatus: primarytag })
   })
 
   const removeItem = ind => {

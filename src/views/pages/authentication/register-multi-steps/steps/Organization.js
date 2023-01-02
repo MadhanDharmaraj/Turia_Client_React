@@ -95,11 +95,11 @@ const Organization = ({ stepper }) => {
     })
   }
 
-  const createOrgUser = async (user, org) => {
+  const createOrgUser = async (user, orgid) => {
     const data = {
       userId: user.id,
       name: user.name,
-      organizationId: org.id,
+      organizationId: orgid,
       email: user.email,
       userTypeId: user.accounttype
     }
@@ -117,23 +117,36 @@ const Organization = ({ stepper }) => {
   useEffect(async () => {
     if (store.registerSuccess) {
       const user = store.loginUser
+      localStorage.setItem('activeOrganization', JSON.stringify(store.activeOrganization[0]))
       navigate(getHomeRouteForLoggedInUser(user.role))
     }
   }, [store.registerSuccess])
 
   useEffect(() => {
 
-    if (store.activeOrganization !== null) {
-      localStorage.setItem('activeOrganization', JSON.stringify(store.activeOrganization))
+    if (store.activeOrganizationId !== null) {
       const user = store.loginUser
-      const org = store.activeOrganization
-      createOrgUser(user, org)
+      const orgid = store.activeOrganizationId
+      createOrgUser(user, orgid)
       toast(t => (
         <ToastContent t={t} name={user.name} />
       ))
     }
 
-  }, [store.activeOrganization])
+  }, [store.activeOrganizationId])
+
+  useEffect(() => {
+
+    if (store.activeOrganizationId !== null) {
+      const user = store.loginUser
+      const orgid = store.activeOrganizationId
+      createOrgUser(user, orgid)
+      toast(t => (
+        <ToastContent t={t} name={user.name} />
+      ))
+    }
+
+  }, [store.activeOrganizationId])
 
 
   const getRow = (fieldLabel, fieldName, reqflag = false) => {

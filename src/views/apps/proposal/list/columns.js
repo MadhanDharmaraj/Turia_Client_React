@@ -17,6 +17,8 @@ import {
   UncontrolledTooltip,
   UncontrolledDropdown
 } from 'reactstrap'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 
 // ** Third Party Components
 import {
@@ -35,7 +37,7 @@ import {
   ArrowDownCircle
 } from 'react-feather'
 import moment from 'moment'
-
+const MySwal = withReactContent(Swal)
 // ** Vars
 const paymentstatusObj = {
   Sent: { color: 'light-secondary', icon: Send },
@@ -55,6 +57,34 @@ const renderClient = row => {
 
 }
 
+const deleteClientfun = (id) => {
+
+  return MySwal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    customClass: {
+      confirmButton: 'btn btn-primary',
+      cancelButton: 'btn btn-outline-danger ms-1'
+    },
+    buttonsStyling: false
+  }).then(async (result) => {
+    if (result.value) {
+      await store.dispatch(deleteInvoice(id))
+      MySwal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Invoice has been deleted.',
+        customClass: {
+          confirmButton: 'btn btn-success'
+        }
+      })
+    }
+  })
+}
+
 const dateFormat = (value) => {
 
   return moment.unix(value).format("MMM DD, YYYY")
@@ -68,6 +98,7 @@ export const columns = [
     sortable: true,
     sortField: 'id',
     minWidth: '107px',
+    // selector: row => row.id,
     cell: row => <Link to={`/invoice/view/${row.id}`}>{`${row.uniqueno}`}</Link>
   },
   {
@@ -75,6 +106,7 @@ export const columns = [
     minWidth: '102px',
     sortField: 'paymentstatus',
     name: <TrendingUp size={14} />,
+    // selector: row => row.paymentstatus,
     cell: row => {
       const color = paymentstatusObj[row.paymentstatus] ? paymentstatusObj[row.paymentstatus].color : 'primary',
         Icon = paymentstatusObj[row.paymentstatus] ? paymentstatusObj[row.paymentstatus].icon : Edit
@@ -97,6 +129,7 @@ export const columns = [
     sortable: true,
     minWidth: '350px',
     sortField: 'client.name',
+    // selector: row => row.client.name,
     cell: row => {
       const name = row.contactname,
         email = row.contactemail
@@ -116,7 +149,8 @@ export const columns = [
     sortable: true,
     minWidth: '150px',
     sortField: 'total',
-    cell: row => <span>${row.totalamount || 0}</span>
+    // selector: row => row.total,
+    cell: row => <span>{row.totalamount || 0}</span>
   },
   {
     sortable: true,
@@ -124,12 +158,14 @@ export const columns = [
     name: 'Due Date',
     sortField: 'paymentdue',
     cell: row => dateFormat(row.paymentdue)
+    // selector: row => row.dueDate
   },
   {
     sortable: true,
     name: 'Balance',
     minWidth: '164px',
     sortField: 'dueamount',
+    // selector: row => row.balance,
     cell: row => {
       return row.dueamount !== 0 ? (
         <span>{row.dueamount}</span>
@@ -174,7 +210,7 @@ export const columns = [
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteInvoice(row.id))
+                deleteClientfun(row.id)
               }}
             >
               <Trash size={14} className='me-50' />

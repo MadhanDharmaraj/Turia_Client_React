@@ -13,10 +13,10 @@ import { yupResolver } from "@hookform/resolvers/yup"
 
 import DataTable from 'react-data-table-component'
 import { ChevronDown, ExternalLink, Printer, FileText, File, Clipboard, Copy } from 'react-feather'
-import { Card, CardHeader, DropdownMenu, DropdownItem, DropdownToggle, UncontrolledButtonDropdown, Label, Button, Input, FormFeedback, Modal, ModalHeader, ModalBody, ModalFooter, Form, Row, Col, ListGroup, ListGroupItem } from 'reactstrap'
+import { Card, CardHeader, DropdownMenu, DropdownItem, DropdownToggle, UncontrolledButtonDropdown, Label, Button, Input, FormFeedback, Modal, ModalHeader, ModalBody, ModalFooter, Form, Row, Col } from 'reactstrap'
 
 // ** Store & Actions
-import { leaveList, assignLeave } from '../store/index'
+import { leaveList, applyLeave } from './store/index'
 import { useDispatch, useSelector } from 'react-redux'
 
 // ** Styles
@@ -25,21 +25,22 @@ import '@styles/react/libs/tables/react-dataTable-component.scss'
 import 'react-slidedown/lib/slidedown.css'
 import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
-import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId, desId } from '@src/helper/sassHelper'
 import moment from 'moment'
+import { useParams } from 'react-router-dom'
 
 const activeOrgId = activeOrganizationid()
 const userId = orgUserId()
-
-const userOptions = [{ id: 1, name: 'Madhan', designation: 1 }, { id: 2, name: 'Akhalya', designation: 2 }, { id: 3, name: 'Kavin Raj', designation: 2 }]
-const Leave = () => {
+const designationId = desId()
+const Leave = (data) => {
   // ** Store Vars
   const [leaveTypeOptions, setLeaveTypeOptions] = useState([])
   const dispatch = useDispatch()
-  const store = useSelector(state => state.leaves)
+  const store = useSelector(state => state.profile)
   // ** States
   const [value] = useState('')
   const [rowsPerPage] = useState(6)
+  const { id } = useParams()
   const [currentPage] = useState(1)
   const [statusValue] = useState('')
   const [sort, setSort] = useState('desc')
@@ -53,33 +54,24 @@ const Leave = () => {
     duration: yup.string().default(1),
     daysCount: yup.string().default(1),
     toDate: yup.string().required('Please Enter From Date'),
-    userId: yup.string().required('Please Select Team Member'),
+    userId: yup.string().default(userId),
     reason: yup.string().required('Please Enter Reason'),
-    status: yup.string().default(3)
-  })
-  const { handleSubmit, control, reset, formState: { errors }, setValue } = useForm({
-    resolver: yupResolver(schema),
-    defaultValues: schema.cast()
+    status: yup.string().default(1)
   })
 
-  const getLeaveType = (userid) => {
-    setValue('leaveTypeId', null)
-    const user = userOptions.find((obj) => obj.id === userid)
-    const designationId = user.designation
+  const getLeaveType = () => {
     axios.post('/leavetypes/list', { designationId }).then(response => {
       const arr = response.data
       setLeaveTypeOptions(arr.leavetypes)
     })
   }
 
+  const { handleSubmit, control, reset, formState: { errors } } = useForm({
+    resolver: yupResolver(schema),
+    defaultValues: schema.cast()
+  })
   const [formModal, setFormModal] = useState(false)
-  const [formModal1, setFormModal1] = useState(false)
-
   const closeModal = () => {
-    setFormModal(false)
-  }
-
-  const closeModal1 = () => {
     setFormModal(false)
   }
 
@@ -92,27 +84,33 @@ const Leave = () => {
       setValue('daysCount', duration)
     }
 
-    await dispatch(assignLeave(data))
+    await dispatch(applyLeave(data))
     setFormModal(false)
-    reset({ organizationId: activeOrgId, daysCount: 1, fromDate: '', toDate: "", userId: "", reason: '', status: 3, leaveTypeId: '' })
+    reset({ name: '', organizationId: activeOrgId, fromDate: '', toDate: "", userId: "", reason: '', status: 1, leaveTypeId: '' })
   }
 
   useEffect(() => {
-    dispatch(
-      leaveList({
-        sort,
-        q: value,
-        sortColumn,
-        page: currentPage,
-        perPage: rowsPerPage,
-        status: statusValue
-      })
-    )
-  }, [dispatch, store.employeeLeaves.length])
+
+    if (data.tabId === 'leaves') {
+      dispatch(
+        leaveList({
+          sort,
+          q: value,
+          sortColumn,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: statusValue,
+          userId: id
+        })
+      )
+      getLeaveType()
+    }
+  }, [dispatch, store.employeeLeaves.length, data.tabId])
 
   const dataToRender = () => {
     const filters = {
       status: statusValue,
+      userId: id,
       q: value
     }
 
@@ -135,6 +133,7 @@ const Leave = () => {
         q: value,
         page: currentPage,
         sort: sortDirection,
+        userId: id,
         status: statusValue,
         perPage: rowsPerPage,
         sortColumn: column.sortField
@@ -174,7 +173,7 @@ const Leave = () => {
               </DropdownItem>
             </DropdownMenu>
           </UncontrolledButtonDropdown>
-          <Button color='primary' outline onClick={() => setFormModal(true)}>Assign Leave</Button>
+          <Button color='primary' outline onClick={() => setFormModal(true)}>Apply Leave</Button>
         </CardHeader>
         <div className='invoice-list-dataTable react-dataTable'>
           <DataTable
@@ -194,32 +193,6 @@ const Leave = () => {
           <ModalHeader toggle={() => closeModal()}>Apply Leave</ModalHeader>
           <Form onSubmit={handleSubmit(onSubmit)}>
             <ModalBody>
-              <div className='mb-0'>
-                <Label sm='3' size='lg' className='form-label required' for='userId'>
-                  Team Member
-                </Label>
-                <Controller
-                  control={control}
-                  name="userId"
-                  id="userId"
-                  render={({ field, value, ref }) => (
-                    <Select
-                      {...field}
-                      inputRef={ref}
-                      className={classnames('react-select', { 'is-invalid': errors.userId })}
-                      {...field}
-                      classNamePrefix='select'
-                      options={userOptions}
-                      value={userOptions.find(c => { return c.id === value })}
-                      onChange={val => { field.onChange(val.id); getLeaveType(val.id) }}
-                      getOptionLabel={(option) => option.name}
-                      getOptionValue={(option) => option.id}
-                    />
-                  )}
-
-                />
-                {errors.userId && <FormFeedback className='text-danger'>{errors.userId?.message}</FormFeedback>}
-              </div>
               <div className='mb-0'>
                 <Label sm='3' size='lg' className='form-label required' for='leaveTypeId'>
                   Leave Type
@@ -346,25 +319,6 @@ const Leave = () => {
               </Button>
             </ModalFooter>
           </Form>
-        </Modal >
-
-        <Modal isOpen={formModal1} toggle={() => setFormModal1(!formModal1)} className='modal-dialog-centered'>
-          <ModalHeader toggle={() => closeModal1()}>Application Details</ModalHeader>
-          <ModalBody>
-            <ListGroup flush>
-              <ListGroupItem>Cras justo odio</ListGroupItem>
-              <ListGroupItem>Dapibus ac facilisis in</ListGroupItem>
-              <ListGroupItem>Vestibulum at eros</ListGroupItem>
-            </ListGroup>
-          </ModalBody>
-          <ModalFooter>
-            <Button type="submit" color='warning' onClick={() => closeModal1()}>
-              Cancel
-            </Button>
-            <Button color='primary' type='submit' >
-              Revert Approval
-            </Button>
-          </ModalFooter>
         </Modal >
 
       </Card>

@@ -39,7 +39,7 @@ export const createOrganization = createAsyncThunk('appUsers/createOrganization'
 
 export const createOrganizationUser = createAsyncThunk('appUsers/createOrganizationUser', async (organization, { }) => {
   const response = await axios.post('/organizationusers/create', organization)
-  return { organization: response.data.organizations }
+  return { organizationusers: response.data.organizationusers }
 })
 
 export const appUsersSlice = createSlice({
@@ -90,10 +90,10 @@ export const appUsersSlice = createSlice({
         state.accessToken = action.payload.data.token
       })
       .addCase(createOrganization.fulfilled, (state, action) => {
-        state.activeOrganization = action.payload.organization
         state.activeOrganizationId = action.payload.organization.id
       })
-      .addCase(createOrganizationUser.fulfilled, (state) => {
+      .addCase(createOrganizationUser.fulfilled, (state, action) => {
+        state.activeOrganization = action.payload.organizationusers
         state.registerSuccess = true
       })
 

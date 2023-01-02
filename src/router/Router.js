@@ -20,11 +20,9 @@ const Router = ({ allRoutes }) => {
     const user = getUserData()
     
     if (user) {
-      console.log('success')
       const path = getHomeRouteForLoggedInUser(user.role)
       return path
     } else {
-      console.log('failed')
       return '/login'
     }
   }

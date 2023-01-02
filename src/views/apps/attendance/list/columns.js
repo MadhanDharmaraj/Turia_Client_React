@@ -1,6 +1,7 @@
 // ** Custom Components
 import Avatar from '@components/avatar'
 import moment from 'moment'
+import { Button } from 'reactstrap'
 
 // ** Renders Client Columns
 const renderClient = row => {
@@ -10,7 +11,7 @@ const renderClient = row => {
       initials
       className='me-1'
       color={'light-primary'}
-      content={row.username}
+      content={row.username || 'Jhone'}
     />
   )
 
@@ -19,7 +20,6 @@ const renderClient = row => {
 const dateFormat = (value) => {
   return moment.unix(value).format("H:m A")
 }
-
 
 export const columns = [
   {
@@ -65,6 +65,8 @@ export const columns = [
     sortable: true,
     sortField: 'status',
     selector: row => row.status,
-    cell: row => <span className='text-capitalize'>{row.totalhours}</span>
+    cell: () => <span className='text-capitalize'>
+      <Button size='sm' color='primary' outline>View Other's</Button>
+    </span>
   }
 ]

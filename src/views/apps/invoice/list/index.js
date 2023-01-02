@@ -78,11 +78,11 @@ const InvoiceList = () => {
   const [sortColumn, setSortColumn] = useState('id')
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [currentStatus, setCurrentStatus] = useState({ id: 1, name: 'Active' })
+  const [currentStatus, setCurrentStatus] = useState({ id: 11, name: 'Sent' })
 
   const statusOptions = [
     { id: '', name: 'Select Status' },
-    { id: 1, name: 'Active' },
+    { id: 11, name: 'Sent' },
     { id: 2, name: 'Inactive' }
   ]
 

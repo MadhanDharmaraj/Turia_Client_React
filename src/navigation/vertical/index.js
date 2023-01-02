@@ -7,9 +7,9 @@ import digitalSignature from './digital-signature'
 import sales from './sales'
 //import settings from './settings'
 //import emailAlert from './email-alert'
-import compliance from './compliance'
+//import compliance from './compliance'
 import report from './report'
 import team from './team'
 
 // ** Merge & Export
-export default [...dashboard, ...client, ...service, ...sales, ...task, ...digitalSignature, ...compliance, ...team, ...report]
+export default [...dashboard, ...client, ...service, ...sales, ...task, ...digitalSignature, ...team, ...report]

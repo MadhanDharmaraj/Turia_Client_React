@@ -31,6 +31,7 @@ import classnames from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 const leaveTypeOptions = [{ id: '1', name: "Paid" }, { id: 2, name: 'Non Paid' }]
+const leaveTypeArr = ["", "Paid", "Non Paid"]
 
 const LeaveTypes = (tabId) => {
   const MySwal = withReactContent(Swal)
@@ -44,14 +45,15 @@ const LeaveTypes = (tabId) => {
   const schema = yup.object().shape({
     organizationId: yup.number().default(parseInt(activeOrgId)),
     name: yup.string().required('Please Enter Name'),
-    daysCount: yup.string().required('Please Select Date'),
-    leaveTpe: yup.string().nullable(),
+    daysCount: yup.string().required('Please Enter Days Count'),
+    leaveType: yup.string().required('Please Select Leave Type'),
     status: yup.boolean().default(true),
+    designation: yup.array().min(1, 'Please Select Designation'),
     updatedBy: yup.string().default(userId),
     createdBy: yup.string().default(userId)
   })
 
-  const { handleSubmit, formState: { errors }, control, reset } = useForm({
+  const { handleSubmit, formState: { errors }, control, reset, setValue } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
@@ -93,16 +95,26 @@ const LeaveTypes = (tabId) => {
     })
   }
 
+  const resetForm = () => {
+    reset({
+      organizationId: activeOrgId,
+      name: '',
+      daysCount: '',
+      designation: [],
+      id: '',
+      leaveType: '',
+      status: ''
+    })
+  }
+
   const onSubmit = async data => {
     if (selected !== null) {
       await dispatch(updateLeaveTypes(data))
-      reset({})
       setSelected(null)
     } else {
       await dispatch(addLeaveTypes(data))
-      reset({})
     }
-
+    resetForm()
   }
 
   useEffect(() => {
@@ -110,7 +122,7 @@ const LeaveTypes = (tabId) => {
   }, [])
 
   useEffect(async () => {
-    if (tabId.data === 'leave') {
+    if (tabId.data === 'leavesetting') {
       await dispatch(getData())
     }
 
@@ -138,7 +150,6 @@ const LeaveTypes = (tabId) => {
       </Col>
     )
   }
-
 
   const getSelectRow = (fieldLabel, fieldName, options, reqflag = false) => {
     return (
@@ -174,12 +185,18 @@ const LeaveTypes = (tabId) => {
     )
   }
 
+  const handleDesignationChange = (e) => {
+    const tempArr = Array.isArray(e) ? e.map(x => x.id) : []
+    setValue("designation", tempArr)
+  }
+
   const openEditModal = card => {
     setSelected(card)
     reset({
       organizationId: activeOrgId,
       name: card.name,
       daysCount: card.dayscount,
+      designation: card.designation,
       id: card.id,
       leaveType: card.leavetype,
       status: card.status
@@ -222,31 +239,31 @@ const LeaveTypes = (tabId) => {
                 </Col>
 
                 <Col md={12}>
-                  <Label sm='12' className={classnames(`form-label required`)} for={`designations`} >
+                  <Label sm='12' className={classnames(`form-label required`)} for={`designation`} >
                     Applicable Designation
                   </Label>
                   <Col>
                     <Controller
                       control={control}
-                      name={`designations`}
-                      id={`designations`}
-                      render={({ field, ref }) => (
+                      name="designation"
+                      id="designation"
+                      render={({ field, value, ref }) => (
                         <Select
                           inputRef={ref}
-                          className={classnames('react-select', { 'is-invalid': errors['designations'] })}
+                          className={classnames('react-select', { 'is-invalid': errors.designation })}
                           {...field}
-                          isMulti
                           classNamePrefix='select'
                           options={designationOptions}
-                          value={designationOptions.find(c => { return c.id === field.value })}
-                          onChange={val => { return field.onChange(val.id) }}
+                          isMulti={true}
+                          value={value} // set selected values
+                          onChange={handleDesignationChange}
                           getOptionLabel={(option) => option.name}
                           getOptionValue={(option) => option.id}
                         />
                       )}
 
                     />
-                    {errors['designations'] && <FormFeedback className='text-danger'>{errors['designations']?.message}</FormFeedback>}
+                    {errors['designation'] && <FormFeedback className='text-danger'>{errors['designation']?.message}</FormFeedback>}
                   </Col>
                 </Col>
 
@@ -274,26 +291,21 @@ const LeaveTypes = (tabId) => {
                 </div>
               </div>
 
-              <div className='added-cards'>
+              <div className='added-cards pt-1'>
                 {data.map((card, index) => {
                   return (
                     <div
                       key={index}
-                      className={classnames('cardMaster rounded border p-2')}
+                      className={classnames('cardMaster rounded border p-1 mt-1')}
                     >
                       <div className='d-flex justify-content-between flex-sm-row flex-column'>
                         <div className='card-information'>
-                          <h5 className='text-primary'>{card.bankName}</h5>
                           <div className='d-flex align-items-center mb-50'>
-                            <h6 className='mb-0'>{card.accountBusinessName}</h6>
-                            {index === 0 && (
-                              <Badge color='light-primary' className='ms-50'>
-                                Primary
-                              </Badge>
-                            )}
+                            <h5 className='text-primary'>{card.name}</h5>
+                            <h6 className=''> &nbsp;&nbsp; - &nbsp;&nbsp;{leaveTypeArr[card.leavetype]}</h6>
                           </div>
                           <span className='card-number '>
-                            {card.accountHolderName}
+                            No of Day's - {card.dayscount}
                           </span>
                         </div>
                         <div className='d-flex flex-column text-start text-lg-end'>

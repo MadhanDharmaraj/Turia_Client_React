@@ -15,6 +15,7 @@ import Attendance from './Attendance'
 import AccountTabContent from './AccountTabContent'
 import RolesandDesignationContent from './RolesandDesignationContent'
 import NotificationsTabContent from './NotificationsTabContent'
+import ConnectionsTabContent from './ConnectionsTabContent'
 
 // ** Styles
 import '@styles/react/libs/flatpickr/flatpickr.scss'
@@ -59,6 +60,9 @@ const AccountSettings = () => {
               </TabPane>
               <TabPane tabId='6'>
                 <NotificationsTabContent />
+              </TabPane>
+              <TabPane tabId='7'>
+                <ConnectionsTabContent />
               </TabPane>
             </TabContent>
           </Col>

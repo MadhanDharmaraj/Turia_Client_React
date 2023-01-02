@@ -7,12 +7,12 @@ import { Home } from 'react-feather'
 const Tabs = ({ activeTab, toggleTab }) => {
   return (
     <Nav pills className='mb-2'>
-      {/* <NavItem>
+      <NavItem>
         <NavLink active={activeTab === 'general'} onClick={() => toggleTab('general')}>
           <Home size={18} className='me-50' />
           <span className='fw-bold'>General</span>
         </NavLink>
-      </NavItem> */}
+      </NavItem>
       <NavItem>
         <NavLink active={activeTab === 'invoiceaccount'} onClick={() => toggleTab('invoiceaccount')}>
           <Home size={18} className='me-50' />

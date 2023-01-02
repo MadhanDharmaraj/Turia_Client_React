@@ -17,6 +17,8 @@ import {
   UncontrolledTooltip,
   UncontrolledDropdown
 } from 'reactstrap'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 
 // ** Third Party Components
 import {
@@ -35,7 +37,7 @@ import {
   ArrowDownCircle
 } from 'react-feather'
 import moment from 'moment'
-
+const MySwal = withReactContent(Swal)
 // ** Vars
 const paymentstatusObj = {
   Sent: { color: 'light-secondary', icon: Send },
@@ -53,6 +55,34 @@ const renderClient = row => {
     color = states[stateNum]
   return <Avatar color={color} className='me-50' content={row.contactname !== null ? row.contactname.charAt(0) : ''} />
 
+}
+
+const deleteClientfun = (id) => {
+
+  return MySwal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    customClass: {
+      confirmButton: 'btn btn-primary',
+      cancelButton: 'btn btn-outline-danger ms-1'
+    },
+    buttonsStyling: false
+  }).then(async (result) => {
+    if (result.value) {
+      await store.dispatch(deleteInvoice(id))
+      MySwal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Invoice has been deleted.',
+        customClass: {
+          confirmButton: 'btn btn-success'
+        }
+      })
+    }
+  })
 }
 
 const dateFormat = (value) => {
@@ -120,7 +150,7 @@ export const columns = [
     minWidth: '150px',
     sortField: 'total',
     // selector: row => row.total,
-    cell: row => <span>${row.totalamount || 0}</span>
+    cell: row => <span>{row.totalamount || 0}</span>
   },
   {
     sortable: true,
@@ -180,7 +210,7 @@ export const columns = [
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteInvoice(row.id))
+                deleteClientfun(row.id)
               }}
             >
               <Trash size={14} className='me-50' />

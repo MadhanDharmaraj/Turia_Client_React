@@ -13,9 +13,6 @@ import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
 import { ChevronDown, Share, Printer, File, Grid, Copy } from 'react-feather'
 
-import { orgUserId } from '@src/helper/sassHelper'
-const userId = orgUserId()
-
 // ** Reactstrap Imports
 import {
   Row,
@@ -25,7 +22,9 @@ import {
   DropdownMenu,
   DropdownItem,
   DropdownToggle,
-  UncontrolledDropdown
+  Button,
+  UncontrolledDropdown,
+  Modal, ModalHeader, ModalBody, ModalFooter
 } from 'reactstrap'
 
 // ** Styles
@@ -119,6 +118,14 @@ const UsersList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [currentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
 
+  const [formModal, setFormModal] = useState(false)
+  const closeModal = () => {
+    setFormModal(false)
+  }
+  useEffect(() => {
+    setFormModal(false)
+  }, [])
+
   // ** Get data on mount
   useEffect(() => {
     dispatch(
@@ -128,8 +135,8 @@ const UsersList = () => {
         q: searchTerm,
         page: currentPage,
         perPage: rowsPerPage,
-        userId,
-        status: currentStatus.value
+        status: currentStatus.value,
+        date: new Date(new Date().toLocaleDateString("en-US")).getTime()
       })
     )
   }, [dispatch, store.data.length, sort, sortColumn, currentPage])
@@ -143,8 +150,8 @@ const UsersList = () => {
         q: searchTerm,
         perPage: rowsPerPage,
         page: page.selected + 1,
-        userId,
-        status: currentStatus.value
+        status: currentStatus.value,
+        date: new Date(new Date().toLocaleDateString("en-US")).getTime()
       })
     )
     setCurrentPage(page.selected + 1)
@@ -160,8 +167,8 @@ const UsersList = () => {
         q: searchTerm,
         perPage: value,
         page: currentPage,
-        userId,
-        status: currentStatus.value
+        status: currentStatus.value,
+        date: new Date(new Date().toLocaleDateString("en-US")).getTime()
       })
     )
     setRowsPerPage(value)
@@ -177,8 +184,8 @@ const UsersList = () => {
         sortColumn,
         page: currentPage,
         perPage: rowsPerPage,
-        userId,
-        status: currentStatus.value
+        status: currentStatus.value,
+        date: new Date(new Date().toLocaleDateString("en-US")).getTime()
       })
     )
   }
@@ -209,8 +216,8 @@ const UsersList = () => {
   // ** Table data to render
   const dataToRender = () => {
     const filters = {
-      userId,
       status: currentStatus.value,
+      date: new Date(new Date().toLocaleDateString("en-US")).getTime(),
       q: searchTerm
     }
 
@@ -222,8 +229,6 @@ const UsersList = () => {
       return store.data
     } else if (store.data.length === 0 && isFiltered) {
       return []
-    } else {
-      return store.allData.slice(0, rowsPerPage)
     }
   }
 
@@ -237,8 +242,8 @@ const UsersList = () => {
         q: searchTerm,
         page: currentPage,
         perPage: rowsPerPage,
-        userId,
-        status: currentStatus.value
+        status: currentStatus.value,
+        date: new Date(new Date().toLocaleDateString("en-US")).getTime()
       })
     )
   }
@@ -272,6 +277,20 @@ const UsersList = () => {
           />
         </div>
       </Card>
+
+      <Modal isOpen={formModal} toggle={() => setFormModal(!formModal)} className='modal-dialog-centered'>
+        <ModalHeader toggle={() => closeModal()}>Attendance</ModalHeader>
+
+        <ModalBody>
+
+        </ModalBody>
+        <ModalFooter>
+          <Button color='warning' onClick={() => closeModal()}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal >
+
     </Fragment>
   )
 }

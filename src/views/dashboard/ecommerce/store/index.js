@@ -16,7 +16,6 @@ export const punchOut = createAsyncThunk('appDashboard/punchOut', async (data, {
 
 export const getAttendance = createAsyncThunk('appDashboard/getAttendance', async (data, { }) => {
   const response = await axios.post('employeeattendances/flagget', data)
-  console.log(response)
   return response.data.employeeattendances
 })
 

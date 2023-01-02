@@ -13,3 +13,8 @@ export const loggedInUser = () => {
 export const orgUserId = () => {
     return localStorage.getItem('activeOrganization') === null ? null : JSON.parse(localStorage.getItem('activeOrganization'))['organizationuserid']
 }
+
+export const desId = () => {
+    return localStorage.getItem('activeOrganization') === null ? null : JSON.parse(localStorage.getItem('activeOrganization'))['designationid']
+}
+

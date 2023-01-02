@@ -36,6 +36,7 @@ const TeamView = lazy(() => import('../../views/apps/team/view'))
 const TeamAdd = lazy(() => import('../../views/apps/team/add'))
 const TeamEdit = lazy(() => import('../../views/apps/team/edit'))
 
+const Profile = lazy(() => import('../../views/apps/profile'))
 
 const AttendanceList = lazy(() => import('../../views/apps/attendance'))
 const LeaveList = lazy(() => import('../../views/apps/leave/list'))
@@ -342,6 +343,10 @@ const AppRoutes = [
   {
     element: <TeamView />,
     path: '/team/view/:id'
+  },
+  {
+    element: <Profile />,
+    path: '/profile/view/:id'
   },
   {
     element: <TeamEdit />,
