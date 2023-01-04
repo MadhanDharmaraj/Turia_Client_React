@@ -40,7 +40,8 @@ const CardAttendance = () => {
     const data = {
       organizationId: activeOrgId,
       punchIn: moment().unix(),
-      userId
+      userId,
+      createdBy : userId
     }
     await dispatch(punchIn(data))
   }
@@ -67,7 +68,8 @@ const CardAttendance = () => {
       organizationId: activeOrgId,
       punchOut: moment().unix(),
       userId,
-      id: data.id
+      id: data.id,
+      updatedBy : userId
     }
     await dispatch(punchOut(datatemp))
 

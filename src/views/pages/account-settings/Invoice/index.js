@@ -21,7 +21,7 @@ import '@styles/react/pages/page-account-settings.scss'
 
 const AccountSettings = () => {
   // ** States
-  const [activeTab, setActiveTab] = useState('invoiceaccount')
+  const [activeTab, setActiveTab] = useState('general')
   const [data, setData] = useState(null)
 
   const toggleTab = tab => {

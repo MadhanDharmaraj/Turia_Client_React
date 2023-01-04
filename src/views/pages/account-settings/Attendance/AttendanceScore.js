@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect } from 'react'
 
 // ** Reactstrap Imports
 import {
@@ -14,14 +14,14 @@ import {
   CardBody,
   FormFeedback
 } from 'reactstrap'
-import axios from '@src/configs/axios/axiosConfig'
+import { getData, addOrgPreference } from './store/index'
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { activeOrganizationid } from '@src/helper/sassHelper'
-//import { addExemption, updateExemption } from './store/holidays'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
 
 // ** Third Party Components
 import classnames from 'classnames'
@@ -29,15 +29,14 @@ import { useDispatch } from 'react-redux'
 
 const AttendanceScore = (tabId) => {
 
-  const [data, setData] = useState([])
-  console.log(data)
-  const [selected, setSelected] = useState(null)
-
   const dispatch = useDispatch()
 
   const schema = yup.object().shape({
     organizationId: yup.number().default(parseInt(activeOrgId)),
-    name: yup.string().required('Please Enter Exemption')
+    punchInGrace: yup.string().required('Please Enter  Grace Time'),
+    workPercentage: yup.string().required('Please Enter Work Percentages'),
+    updatedBy: yup.string().default(userId),
+    createdBy: yup.string().default(userId)
   })
 
   const { handleSubmit, formState: { errors }, control, reset } = useForm({
@@ -45,26 +44,29 @@ const AttendanceScore = (tabId) => {
     defaultValues: schema.cast()
   })
 
-
   const onSubmit = async data => {
-    if (selected !== null) {
-      await dispatch(updateExemption(data))
-      reset({})
-      setSelected(null)
-    } else {
-      await dispatch(addExemption(data))
-      reset({})
+    await dispatch(addOrgPreference(data))
+  }
+
+  useEffect(async () => {
+
+    if (tabId.data === 'attendancescore') {
+      const response = await dispatch(getData(activeOrgId))
+      const res = response.payload.data
+      if (res !== undefined) {
+        reset({
+          organizationId: activeOrgId,
+          workPercentage: parseInt(res.workpercentage),
+          punchInGrace: parseInt(res.punchingrace),
+          updatedBy: userId,
+          createdBy: userId
+        })
+      }
+
     }
+  }, [tabId])
 
-  }
 
-  const getList = () => {
-    axios.post('/exemptionreasons/list')
-      .then((res) => {
-        setData(res.data.exemptionreasons)
-      })
-      .catch((err) => { console.log(err) })
-  }
   const getRow = (fieldLabel, fieldName, reqflag = true) => {
     return (
       <Col md={12}>
@@ -84,13 +86,6 @@ const AttendanceScore = (tabId) => {
     )
   }
 
-  useEffect(async () => {
-    if (tabId.data === 'exemptionreason') {
-      getList()
-    }
-
-  }, [tabId])
-
   return (
     <Fragment>
       <Card>
@@ -106,9 +101,9 @@ const AttendanceScore = (tabId) => {
               }
               <Row tag={Form} className='gx-2 gy-1' onSubmit={handleSubmit(onSubmit)}>
 
-                {getRow('Office Clock In Time - Grace period (in minutes)', 'name')}
+                {getRow('Office Clock In Time - Grace period (in minutes)', 'punchInGrace', true)}
 
-                {getRow('Work Availability definition(Percentage)', 'name')}
+                {getRow('Work Availability definition(Percentage)', 'workPercentage', true)}
 
                 <Col className='mt-2 pt-1' xs={12}>
                   <Button type='submit' className='me-1' color='primary'>

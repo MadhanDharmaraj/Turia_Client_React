@@ -110,8 +110,10 @@ const InvoiceAccounts = (tabId) => {
   }, [tabId])
 
   useEffect(() => {
-    setData(store.data)
-  }, [store.data])
+    if (store.accounts !== undefined) {
+      setData(store.accounts)
+    }
+  }, [store.accounts])
 
   const formatAccountName = () => {
     const name = control._formValues.bankName
@@ -247,7 +249,7 @@ const InvoiceAccounts = (tabId) => {
             <Col lg='6' className='mt-2 mt-lg-0'>
               <h6 className='fw-bolder mb-2'>My Accounts</h6>
               <div className='added-cards'>
-                {data.map((card, index) => {
+                {data !== undefined && data.map((card, index) => {
                   return (
                     <div
                       key={index}

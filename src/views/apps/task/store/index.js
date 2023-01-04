@@ -13,7 +13,7 @@ export const getData = createAsyncThunk('appTasks/getData', async params => {
   }
 })
 
-export const getClient = createAsyncThunk('appInvoice/getClient', async id => {
+export const getClient = createAsyncThunk('appTasks/getClient', async id => {
   const response = await axios.post('/clients/get', { id })
   return response.data.clients
 })
@@ -23,17 +23,19 @@ export const getTask = createAsyncThunk('appTasks/getTask', async id => {
   return response.data.task
 })
 
-export const addTask = createAsyncThunk('appTasks/addTask', async (task, { dispatch, getState }) => {
-  await axios.post('/tasks/create', task)
-  await dispatch(getData(getState().tasks.params))
-  await dispatch(getAllData())
-  return task
+export const addTask = createAsyncThunk('appTasks/addTask', async (task, {  }) => {
+  await axios.post('/tasks/create', task)      
+  return response.data.task
+})
+
+export const updateInvocieId = createAsyncThunk('appTasks/updateInvocieId', async (data, {  }) => {
+  await axios.post('/tasks/updateinvocieid', data)
+  return response.data.task
 })
 
 export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
   await axios.delete('/tasks/delete', { id })
   await dispatch(getData(getState().tasks.params))
-  await dispatch(getAllData())
   return id
 })
 
@@ -55,6 +57,9 @@ export const appTasksSlice = createSlice({
         state.total = action.payload.totalPages
       })
       .addCase(getTask.fulfilled, (state, action) => {
+        state.selectedTask = action.payload
+      })
+      .addCase(addTask.fulfilled, (state, action) => {
         state.selectedTask = action.payload
       })
   }

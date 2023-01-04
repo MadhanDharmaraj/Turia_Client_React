@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useState } from 'react'
 
 // ** Reactstrap Imports
 import {
@@ -7,91 +7,103 @@ import {
   Col,
   Card,
   Form,
-  Badge,
-  Label,
   Input,
   Button,
   CardBody,
   FormFeedback
 } from 'reactstrap'
-import axios from '@src/configs/axios/axiosConfig'
-import { useForm, Controller } from "react-hook-form"
+
+import { Controller, useFieldArray, useForm } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 //import { addExemption, updateExemption } from './store/holidays'
+import { businesshours } from './businesshoursArray.js'
 
 const activeOrgId = activeOrganizationid()
 const userId = orgUserId()
 // ** Third Party Components
-import classnames from 'classnames'
-import { useDispatch } from 'react-redux'
+import moment from 'moment'
 
-const InvoiceAccounts = (tabId) => {
+const InvoiceAccounts = () => {
 
-  const [data, setData] = useState([])
-  console.log(data)
-  const [selected, setSelected] = useState(null)
+  const [weeklyHours, setWeeklyHours] = useState(0)
+  const [monthlyHours, setMonthlylyHours] = useState(0)
 
-  const dispatch = useDispatch()
+  //  const dispatch = useDispatch()
 
   const schema = yup.object().shape({
     organizationId: yup.number().default(parseInt(activeOrgId)),
-    name: yup.string().required('Please Enter Exemption'),
+    businessHours: yup.array().default(businesshours).of(
+      yup.object().shape({
+        name: yup.string(),
+        status: yup.boolean().default(true),
+        start: yup.string().when("status", { is: (status) => status, then: yup.string().required("Please Enter Start Time") }),
+        end: yup.string().when("status", { is: (status) => status, then: yup.string().required("Please Enter End Time.") })
+      })
+    ),
     updatedBy: yup.string().default(userId),
     createdBy: yup.string().default(userId)
   })
 
-  const { handleSubmit, formState: { errors }, control, reset } = useForm({
+  const { handleSubmit, control, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
 
+  const { fields, update } = useFieldArray({ name: 'businessHours', control })
+
+  const weeklyHoursfn = () => {
+    let minutes = 0
+
+    control._formValues.businessHours.forEach((obj, i) => {
+      if (!obj.status) {
+        const data = {
+          day: obj.day,
+          status: obj.status,
+          start: '',
+          end: ''
+        }
+        update(i, data)
+      }
+    })
+
+    control._formValues.businessHours.forEach((obj) => {
+      if (obj.status && (obj.start !== '' || obj.start !== '')) {
+        const startTime = moment(`${obj.start} am`, 'HH:mm a')
+        const endTime = moment(`${obj.end} pm`, 'HH:mm a')
+
+        const minDiff = endTime.diff(startTime, 'minutes')
+        minutes = minutes + minDiff
+      }
+    })
+    const hours_temp = Math.floor(minutes / 60)
+    const minutes_temp = minutes % 60
+    setWeeklyHours(`${String(hours_temp)} : ${String(minutes_temp)}`)
+  }
+  const monthlyHoursfn = () => {
+    let minutes = 0
+    control._formValues.businessHours.forEach((obj) => {
+      if (obj.status) {
+        const startTime = moment(`${obj.start} am`, 'HH:mm a')
+        const endTime = moment(`${obj.end} pm`, 'HH:mm a')
+
+        const minDiff = endTime.diff(startTime, 'minutes')
+        minutes = minutes + minDiff
+      }
+    })
+    const hours_temp = Math.floor(minutes / 60)
+    const minutes_temp = minutes % 60
+
+    const hur = parseInt(minutes_temp * 4 / 60)
+    const bal_minutes = (minutes_temp % 60)
+    setMonthlylyHours(`${(4 * hours_temp) + hur} : ${bal_minutes}`)
+  }
+
 
   const onSubmit = async data => {
-    if (selected !== null) {
-      await dispatch(updateExemption(data))
-      reset({})
-      setSelected(null)
-    } else {
-      await dispatch(addExemption(data))
-      reset({})
-    }
-
+    console.log(data)
   }
-
-  const getList = () => {
-    axios.post('/exemptionreasons/list')
-      .then((res) => {
-        setData(res.data.exemptionreasons)
-      })
-      .catch((err) => { console.log(err) })
-  }
-  const getRow = (fieldLabel, fieldName, reqflag = true) => {
-    return (
-      <Col md={12}>
-        <Label sm='12' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
-          {fieldLabel}
-        </Label>
-        <Col>
-          <Controller
-            id={fieldName}
-            name={fieldName}
-            control={control}
-            render={({ field }) => <Input invalid={errors[fieldName] && true} {...field} />}
-          />
-          {errors[fieldName] && <FormFeedback>{errors[fieldName].message}</FormFeedback>}
-        </Col>
-      </Col>
-    )
-  }
-
-  useEffect(async () => {
-    if (tabId.data === 'exemptionreason') {
-      getList()
-    }
-
-  }, [tabId])
 
   return (
     <Fragment>
@@ -108,33 +120,59 @@ const InvoiceAccounts = (tabId) => {
               }
               <Row tag={Form} className='gx-2 gy-1' onSubmit={handleSubmit(onSubmit)}>
 
-                {getRow('Office Clock In Time - Grace period (in minutes)', 'name')}
+                {
+                  fields.map((obj, i) => {
+                    return (
+                      <Row key={obj.id} className='mt-1'>
+                        <Col>{obj.day}</Col>
+                        <Col>
+                          <Controller
+                            name={`businessHours[${i}].status`}
+                            control={control}
+                            render={({ field }) => (
+                              <div className='form-check form-switch'>
+                                <Input {...field} type='switch' defaultChecked={obj.status} className='customSwitch' onInput={(val) => { field.onChange(val); monthlyHoursfn(); weeklyHoursfn() }} />
+                              </div>
+                            )}
+                          />
+                        </Col>
+                        <Col>
+                          <Controller
+                            name={`businessHours[${i}].start`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input type='time' onChange={() => { weeklyHoursfn(); monthlyHoursfn() }} defaultValue={obj.start} {...field} />
+                            )}
+                          />
+                        </Col>
+                        <Col>
+                          <Controller
+                            name={`businessHours[${i}].end`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input type='time' onChange={() => { weeklyHoursfn(); monthlyHoursfn() }} defaultValue={obj.end} {...field} />
+                            )}
+                          />
+                        </Col>
+                      </Row>
+                    )
+                  })
+                }
 
-                {getRow('Work Availability definition(Percentage)', 'name')}
-
+                <Row className='mt-1'>
+                  <Col> Weekly Hours</Col>
+                  <Col>{weeklyHours} </Col>
+                </Row>
+                <Row className='mt-1'>
+                  <Col> Monthly Hours</Col>
+                  <Col>{monthlyHours}</Col>
+                </Row>
                 <Col className='mt-2 pt-1' xs={12}>
                   <Button type='submit' className='me-1' color='primary'>
                     Submit
                   </Button>
                 </Col>
 
-              </Row>
-            </Col>
-            <Col lg='6'>
-              <Row>
-                <Col md={4} >
-                  <Badge color='warning'>Early</Badge>
-                  <p>Before on Time</p></Col>
-                <Col md={4} ><Badge color='success'>Regular</Badge>
-                  <p>On Time to tolerence</p></Col>
-                <Col md={4} ><Badge color='danger'>Late</Badge>
-                  <p>After tolerence</p></Col>
-              </Row>
-              <Row>
-                <Col md={4} ><Badge color='success'>Good</Badge>
-                  <p>Equal or Above the Percent</p></Col>
-                <Col md={4} ><Badge color='danger'>Bad</Badge>
-                  <p>Below the Percent</p></Col>
               </Row>
             </Col>
           </Row>

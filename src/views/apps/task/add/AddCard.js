@@ -13,9 +13,10 @@ import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 
-import { getClient, addTask } from '../store'
+import { getClient, addTask, updateInvocieId } from '../store'
+import { addInvoice, addInvoiceItems } from '@src/views/apps/invoice/store/index.js'
 // ** Reactstrap Imports
-import { Row, Col, Card, Label, Button, CardBody, CardText, FormFeedback, Input } from 'reactstrap'
+import { Row, Col, Card, Label, Button, CardBody, CardText, FormFeedback, Input, CardHeader } from 'reactstrap'
 
 // ** Styles
 import 'react-slidedown/lib/slidedown.css'
@@ -23,7 +24,7 @@ import '@styles/react/libs/react-select/_react-select.scss'
 import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { activeOrganizationid, activeOrganization, orgUserId } from '@src/helper/sassHelper'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 const activeOrgId = activeOrganizationid()
 const activeOrg = activeOrganization()
@@ -31,7 +32,6 @@ const userId = orgUserId()
 
 const AddCard = () => {
   // ** States
-
   const inputRef = useRef(null)
   const [setOpen] = useState(false)
   const [date, setDate] = useState("")
@@ -53,21 +53,24 @@ const AddCard = () => {
       .nullable()
       .required('Please Select End Date'),
     priority: yup.string().required("Please select a Priority"),
-    invoiceFlag: yup.boolean().default(false)
-    // invoice_items: yup.array().of(
-    //   yup.object().shape({
-    // serviceId: yup.number().required("Please Select Service Item"),
-    // invoiceId: yup.number(),
-    // sacCode: yup.string(),
-    // price: yup.string(),
-    // organizationId: yup.number().default(activeOrgId),
-    // exemptioReasonId: yup.number(),
-    // actualPrice: yup.string().required(),
-    // taxGroupId: yup.number().required("Pleace Select Tax"),
-    // subTotalAmount: yup.string().required(1)
-    //   })
-    // )
+    invoiceFlag: yup.boolean().default(false),
+    invoiceItems: yup.array().of(
+      yup.object().shape({
+        serviceId: yup.number().required("Please Select Service Item"),
+        invoiceId: yup.number(),
+        sacCode: yup.string(),
+        price: yup.string(),
+        organizationId: yup.number().default(activeOrgId),
+        exemptioReasonId: yup.number(),
+        actualPrice: yup.string().required(),
+        taxGroupId: yup.number().required("Pleace Select Tax"),
+        subTotalAmount: yup.string().required(1),
+        isTaxApplicable: yup.boolean().default(true)
+      })
+    ).when("invoiceFlag", { is: (invoiceFlag) => invoiceFlag, then: yup.string().required("Require Atleast one Item when Proposal For this Task.") })
   })
+  const store = useSelector(state => state.task)
+  const invoicestore = useSelector(state => state.invoice)
 
   const { handleSubmit, formState: { errors }, control, setValue } = useForm({
     resolver: yupResolver(schema),
@@ -88,17 +91,56 @@ const AddCard = () => {
   const [clientOptions, setClientOptions] = useState([])
   const [serviceOptions, setServiceOptions] = useState([])
   //const [userOptions, setUserOptions] = useState([])
+  const [taskId, setTaskId] = useState([])
+  const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
   const [invoiceFlag, setinvoiceFlag] = useState(true)
   const [taxValues, setTaxValues] = useState([])
   const [selectedClient, setSelectedClient] = useState({})
   const [invoiceData, setInvoiceData] = useState({})
-  const { fields, append, remove } = useFieldArray({ name: 'invoice_items', keyName: 'rowid', control })
+  const [invoiceItems, setInvoiceItems] = useState({})
+  const { fields, append, remove } = useFieldArray({ name: 'invoiceItems', keyName: 'rowid', control })
+
+  useEffect(async () => {
+    if (store.selectedTask !== null) {
+      setTaskId(store.selectedTask.id)
+      await dispatch(addInvoice(invoiceData))
+
+      await d
+    }
+  }, [store.selectedTask])
+
+  useEffect(async () => {
+    if (invoicestore.selectedInvoice !== null) {
+      const invoice_items = []
+      const temp = invoiceItems
+      temp.forEach((obj) => {
+        invoice_items = obj
+        invoice_items['invoiceId'] = invoicestore.selectedInvoice.id
+      })
+      await dispatch(addInvoiceItems(invoice_items))
+      const invoiceId = invoicestore.selectedInvoice.id
+      await dispatch(updateInvocieId({taskId, invoiceId}))
+    }
+  }, [invoicestore.selectedInvoice])
+
 
   const onSubmit = async data => {
     console.log(data)
     console.log(invoiceData)
+
+    const temp = data.invoiceItems
+    setInvoiceItems(predata => ([...predata, ...temp]))
+    delete data.invoiceItems
+
     await dispatch(addTask(data))
+  }
+
+  const getExemptionReason = () => {
+    axios.post('/exemptionreasons/dropdown').then(response => {
+      const arr = response.data
+      setExemptionReasonOptions(arr.exemptionreasons)
+    })
   }
 
   const getClients = () => {
@@ -136,18 +178,15 @@ const AddCard = () => {
       setTaxValues(arr.taxvalues)
     })
 
-    console.log(taxValues)
   }
 
-
   const addItem = (() => {
-    append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '' })
+    append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '', isTaxApplicable: false })
   })
 
   const removeItem = ((val) => {
     remove(val)
   })
-
 
   const taxvaluefn = () => {
     let taxtype = 1
@@ -193,10 +232,70 @@ const AddCard = () => {
 
   }, [selectedClient])
 
+  const loadItemData = (ind, desFlg = false, priceFlg = false, sacFlg = false, taxFlg = false, itemFlg = false) => {
+    const eachObj = control._formValues.rows[ind]
+    if (eachObj.serviceId === undefined || eachObj.serviceId === '') {
+      return false
+    }
+
+    const selectedService = serviceOptions.find((a) => a.id === eachObj.serviceId)
+    if (itemFlg) {
+      eachObj['sacCode'] = selectedService.saccode
+      eachObj['actualPrice'] = selectedService.sellingprice | 0
+      eachObj['price'] = String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = selectedService.taxgroupid
+      eachObj['description'] = selectedService.description
+      eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
+    } else {
+      eachObj['sacCode'] = sacFlg ? eachObj.sacCode : selectedService.saccode
+      eachObj['price'] = priceFlg ? eachObj.price : selectedService.sellingprice | 0
+      eachObj['actualPrice'] = String(selectedService.sellingprice) | 0
+      eachObj['taxGroupId'] = taxFlg ? eachObj.taxGroupId : selectedService.taxgroupid
+      eachObj['description'] = desFlg ? eachObj.description : selectedService.description
+      eachObj['exemptionReasonId'] = selectedService.exemptionreasonid
+    }
+
+    let calculateTaxAmount = 0
+    const invoice_item_taxes = []
+
+    const taxGroups = taxGroupOptions.find((a) => a.id === eachObj.taxGroupId)
+    eachObj['isTaxApplicable'] = taxGroups !== undefined ? !taxGroups.nontaxableflag : selectedService.istaxapplicable
+
+    if (eachObj.isTaxApplicable) {
+      if (taxGroups !== undefined) {
+        taxValues.forEach(obj => {
+          if (obj.taxid === eachObj['taxGroupId']) {
+            let temp = 0
+            temp = calculateTax(eachObj.price, obj.percentage, 2)
+            calculateTaxAmount = parseFloat(calculateTaxAmount) + parseFloat(temp)
+            const dataTemp = {}
+            dataTemp["taxName"] = `${obj.name} (${obj.percentage}%)`
+            dataTemp["taxId"] = parseInt(obj.id)
+            dataTemp["taxNameValue"] = obj.name
+            dataTemp["taxPercentage"] = String(obj.percentage)
+            dataTemp["taxAmount"] = String(temp)
+
+            invoice_item_taxes.push(dataTemp)
+          }
+        })
+      }
+    }
+
+    eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount | 0) + parseFloat(eachObj.price | 0)).toFixed(2))
+    eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
+    eachObj['taxes'] = JSON.stringify(invoice_item_taxes)
+
+    update(ind, eachObj)
+
+    ItemFinalTotalAmount()
+
+  }
+
   useEffect(() => {
     getClients()
     getServices()
     getTaxGroups()
+    getExemptionReason()
   }, [])
 
   useEffect(() => {
@@ -260,8 +359,13 @@ const AddCard = () => {
 
   return (
 
+
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card className='invoice-preview-card'>
+        {Object.keys(errors).map((obj, k) => {
+          return <FormFeedback key={k}> {errors[k]?.message}</FormFeedback>
+        })}
+        <CardHeader>Add Task</CardHeader>
         {/* Header */}
         <CardBody className='pb-2 px-2'>
           <Row>
@@ -507,88 +611,116 @@ const AddCard = () => {
         </Row>
         {invoiceFlag && (
           <CardBody className='invoice-padding invoice-product-details'>
-            {fields.map((item, i) => (
-
-              <div key={item.rowid} className='repeater-wrapper'>
-                <Row>
-                  <Col className='d-lg-flex product-details-border position-relative pe-0 ps-sm-0' sm='12'>
-                    <Row className='w-100 pe-lg-0 py-2 ms-sm-1'>
-                      <Col className='my-lg-0 my-2' lg='4' sm='12'>
-                        <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
-                        <Controller
-                          control={control}
-                          name={`invoice_items.${i}.itemId`}
-                          rules={{ required: true }}
-                          render={({ field, value, ref }) => (
-                            <Select
-                              inputRef={ref}
-                              className={classnames('react-select', { 'is-invalid': errors.invoice_items?.[i]?.itemId })}
-                              classNamePrefix='select'
-                              options={serviceOptions}
-                              value={serviceOptions.find(c => c.id === value)}
-                              onChange={val => field.onChange(val.id)}
-                              getOptionLabel={(option) => option.name}
-                              getOptionValue={(option) => option.id}
+            {fields.map((item, index) => {
+              return (
+                <div key={item.rowid} className='repeater-wrapper'>
+                  <Row>
+                    <Col className='d-lg-flex product-details-border position-relative pe-0' sm='12'>
+                      <Row className='w-100 pe-lg-0 pe-1 py-2'>
+                        <Col className='mb-lg-0 mb-2 mt-lg-0 mt-2 col-lg-4 col-sm-12'>
+                          <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
+                          <Controller
+                            control={control}
+                            name={`rows[${index}].serviceId`}
+                            rules={{ required: true }}
+                            render={({ field, ref }) => (
+                              <Select
+                                {...field}
+                                inputRef={ref}
+                                className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.serviceId })}
+                                classNamePrefix='select'
+                                options={serviceOptions}
+                                value={serviceOptions.find(c => c.id === field.value)}
+                                onChange={val => { field.onChange(val.id); loadItemData(index, false, false, false, false, true) }}
+                                getOptionLabel={(option) => option.name}
+                                getOptionValue={(option) => option.id}
+                              />
+                            )}
+                          />
+                          {errors.rows?.[index]?.serviceId && <FormFeedback>{errors.rows?.[index]?.serviceId.message}</FormFeedback>}
+                          <Controller
+                            id={`rows_${index}_description`}
+                            name={`rows[${index}].description`}
+                            control={control}
+                            render={({ field }) => <Input className='mt-1' invalid={errors.rows?.[index]?.description && true} onInput={(val) => { field.onChange(val); loadItemData(index, true, false, false, false, false) }} {...field} />}
+                          />
+                        </Col>
+                        <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
+                          <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
+                          <Controller
+                            id={`rows_${index}_sacCode`}
+                            name={`rows[${index}].sacCode`}
+                            control={control}
+                            render={({ field }) => <Input type='text' invalid={errors.rows?.[index]?.sacCode && true} onInput={(val) => { field.onChange(val); loadItemData(index, false, true, true, false, false) }} {...field} />}
+                          />
+                          {errors.rows?.[index]?.sacCode && <FormFeedback>{errors.rows?.[index]?.sacCode.message}</FormFeedback>}
+                        </Col>
+                        <Col className='my-lg-0 my-2' lg='2' sm='12'>
+                          <CardText className='col-title mb-md-2 mb-0'>Price</CardText>
+                          <Controller
+                            id={`rows_${index}_price`}
+                            name={`rows[${index}].price`}
+                            control={control}
+                            render={({ field }) => <Input type='number' id={`input_rows_${index}_price`} onInput={(val) => { field.onChange(val); console.log(val); loadItemData(index, false, true, false, false, false) }} {...field} invalid={errors.rows?.[index]?.price && true} />}
+                          />
+                          {errors.rows?.[index]?.price && <FormFeedback>{errors.rows?.[index]?.price.message}</FormFeedback>}
+                        </Col>
+                        <Col className='my-lg-0 mt-2' lg='2' sm='12'>
+                          <CardText className='col-title mb-md-50 mb-0'>Tax Rate</CardText>
+                          <Controller
+                            control={control}
+                            name={`rows[${index}].taxGroupId`}
+                            rules={{ required: true }}
+                            render={({ field, ref }) => (
+                              <Select
+                                {...field}
+                                inputRef={ref}
+                                className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
+                                classNamePrefix='select'
+                                options={taxGroupOptions}
+                                value={taxGroupOptions.find(c => c.id === field.value)}
+                                onChange={(val) => { field.onChange(val.id); loadItemData(index, false, true, false, true, false) }}
+                                getOptionLabel={(option) => option.name}
+                                getOptionValue={(option) => option.id}
+                              />
+                            )}
+                          />
+                          {errors.rows?.[index]?.taxGroupId && <FormFeedback>{errors.rows?.[index]?.taxGroupId.message}</FormFeedback>}
+                          {
+                            !item.isTaxApplicable && <Controller
+                              control={control}
+                              name={`rows[${index}].exemptionReasonId`}
+                              rules={{ required: true }}
+                              render={({ field, ref }) => (
+                                <Select
+                                  {...field}
+                                  inputRef={ref}
+                                  className={classnames('react-select mt-1', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
+                                  classNamePrefix='select'
+                                  options={exemptionReasonOptions}
+                                  value={exemptionReasonOptions.find(c => c.id === field.value)}
+                                  onChange={(val) => { field.onChange(val.id) }}
+                                  getOptionLabel={(option) => option.name}
+                                  getOptionValue={(option) => option.id}
+                                />
+                              )}
                             />
-                          )}
-                        />
-                        {errors.invoice_items?.[i]?.itemId && <FormFeedback className='text-danger'>{errors.invoice_items?.[i]?.itemId?.message}</FormFeedback>}
-                      </Col>
-                      <Col className='my-lg-0 my-2' lg='2' sm='12'>
-                        <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
+                          }
 
-                        <Controller
-                          name={`invoice_items.${i}.sac_code`}
-                          control={control}
-                          render={({ field }) => <Input type="text" invalid={errors.invoice_items?.[i]?.sac_code && true} {...field} />}
-                        />
-                        {errors.invoice_items?.[i]?.sac_code && <FormFeedback>{errors.invoice_items?.[i]?.sac_code?.message}</FormFeedback>}
-
-
-                      </Col>
-                      <Col className='my-lg-0 my-2' lg='2' sm='12'>
-                        <CardText className='col-title mb-md-2 mb-0'>Price</CardText>
-                        <Controller
-                          name={`invoice_items.${i}.price`}
-                          control={control}
-                          render={({ field }) => <Input type="number" invalid={errors.invoice_items?.[i]?.price && true} {...field} />}
-                        />
-                        {errors.invoice_items?.[i]?.price && <FormFeedback>{errors.invoice_items?.[i]?.price?.message}</FormFeedback>}
-
-                      </Col>
-                      <Col className='my-lg-0 mt-2' lg='2' sm='12'>
-                        <CardText className='col-title mb-md-50 mb-0'>Tax Rate</CardText>
-                        <Controller
-                          control={control}
-                          name={`invoice_items.${i}.tax_group_id`}
-                          rules={{ required: true }}
-                          render={({ field, value, ref }) => (
-                            <Select
-                              inputRef={ref}
-                              className={classnames('react-select', { 'is-invalid': errors.invoice_items?.[i]?.tax_group_id })}
-                              classNamePrefix='select'
-                              options={taxGroupOptions}
-                              value={taxGroupOptions.find(c => c.id === value)}
-                              onChange={val => field.onChange(val.id)}
-                              getOptionLabel={(option) => option.name}
-                              getOptionValue={(option) => option.id}
-                            />
-                          )}
-                        />
-                        {errors.invoice_items?.[i]?.tax_group_id && <FormFeedback className='text-danger'>{errors.invoice_items?.[i]?.tax_group_id?.message}</FormFeedback>}
-                      </Col>
-                      <Col className='my-lg-0 mt-2' lg='1' sm='12'>
-                        <CardText className='col-title mb-md-50 mb-0'>Amount</CardText>
-
-                      </Col>
-                    </Row>
-                    <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
-                      <X size={18} className='cursor-pointer' onClick={() => removeItem(i)} />
-                    </div>
-                  </Col>
-                </Row>
-              </div>
-            ))}
+                        </Col>
+                        <Col className='my-lg-0 mt-2' lg='1' sm='12'>
+                          <CardText className='col-title mb-md-50 mb-0'>Amount</CardText>
+                          {item.subTotalAmount}
+                        </Col>
+                      </Row>
+                      <div className='d-lg-flex justify-content-center border-start invoice-product-actions py-50 px-25'>
+                        <X size={18} className='cursor-pointer' onClick={() => { removeItem(index) }} />
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              )
+            })}
             <Row className='mt-1'>
               <Col sm='12' className='px-0'>
                 <Button color='primary' size='sm' className='btn-add-new' onClick={() => addItem()}>
