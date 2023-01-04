@@ -9,50 +9,51 @@ import { store } from '@store/store'
 import { getTask, deleteTask } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
+import { MoreVertical, FileText, Trash2, Archive, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
 
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 
 // ** Renders Client Columns
-// const renderClient = row => {
-//   if (row.avatar.length) {
-//     return <Avatar className='me-1' img={row.avatar} width='32' height='32' />
-//   } else {
-//     return (
-//       <Avatar
-//         initials
-//         className='me-1'
-//         color={row.avatarColor || 'light-primary'}
-//         content={row.fullName || 'John Doe'}
-//       />
-//     )
-//   }
-// }
+const renderClient = row => {
 
-const statusObj = {
-  pending: 'light-warning',
-  active: 'light-success',
-  inactive: 'light-secondary'
+  return (
+    <Avatar
+      initials
+      className='me-1'
+      color={'light-primary'}
+      content={row.servicename.charAt(0) || 'T'}
+    />
+  )
+
 }
+
+const statusObj = [
+  'light-warning',
+  'light-success',
+  'light-secondary'
+]
+
+const priorityOptions = ['Low', 'Medium', 'High']
+const statusOptions = ['To Do', 'In progress', 'Completed', 'On Hold', 'Cancelled', 'Sent to Review', 'Request Changes']
 
 export const columns = [
   {
     name: 'Task ID',
     sortable: true,
     minWidth: '138px',
-    sortField: 'task_id',
-    selector: row => row.task_id,
+    sortField: 'uniqueidentity',
+    selector: row => row.uniqueidentity,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
-
+        {renderClient(row)}
         <div className='d-flex flex-column'>
           <Link
             to={`/task/view/${row.id}`}
             className='user_name text-truncate text-body'
             onClick={() => store.dispatch(getTask(row.id))}
           >
-            <span className='fw-bolder'>{row.task_id}</span>
+            <span className='fw-bolder'>{row.uniqueidentity}</span>
           </Link>
         </div>
       </div>
@@ -62,35 +63,35 @@ export const columns = [
     name: 'Client',
     sortable: true,
     minWidth: '172px',
-    sortField: 'role',
-    selector: row => row.client,
-    cell: row => <span className='text-capitalize'>{row.client}</span>
+    sortField: 'clientname',
+    selector: row => row.clientname,
+    cell: row => <span className='text-capitalize'>{row.clientname}</span>
   },
   {
     name: 'Service',
     minWidth: '172px',
     sortable: true,
-    sortField: 'currentPlan',
-    selector: row => row.task,
-    cell: row => <span className='text-capitalize'>{row.task}</span>
+    sortField: 'servicename',
+    selector: row => row.servicename,
+    cell: row => <span className='text-capitalize'>{row.servicename}</span>
   },
   {
     name: 'Priority',
     minWidth: '230px',
     sortable: true,
-    sortField: 'billing',
+    sortField: 'priority',
     selector: row => row.priority,
-    cell: row => <span className='text-capitalize'>{row.priority}</span>
+    cell: row => <span className='text-capitalize'>{priorityOptions[row.priority]}</span>
   },
   {
     name: 'Status',
     minWidth: '138px',
     sortable: true,
-    sortField: 'status',
-    selector: row => row.status,
+    sortField: 'taskstatus',
+    selector: row => row.taskstatus,
     cell: row => (
-      <Badge className='text-capitalize' color={statusObj[row.status]} pill>
-        {row.status}
+      <Badge className='text-capitalize' color={statusObj[row.taskstatus]} pill>
+        {statusOptions[row.taskstatus]}
       </Badge>
     )
   },

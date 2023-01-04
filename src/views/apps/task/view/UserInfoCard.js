@@ -2,13 +2,12 @@
 import { useState, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 // ** Reactstrap Imports
-import { Row, Col, Card, Form, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover } from 'reactstrap'
+import { Row, Col, Card, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover } from 'reactstrap'
 
 // ** Third Party Components
 import Swal from 'sweetalert2'
-import Select from 'react-select'
-import { Check, Briefcase, X, Clock } from 'react-feather'
-import { useForm, Controller } from 'react-hook-form'
+import { Clock } from 'react-feather'
+import { useForm } from 'react-hook-form'
 import withReactContent from 'sweetalert2-react-content'
 
 // ** Custom Components
@@ -16,6 +15,7 @@ import Avatar from '@components/avatar'
 
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
+import moment from 'moment'
 
 const statusColors = {
   active: 'light-success',
@@ -25,7 +25,7 @@ const statusColors = {
 
 const MySwal = withReactContent(Swal)
 
-const UserInfoCard = ({ selectedUser }) => {
+const UserInfoCard = ({ selectedTask }) => {
   // ** State
   const [setShow] = useState(false)
 
@@ -34,30 +34,21 @@ const UserInfoCard = ({ selectedUser }) => {
     formState: { }
   } = useForm({
     defaultValues: {
-      username: selectedUser.task
+      username: selectedTask.servicename
     }
   })
 
   // ** render user img
   const renderUserImg = () => {
-    if (selectedUser !== null && selectedUser.avatar.length) {
-      return (
-        <img
-          height='110'
-          width='110'
-          alt='user-avatar'
-          src={selectedUser.avatar}
-          className='img-fluid rounded mt-3 mb-2'
-        />
-      )
-    } else {
+    if (selectedTask !== null) {
+
       return (
 
         <Avatar
           initials
-          color={selectedUser.avatarColor || 'light-primary'}
+          color={'light-primary'}
           className='rounded mt-3 mb-2'
-          content={selectedUser.task}
+          content={selectedTask.servicename.charAt(0) || 'T'}
           contentStyles={{
             borderRadius: 0,
             fontSize: 'calc(48px)',
@@ -73,6 +64,9 @@ const UserInfoCard = ({ selectedUser }) => {
     }
   }
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const dateFormat = (value) => {
+    return moment.unix(value).format("MMM DD, YYYY")
+  }
 
   return (
     <Fragment>
@@ -108,10 +102,10 @@ const UserInfoCard = ({ selectedUser }) => {
               {renderUserImg()}
               <div className='d-flex flex-column align-items-center text-center'>
                 <div className='user-info'>
-                  <h4>{selectedUser !== null ? selectedUser.task : 'Eleanor Aguilar'}</h4>
-                  {selectedUser !== null ? (
+                  <h4>{selectedTask !== null ? selectedTask.servicename : 'Eleanor Aguilar'}</h4>
+                  {selectedTask !== null ? (
 
-                    <span>Trueminds pvt ltd.</span>
+                    <span>{selectedTask.clientname}</span>
 
                   ) : null}
                 </div>
@@ -124,23 +118,27 @@ const UserInfoCard = ({ selectedUser }) => {
               <Clock size={16} className='me-25'></Clock>Start Timer</Button>
           </div>
           <div className='info-container'>
-            {selectedUser !== null ? (
+            {selectedTask !== null ? (
               <ul className='list-unstyled'>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Task ID:</span>
-                  <span>{selectedUser.task_id}</span>
+                  <span>{selectedTask.uniqueidentity}</span>
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Service Name:</span>
-                  <span>{selectedUser.task}</span>
+                  <span>{selectedTask.servicename}</span>
                 </li>
                 <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Category:</span>
-                  <span>Category</span>
+                  <span className='fw-bolder me-25'>Start Date:</span>
+                  <span>{dateFormat(selectedTask.startdate)}</span>
+                </li>
+                <li className='mb-75'>
+                  <span className='fw-bolder me-25'>End Date:</span>
+                  <span>{dateFormat(selectedTask.enddate)}</span>
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Priority:</span>
-                  <Badge className='text-capitalize' color={statusColors[selectedUser.status]}>
+                  <Badge className='text-capitalize' color={statusColors[selectedTask.status]}>
                     Medium
                   </Badge>
                 </li>

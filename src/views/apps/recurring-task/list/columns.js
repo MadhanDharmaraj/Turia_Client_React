@@ -6,53 +6,54 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getTask, deleteUser } from '../store'
+import { getTask, deleteTask } from '../store'
 
 // ** Icons Imports
-import { Slack, User, Settings, Database, Edit2, MoreVertical, FileText, Trash2, Archive } from 'react-feather'
+import { MoreVertical, FileText, Trash2, Archive, Eye, Edit, CheckCircle, XCircle } from 'react-feather'
 
 // ** Reactstrap Imports
-import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap'
+import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 
 // ** Renders Client Columns
-// const renderClient = row => {
-//   if (row.avatar.length) {
-//     return <Avatar className='me-1' img={row.avatar} width='32' height='32' />
-//   } else {
-//     return (
-//       <Avatar
-//         initials
-//         className='me-1'
-//         color={row.avatarColor || 'light-primary'}
-//         content={row.fullName || 'John Doe'}
-//       />
-//     )
-//   }
-// }
+const renderClient = row => {
 
-const statusObj = {
-  pending: 'light-warning',
-  active: 'light-success',
-  inactive: 'light-secondary'
+  return (
+    <Avatar
+      initials
+      className='me-1'
+      color={'light-primary'}
+      content={row.servicename.charAt(0) || 'T'}
+    />
+  )
+
 }
+
+const statusObj = [
+  'light-warning',
+  'light-success',
+  'light-secondary'
+]
+
+const priorityOptions = ['Low', 'Medium', 'High']
+const statusOptions = ['To Do', 'In progress', 'Completed', 'On Hold', 'Cancelled', 'Sent to Review', 'Request Changes']
 
 export const columns = [
   {
     name: 'Task ID',
     sortable: true,
-    minWidth: '138px',  
-    sortField: 'task_id',
-    selector: row => row.task_id,
+    minWidth: '138px',
+    sortField: 'uniqueidentity',
+    selector: row => row.uniqueidentity,
     cell: row => (
       <div className='d-flex justify-content-left align-items-center'>
-        
+        {renderClient(row)}
         <div className='d-flex flex-column'>
           <Link
             to={`/task/view/${row.id}`}
             className='user_name text-truncate text-body'
             onClick={() => store.dispatch(getTask(row.id))}
           >
-            <span className='fw-bolder'>{row.task_id}</span>
+            <span className='fw-bolder'>{row.uniqueidentity}</span>
           </Link>
         </div>
       </div>
@@ -62,35 +63,35 @@ export const columns = [
     name: 'Client',
     sortable: true,
     minWidth: '172px',
-    sortField: 'role',
-    selector: row => row.client,
-    cell: row => <span className='text-capitalize'>{row.client}</span>
+    sortField: 'clientname',
+    selector: row => row.clientname,
+    cell: row => <span className='text-capitalize'>{row.clientname}</span>
   },
   {
     name: 'Service',
     minWidth: '172px',
     sortable: true,
-    sortField: 'currentPlan',
-    selector: row => row.task,
-    cell: row => <span className='text-capitalize'>{row.task}</span>
+    sortField: 'servicename',
+    selector: row => row.servicename,
+    cell: row => <span className='text-capitalize'>{row.servicename}</span>
   },
   {
     name: 'Priority',
     minWidth: '230px',
     sortable: true,
-    sortField: 'billing',
+    sortField: 'priority',
     selector: row => row.priority,
-    cell: row => <span className='text-capitalize'>{row.priority}</span>
+    cell: row => <span className='text-capitalize'>{priorityOptions[row.priority]}</span>
   },
   {
     name: 'Status',
     minWidth: '138px',
     sortable: true,
-    sortField: 'status',
-    selector: row => row.status,
+    sortField: 'taskstatus',
+    selector: row => row.taskstatus,
     cell: row => (
-      <Badge className='text-capitalize' color={statusObj[row.status]} pill>
-        {row.status}
+      <Badge className='text-capitalize' color={statusObj[row.taskstatus]} pill>
+        {statusOptions[row.taskstatus]}
       </Badge>
     )
   },
@@ -98,24 +99,29 @@ export const columns = [
     name: 'Actions',
     minWidth: '100px',
     cell: row => (
-      <div className='column-action'>
+      <div className='column-action d-flex align-items-center'>
+        <Col tag={Link} lg={4}
+          to={`/task/view/${row.id}`}
+          onClick={() => store.dispatch(getTask(row.id))} >
+          <Eye className='cursor-pointer mt-0' size={16} />
+        </Col>
+        <Col tag={Link} to={`/task/edit/${row.id}`} lg={4}
+          onClick={() => store.dispatch(getTask(row.id))} >
+          <Edit
+            className='cursor-pointer ms-1 mt-0' size={16} />
+        </Col>
         <UncontrolledDropdown>
           <DropdownToggle tag='div' className='btn btn-sm'>
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
           <DropdownMenu>
-            <DropdownItem
-              tag={Link}
-              className='w-100'
-              to={`/task/view/${row.id}`}
-              onClick={() => store.dispatch(getTask(row.id))}
-            >
-              <FileText size={14} className='me-50' />
-              <span className='align-middle'>Details</span>
+            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
+              <CheckCircle size={14} className='me-50' />
+              <span className='align-middle'>Mark as Active</span>
             </DropdownItem>
             <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <Archive size={14} className='me-50' />
-              <span className='align-middle'>Edit</span>
+              <XCircle size={14} className='me-50' />
+              <span className='align-middle'>Mark as Inactive</span>
             </DropdownItem>
             <DropdownItem
               tag='a'
@@ -123,7 +129,7 @@ export const columns = [
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteUser(row.id))
+                store.dispatch(deleteTask(row.id))
               }}
             >
               <Trash2 size={14} className='me-50' />

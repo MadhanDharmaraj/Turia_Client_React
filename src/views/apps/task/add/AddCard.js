@@ -1,6 +1,6 @@
 // ** React Imports
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 // ** Custom Components
 import classnames from 'classnames'
 
@@ -13,7 +13,7 @@ import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 
-import { getClient, addTask, updateInvocieId } from '../store'
+import { getClient, addTask, updateInvocieId, addTaskParticipants } from '../store'
 import { addInvoice, addInvoiceItems } from '@src/views/apps/invoice/store/index.js'
 // ** Reactstrap Imports
 import { Row, Col, Card, Label, Button, CardBody, CardText, FormFeedback, Input, CardHeader } from 'reactstrap'
@@ -25,7 +25,8 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { activeOrganizationid, activeOrganization, orgUserId } from '@src/helper/sassHelper'
 import { useDispatch, useSelector } from 'react-redux'
-
+import { calculateTax, parser } from '@src/views/apps/proposal/helper/hepler.js'
+import moment from 'moment'
 const activeOrgId = activeOrganizationid()
 const activeOrg = activeOrganization()
 const userId = orgUserId()
@@ -33,6 +34,7 @@ const userId = orgUserId()
 const AddCard = () => {
   // ** States
   const inputRef = useRef(null)
+  const navigate = useNavigate()
   const [setOpen] = useState(false)
   const [date, setDate] = useState("")
 
@@ -46,12 +48,8 @@ const AddCard = () => {
     organizationId: yup.number().default(activeOrgId),
     taskStatus: yup.number().default(1),
     invoiceId: yup.number().default(0),
-    startDate: yup.string()
-      .nullable()
-      .required('Please Select Start Date'),
-    endDate: yup.string()
-      .nullable()
-      .required('Please Select End Date'),
+    startDate: yup.string().required('Please Select Start Date'),
+    endDate: yup.string().required('Please Select End Date'),
     priority: yup.string().required("Please select a Priority"),
     invoiceFlag: yup.boolean().default(false),
     invoiceItems: yup.array().of(
@@ -60,14 +58,15 @@ const AddCard = () => {
         invoiceId: yup.number(),
         sacCode: yup.string(),
         price: yup.string(),
-        organizationId: yup.number().default(activeOrgId),
+        organizationId: yup.string().default(activeOrgId),
         exemptioReasonId: yup.number(),
         actualPrice: yup.string().required(),
         taxGroupId: yup.number().required("Pleace Select Tax"),
-        subTotalAmount: yup.string().required(1),
-        isTaxApplicable: yup.boolean().default(true)
+        subTotalAmount: yup.string().required('Subtotal Should be Greater than 0'),
+        isTaxApplicable: yup.boolean().default(true),
+        taxes: yup.string()
       })
-    ).when("invoiceFlag", { is: (invoiceFlag) => invoiceFlag, then: yup.string().required("Require Atleast one Item when Proposal For this Task.") })
+    ).when("invoiceFlag", { is: (invoiceFlag) => invoiceFlag === true, then: yup.array().min(1, "Require Atleast one Item when Proposal For this Task.") })
   })
   const store = useSelector(state => state.task)
   const invoicestore = useSelector(state => state.invoice)
@@ -91,47 +90,80 @@ const AddCard = () => {
   const [clientOptions, setClientOptions] = useState([])
   const [serviceOptions, setServiceOptions] = useState([])
   //const [userOptions, setUserOptions] = useState([])
-  const [taskId, setTaskId] = useState([])
   const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
-  const [invoiceFlag, setinvoiceFlag] = useState(true)
+  const [invoiceFlag, setinvoiceFlag] = useState(false)
   const [taxValues, setTaxValues] = useState([])
+  const [taskParticipants, seTaskParticipants] = useState([])
   const [selectedClient, setSelectedClient] = useState({})
   const [invoiceData, setInvoiceData] = useState({})
-  const [invoiceItems, setInvoiceItems] = useState({})
-  const { fields, append, remove } = useFieldArray({ name: 'invoiceItems', keyName: 'rowid', control })
+  const [invoiceTaxes, setInvoiceTaxes] = useState([])
+  const [invoiceItems, setInvoiceItems] = useState([])
+  const [finalTotal, setFinalTotal] = useState(0)
+  const [finalSubTotal, setFinalSubTotal] = useState(0)
+  const [finalTotalTaxAmount, setFinalTotalTaxAmount] = useState(0)
+  const { fields, append, remove, update } = useFieldArray({ name: 'invoiceItems', keyName: 'rowid', control })
 
   useEffect(async () => {
-    if (store.selectedTask !== null) {
-      setTaskId(store.selectedTask.id)
-      await dispatch(addInvoice(invoiceData))
-
-      await d
-    }
-  }, [store.selectedTask])
-
-  useEffect(async () => {
-    if (invoicestore.selectedInvoice !== null) {
-      const invoice_items = []
-      const temp = invoiceItems
-      temp.forEach((obj) => {
-        invoice_items = obj
-        invoice_items['invoiceId'] = invoicestore.selectedInvoice.id
+    if (store.taskId !== null) {
+      const arr = taskParticipants.map((obj) => {
+        return { ...obj, taskId: store.taskId }
       })
-      await dispatch(addInvoiceItems(invoice_items))
-      const invoiceId = invoicestore.selectedInvoice.id
-      await dispatch(updateInvocieId({taskId, invoiceId}))
-    }
-  }, [invoicestore.selectedInvoice])
+      await dispatch(addTaskParticipants({ rows: arr }))
 
+      if (invoiceFlag) {
+        const data = { ...invoiceData, calculateTaxes: JSON.stringify(invoiceTaxes), totalTaxAmount: String(finalTotalTaxAmount), dueAmount: String(finalTotal), totalAmount: String(finalTotal), subTotalAmount: String(finalSubTotal) }
+        await dispatch(addInvoice(data))
+      } else {
+        const id = store.taskId
+        navigate(`/task/view/${id}`)
+      }
+    }
+  }, [store.taskId])
+
+  useEffect(async () => {
+    if (invoiceFlag) {
+      if (invoicestore.invoiceId !== null) {
+        const temp = invoiceItems.map((obj) => {
+          return { ...obj, invoiceId: invoicestore.invoiceId }
+        })
+        await dispatch(addInvoiceItems(temp))
+        const invoiceId = invoicestore.invoiceId
+        const id = store.taskId
+        await dispatch(updateInvocieId({ updatedBy: userId, id, invoiceId }))
+
+        navigate(`/task/view/${id}`)
+      }
+    }
+  }, [invoicestore.invoiceId])
+
+  const formatparticipants = (user, type) => {
+    const obj = {
+      organizationId: activeOrgId,
+      userId: user,
+      type,
+      createdBy: userId
+    }
+    return obj
+  }
 
   const onSubmit = async data => {
-    console.log(data)
-    console.log(invoiceData)
 
     const temp = data.invoiceItems
     setInvoiceItems(predata => ([...predata, ...temp]))
+    const tempParticipants = []
+    data.assignee.forEach((user) => {
+      tempParticipants.push(formatparticipants(user, 2))
+    })
+
+    data.reviewer.forEach((user) => {
+      tempParticipants.push(formatparticipants(user, 2))
+    })
+
+    seTaskParticipants(tempParticipants)
     delete data.invoiceItems
+    delete data.assignee
+    delete data.reviewer
 
     await dispatch(addTask(data))
   }
@@ -184,20 +216,6 @@ const AddCard = () => {
     append({ invoiceId: 0, organizationId: activeOrgId, serviceId: '', sacCode: '', actualPrice: 0, taxGroupId: '', subTotalAmount: 0, taxPrice: 0, description: '', isTaxApplicable: false })
   })
 
-  const removeItem = ((val) => {
-    remove(val)
-  })
-
-  const taxvaluefn = () => {
-    let taxtype = 1
-    if (activeOrg.stateid === selectedClient.placeofsupplyid) {
-      taxtype = 2
-    }
-
-    getTaxValue(taxtype)
-
-  }
-
   useEffect(() => {
     if (Object.keys(selectedClient).length > 0) {
       const Invoicedata = {}
@@ -210,6 +228,12 @@ const AddCard = () => {
       Invoicedata['billingCurrencySymbol'] = selectedClient.currenciessymbol
       Invoicedata['billingCurrencyShortName'] = selectedClient.currenciescode
       Invoicedata['billingCurrencyName'] = selectedClient.currenciesname
+      Invoicedata['bankAccountBankName'] = ''
+      Invoicedata['bankAccountBranchName'] = ''
+      Invoicedata['bankAccountHolderName'] = ''
+      Invoicedata['bankAccountId'] = '1'
+      Invoicedata['bankAccountIfscCode'] = ''
+      Invoicedata['bankAccountNumber'] = ''
       Invoicedata['contactEmail'] = selectedClient.email
       Invoicedata['gstin'] = selectedClient.gstin
       Invoicedata['isRcmApplicable'] = false
@@ -225,15 +249,75 @@ const AddCard = () => {
       Invoicedata['organizationImageUrl'] = ''
       Invoicedata['organizationStateCode'] = activeOrg.stateshortname
       Invoicedata['organizationGstin'] = activeOrg.gstin
+      Invoicedata['createdBy'] = userId
+      Invoicedata['invoiceDate'] = moment().startOf('day').format('x')
+      Invoicedata['organizationId'] = activeOrgId
+      Invoicedata['note'] = ''
+      Invoicedata['paymentStatus'] = 4
+      Invoicedata['paymentDue'] = moment().startOf('day').format('x')
 
       setInvoiceData(Invoicedata)
-      taxvaluefn()
+
+      let taxtype = 1
+      if (activeOrg.stateid === selectedClient.placeofsupplyid) {
+        taxtype = 2
+      }
+
+      getTaxValue(taxtype)
+
     }
 
   }, [selectedClient])
 
+  const calculateInvoiceTax = () => {
+
+    const inputArray = control._formValues.invoiceItems.map(a => parser(a.taxes))
+    let temp = []
+    temp = inputArray.flat()
+    let output = []
+    output = temp.reduce((acc, item) => {
+      if (item !== undefined) {
+        const existItem = acc.find((obj) => {
+          return item.taxName === obj.taxName
+        })
+        if (existItem) {
+          existItem.taxAmount = parseFloat(existItem.taxAmount) + parseFloat(item.taxAmount)
+        } else {
+          acc.push(Object.assign({}, item))
+        }
+      }
+      return acc
+    }, [])
+
+    setInvoiceTaxes(output)
+
+  }
+
+  const ItemFinalTotalAmount = () => {
+
+    const items = control._formValues.invoiceItems
+    let finalTotal = 0
+    let finalsubTotalAmount = 0
+    let finalTaxAmount = 0
+    items.forEach(obj => {
+      finalTotal = parseFloat(obj.subTotalAmount) + parseFloat(finalTotal)
+      finalsubTotalAmount = parseFloat(obj.price) + parseFloat(finalsubTotalAmount)
+      finalTaxAmount = parseFloat(finalTaxAmount) + parseFloat(obj.taxPrice)
+    })
+
+    setFinalTotal(finalTotal)
+    setFinalSubTotal(finalsubTotalAmount)
+    setFinalTotalTaxAmount(finalTaxAmount)
+    calculateInvoiceTax()
+  }
+
+  const removeItem = ((ind) => {
+    remove(ind)
+    ItemFinalTotalAmount()
+  })
+
   const loadItemData = (ind, desFlg = false, priceFlg = false, sacFlg = false, taxFlg = false, itemFlg = false) => {
-    const eachObj = control._formValues.rows[ind]
+    const eachObj = control._formValues.invoiceItems[ind]
     if (eachObj.serviceId === undefined || eachObj.serviceId === '') {
       return false
     }
@@ -284,6 +368,7 @@ const AddCard = () => {
     eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount | 0) + parseFloat(eachObj.price | 0)).toFixed(2))
     eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
     eachObj['taxes'] = JSON.stringify(invoice_item_taxes)
+    eachObj['createdBy'] = userId
 
     update(ind, eachObj)
 
@@ -291,15 +376,21 @@ const AddCard = () => {
 
   }
 
+  const enableInvoice = () => {
+
+    setinvoiceFlag(!invoiceFlag)
+    if (invoiceFlag) {
+      remove()
+    } else {
+      addItem()
+    }
+  }
+
   useEffect(() => {
     getClients()
     getServices()
     getTaxGroups()
     getExemptionReason()
-  }, [])
-
-  useEffect(() => {
-    addItem()
   }, [])
 
   // handle onChange event of the dropdown
@@ -363,7 +454,7 @@ const AddCard = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Card className='invoice-preview-card'>
         {Object.keys(errors).map((obj, k) => {
-          return <FormFeedback key={k}> {errors[k]?.message}</FormFeedback>
+          return <FormFeedback key={k}> {errors[obj]?.message}</FormFeedback>
         })}
         <CardHeader>Add Task</CardHeader>
         {/* Header */}
@@ -529,7 +620,7 @@ const AddCard = () => {
                         value={field.value}
                         onChange={(date, dateStr) => { field.onChange(dateStr) }}
                         options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
-                        className='form-control due-date-picker' />
+                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.startDate })}  />
                     )}
                   />
 
@@ -554,7 +645,7 @@ const AddCard = () => {
                         value={field.value}
                         onChange={(date, dateStr) => { field.onChange(dateStr) }}
                         options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
-                        className='form-control due-date-picker' />
+                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.endDate })} />
                     )}
                   />
 
@@ -601,7 +692,7 @@ const AddCard = () => {
               name={`invoiceFlag`}
               rules={{ required: true }}
               render={({ field }) => (
-                <Input className='form-check-input' type='checkbox' id='invoice_flag' {...field} onChange={() => setinvoiceFlag(!invoiceFlag)} />
+                <Input className='form-check-input' type='checkbox' id='invoice_flag' {...field} onChange={(val) => { field.onChange(val); enableInvoice() }} />
               )}
             />
             <Label className='form-check-label' for='invoice_flag'>
@@ -621,13 +712,13 @@ const AddCard = () => {
                           <CardText className='col-title mb-md-50 mb-0'>Item</CardText>
                           <Controller
                             control={control}
-                            name={`rows[${index}].serviceId`}
+                            name={`invoiceItems[${index}].serviceId`}
                             rules={{ required: true }}
                             render={({ field, ref }) => (
                               <Select
                                 {...field}
                                 inputRef={ref}
-                                className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.serviceId })}
+                                className={classnames('react-select', { 'is-invalid': errors.invoiceItems?.[index]?.serviceId })}
                                 classNamePrefix='select'
                                 options={serviceOptions}
                                 value={serviceOptions.find(c => c.id === field.value)}
@@ -637,45 +728,45 @@ const AddCard = () => {
                               />
                             )}
                           />
-                          {errors.rows?.[index]?.serviceId && <FormFeedback>{errors.rows?.[index]?.serviceId.message}</FormFeedback>}
+                          {errors.invoiceItems?.[index]?.serviceId && <FormFeedback>{errors.invoiceItems?.[index]?.serviceId.message}</FormFeedback>}
                           <Controller
-                            id={`rows_${index}_description`}
-                            name={`rows[${index}].description`}
+                            id={`invoiceItems_${index}_description`}
+                            name={`invoiceItems[${index}].description`}
                             control={control}
-                            render={({ field }) => <Input className='mt-1' invalid={errors.rows?.[index]?.description && true} onInput={(val) => { field.onChange(val); loadItemData(index, true, false, false, false, false) }} {...field} />}
+                            render={({ field }) => <Input className='mt-1' invalid={errors.invoiceItems?.[index]?.description && true} onInput={(val) => { field.onChange(val); loadItemData(index, true, false, false, false, false) }} {...field} />}
                           />
                         </Col>
                         <Col className='my-lg-0 my-2 col-lg-2 col-sm-12'>
                           <CardText className='col-title mb-md-2 mb-0'>SAC Code</CardText>
                           <Controller
-                            id={`rows_${index}_sacCode`}
-                            name={`rows[${index}].sacCode`}
+                            id={`invoiceItems_${index}_sacCode`}
+                            name={`invoiceItems[${index}].sacCode`}
                             control={control}
-                            render={({ field }) => <Input type='text' invalid={errors.rows?.[index]?.sacCode && true} onInput={(val) => { field.onChange(val); loadItemData(index, false, true, true, false, false) }} {...field} />}
+                            render={({ field }) => <Input type='text' invalid={errors.invoiceItems?.[index]?.sacCode && true} onInput={(val) => { field.onChange(val); loadItemData(index, false, true, true, false, false) }} {...field} />}
                           />
-                          {errors.rows?.[index]?.sacCode && <FormFeedback>{errors.rows?.[index]?.sacCode.message}</FormFeedback>}
+                          {errors.invoiceItems?.[index]?.sacCode && <FormFeedback>{errors.invoiceItems?.[index]?.sacCode.message}</FormFeedback>}
                         </Col>
                         <Col className='my-lg-0 my-2' lg='2' sm='12'>
                           <CardText className='col-title mb-md-2 mb-0'>Price</CardText>
                           <Controller
-                            id={`rows_${index}_price`}
-                            name={`rows[${index}].price`}
+                            id={`invoiceItems_${index}_price`}
+                            name={`invoiceItems[${index}].price`}
                             control={control}
-                            render={({ field }) => <Input type='number' id={`input_rows_${index}_price`} onInput={(val) => { field.onChange(val); console.log(val); loadItemData(index, false, true, false, false, false) }} {...field} invalid={errors.rows?.[index]?.price && true} />}
+                            render={({ field }) => <Input type='number' id={`input_invoiceItems_${index}_price`} onInput={(val) => { field.onChange(val); console.log(val); loadItemData(index, false, true, false, false, false) }} {...field} invalid={errors.invoiceItems?.[index]?.price && true} />}
                           />
-                          {errors.rows?.[index]?.price && <FormFeedback>{errors.rows?.[index]?.price.message}</FormFeedback>}
+                          {errors.invoiceItems?.[index]?.price && <FormFeedback>{errors.invoiceItems?.[index]?.price.message}</FormFeedback>}
                         </Col>
                         <Col className='my-lg-0 mt-2' lg='2' sm='12'>
                           <CardText className='col-title mb-md-50 mb-0'>Tax Rate</CardText>
                           <Controller
                             control={control}
-                            name={`rows[${index}].taxGroupId`}
+                            name={`invoiceItems[${index}].taxGroupId`}
                             rules={{ required: true }}
                             render={({ field, ref }) => (
                               <Select
                                 {...field}
                                 inputRef={ref}
-                                className={classnames('react-select', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
+                                className={classnames('react-select', { 'is-invalid': errors.invoiceItems?.[index]?.taxGroupId })}
                                 classNamePrefix='select'
                                 options={taxGroupOptions}
                                 value={taxGroupOptions.find(c => c.id === field.value)}
@@ -685,17 +776,17 @@ const AddCard = () => {
                               />
                             )}
                           />
-                          {errors.rows?.[index]?.taxGroupId && <FormFeedback>{errors.rows?.[index]?.taxGroupId.message}</FormFeedback>}
+                          {errors.invoiceItems?.[index]?.taxGroupId && <FormFeedback>{errors.invoiceItems?.[index]?.taxGroupId.message}</FormFeedback>}
                           {
                             !item.isTaxApplicable && <Controller
                               control={control}
-                              name={`rows[${index}].exemptionReasonId`}
+                              name={`invoiceItems[${index}].exemptionReasonId`}
                               rules={{ required: true }}
                               render={({ field, ref }) => (
                                 <Select
                                   {...field}
                                   inputRef={ref}
-                                  className={classnames('react-select mt-1', { 'is-invalid': errors.rows?.[index]?.taxGroupId })}
+                                  className={classnames('react-select mt-1', { 'is-invalid': errors.invoiceItems?.[index]?.taxGroupId })}
                                   classNamePrefix='select'
                                   options={exemptionReasonOptions}
                                   value={exemptionReasonOptions.find(c => c.id === field.value)}

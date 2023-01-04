@@ -1,14 +1,13 @@
 // ** React Imports
 import { useState, Fragment } from 'react'
-
+import { Link } from 'react-router-dom'
 // ** Reactstrap Imports
-import { Row, Col, Card, Form, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover } from 'reactstrap'
+import { Row, Col, Card, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover } from 'reactstrap'
 
 // ** Third Party Components
 import Swal from 'sweetalert2'
-import Select from 'react-select'
-import { Check, Briefcase, X, Clock } from 'react-feather'
-import { useForm, Controller } from 'react-hook-form'
+import { Clock } from 'react-feather'
+import { useForm } from 'react-hook-form'
 import withReactContent from 'sweetalert2-react-content'
 
 // ** Custom Components
@@ -16,14 +15,7 @@ import Avatar from '@components/avatar'
 
 // ** Styles
 import '@styles/react/libs/react-select/_react-select.scss'
-
-const roleColors = {
-  editor: 'light-info',
-  admin: 'light-danger',
-  author: 'light-warning',
-  maintainer: 'light-success',
-  subscriber: 'light-primary'
-}
+import moment from 'moment'
 
 const statusColors = {
   active: 'light-success',
@@ -33,41 +25,30 @@ const statusColors = {
 
 const MySwal = withReactContent(Swal)
 
-const UserInfoCard = ({ selectedUser }) => {
+const UserInfoCard = ({ selectedTask }) => {
   // ** State
   const [setShow] = useState(false)
 
   // ** Hook
   const {
-    formState: {  }
+    formState: { }
   } = useForm({
     defaultValues: {
-      username: selectedUser.username,
-      lastName: selectedUser.fullName.split(' ')[1],
-      firstName: selectedUser.fullName.split(' ')[0]
+      username: selectedTask.servicename
     }
   })
 
   // ** render user img
   const renderUserImg = () => {
-    if (selectedUser !== null && selectedUser.avatar.length) {
-      return (
-        <img
-          height='110'
-          width='110'
-          alt='user-avatar'
-          src={selectedUser.avatar}
-          className='img-fluid rounded mt-3 mb-2'
-        />
-      )
-    } else {
+    if (selectedTask !== null) {
+
       return (
 
         <Avatar
           initials
-          color={selectedUser.avatarColor || 'light-primary'}
+          color={'light-primary'}
           className='rounded mt-3 mb-2'
-          content={selectedUser.fullName}
+          content={selectedTask.servicename.charAt(0) || 'T'}
           contentStyles={{
             borderRadius: 0,
             fontSize: 'calc(48px)',
@@ -83,49 +64,17 @@ const UserInfoCard = ({ selectedUser }) => {
     }
   }
   const [popoverOpen, setPopoverOpen] = useState(false)
-
-  const handleSuspendedClick = () => {
-    return MySwal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert user!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Suspend user!',
-      customClass: {
-        confirmButton: 'btn btn-primary',
-        cancelButton: 'btn btn-outline-danger ms-1'
-      },
-      buttonsStyling: false
-    }).then(function (result) {
-      if (result.value) {
-        MySwal.fire({
-          icon: 'success',
-          title: 'Suspended!',
-          text: 'User has been suspended.',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      } else if (result.dismiss === MySwal.DismissReason.cancel) {
-        MySwal.fire({
-          title: 'Cancelled',
-          text: 'Cancelled Suspension :)',
-          icon: 'error',
-          customClass: {
-            confirmButton: 'btn btn-success'
-          }
-        })
-      }
-    })
+  const dateFormat = (value) => {
+    return moment.unix(value).format("MMM DD, YYYY")
   }
 
   return (
     <Fragment>
       <Card>
         <CardBody>
-          <div className='d-lg-flex'>
+          <div className='d-flex'>
             <div>
-              <Badge color={roleColors[selectedUser.role]} className='text-capitalize'>
+              <Badge color='success' className='text-capitalize'>
                 Sent to Review
               </Badge>
             </div>
@@ -153,50 +102,47 @@ const UserInfoCard = ({ selectedUser }) => {
               {renderUserImg()}
               <div className='d-flex flex-column align-items-center text-center'>
                 <div className='user-info'>
-                  <h4>{selectedUser !== null ? selectedUser.fullName : 'Eleanor Aguilar'}</h4>
-                  {selectedUser !== null ? (
-                    <Badge color={roleColors[selectedUser.role]} className='text-capitalize'>
-                      Trueminds pvt ltd.
-                    </Badge>
+                  <h4>{selectedTask !== null ? selectedTask.servicename : 'Eleanor Aguilar'}</h4>
+                  {selectedTask !== null ? (
+
+                    <span>{selectedTask.clientname}</span>
+
                   ) : null}
                 </div>
               </div>
             </div>
           </div>
-          <div className='border-bottom mb-1 pb-50 align-items-center d-lg-flex'>
+          <div className='border-bottom mb-1 mt-1 pb-50 align-items-center d-flex'>
             <span className='fw-bolder pb-50'>Details</span>
             <Button className='ms-auto' color='success' size='sm'>
               <Clock size={16} className='me-25'></Clock>Start Timer</Button>
           </div>
           <div className='info-container'>
-            {selectedUser !== null ? (
+            {selectedTask !== null ? (
               <ul className='list-unstyled'>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Task ID:</span>
-                  <span>{selectedUser.username}</span>
+                  <span>{selectedTask.uniqueidentity}</span>
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Service Name:</span>
-                  <span>{selectedUser.email}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Category:</span>
-                  <span>Category</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Priority:</span>
-                  <Badge className='text-capitalize' color={statusColors[selectedUser.status]}>
-                    Medium
-                  </Badge>
+                  <span>{selectedTask.servicename}</span>
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Start Date:</span>
-                  <span>Tax-{selectedUser.contact.substr(selectedUser.contact.length - 4)}</span>
+                  <span>{dateFormat(selectedTask.startdate)}</span>
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>End Date:</span>
-                  <span>{selectedUser.contact}</span>
+                  <span>{dateFormat(selectedTask.enddate)}</span>
                 </li>
+                <li className='mb-75'>
+                  <span className='fw-bolder me-25'>Priority:</span>
+                  <Badge className='text-capitalize' color={statusColors[selectedTask.status]}>
+                    Medium
+                  </Badge>
+                </li>
+
               </ul>
             ) : null}
           </div>
@@ -204,11 +150,11 @@ const UserInfoCard = ({ selectedUser }) => {
             <Button color='primary' onClick={() => setShow(true)}>
               Edit
             </Button>
-            <Button className='ms-1' color='danger' outline onClick={handleSuspendedClick}>
+            <Button className='ms-1' color='danger' outline tag={Link} to={`/task/list`}>
               Cancel
             </Button>
           </div>
-        </CardBody> 
+        </CardBody>
       </Card>
     </Fragment>
   )

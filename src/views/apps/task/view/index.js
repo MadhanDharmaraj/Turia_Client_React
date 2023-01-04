@@ -18,7 +18,7 @@ import '@styles/react/apps/app-users.scss'
 
 const TaskView = () => {
   // ** Store Vars
-  const store = useSelector(state => state.users)
+  const store = useSelector(state => state.task)
   const dispatch = useDispatch()
 
   // ** Hooks
@@ -37,11 +37,11 @@ const TaskView = () => {
     }
   }
 
-  return store.selectedUser !== null && store.selectedUser !== undefined ? (
+  return store.selectedTask !== null && store.selectedTask !== undefined ? (
     <div className='app-user-view'>
       <Row>
         <Col xl='4' lg='5' xs={{ order: 1 }} md={{ order: 0, size: 5 }}>
-          <UserInfoCard selectedUser={store.selectedUser} />
+          <UserInfoCard selectedTask={store.selectedTask} />
         </Col>
         <Col xl='8' lg='7' xs={{ order: 0 }} md={{ order: 1, size: 7 }}>
           <UserTabs active={active} toggleTab={toggleTab} />
@@ -50,9 +50,9 @@ const TaskView = () => {
     </div>
   ) : (
     <Alert color='danger'>
-      <h4 className='alert-heading'>User not found</h4>
+      <h4 className='alert-heading'>Task not found</h4>
       <div className='alert-body'>
-        User with id: {id} doesn't exist. Check list of all Users: <Link to='/apps/user/list'>Users List</Link>
+        Task with id: {id} doesn't exist. Check list of all Tasks: <Link to='/task/list'>Tasks List</Link>
       </div>
     </Alert>
   )

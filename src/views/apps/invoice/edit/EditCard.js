@@ -366,7 +366,7 @@ const AddCard = (data) => {
     eachObj['subTotalAmount'] = String(parseFloat(parseFloat(calculateTaxAmount) + parseFloat(eachObj.price)).toFixed(2))
     eachObj['taxPrice'] = parseFloat(calculateTaxAmount).toFixed(2)
     eachObj['taxes'] = JSON.stringify(invoice_item_taxes)
-
+    eachObj['updatedBy'] = userId
     update(ind, eachObj)
 
     ItemFinalTotalAmount()

@@ -2,65 +2,87 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
-import axios from 'axios'
+import axios from '@src/configs/axios/axiosConfig'
 
-export const getAllData = createAsyncThunk('appUsers/getAllData', async () => {
-  const response = await axios.get('/api/task/list/all-data')
-  return response.data
-})
-
-export const getData = createAsyncThunk('appUsers/getData', async params => {
-  const response = await axios.get('/api/task/list/data', params)
+export const getData = createAsyncThunk('appTasks/getData', async params => {
+  const response = await axios.post('/tasks/list', params)
   return {
     params,
-    data: response.data.users,
-    totalPages: response.data.total
+    data: response.data.tasks.tasks,
+    totalPages: response.data.tasks.total
   }
 })
 
-export const getTask = createAsyncThunk('appUsers/getUser', async id => {
-  const response = await axios.get('/api/task', { id })
-  return response.data.user
+export const getClient = createAsyncThunk('appTasks/getClient', async id => {
+  const response = await axios.post('/clients/get', { id })
+  return response.data.clients
 })
 
-export const addUser = createAsyncThunk('appUsers/addUser', async (user, { dispatch, getState }) => {
-  await axios.post('/apps/users/add-user', user)
-  await dispatch(getData(getState().users.params))
-  await dispatch(getAllData())
-  return user
+export const getTask = createAsyncThunk('appTasks/getTask', async id => {
+  const response = await axios.post('/tasks/get', { id })
+  return response.data.task
 })
 
-export const deleteUser = createAsyncThunk('appUsers/deleteUser', async (id, { dispatch, getState }) => {
-  await axios.delete('/apps/users/delete', { id })
-  await dispatch(getData(getState().users.params))
-  await dispatch(getAllData())
+export const addTask = createAsyncThunk('appTasks/addTask', async (task, { }) => {
+  const response = await axios.post('/tasks/create', task)
+  return response.data.task
+})
+
+export const addTaskParticipants = createAsyncThunk('appTasks/addTaskParticipants', async (taskparticpants, { }) => {
+  await axios.post('/taskparticpants/create', taskparticpants)
+  return []
+})
+
+export const addTaskWorkflow = createAsyncThunk('appTasks/addTaskWorkflow', async (taskworkflows, { }) => {
+  await axios.post('/taskworkflows/create', taskworkflows)
+  return []
+})
+
+export const updateInvocieId = createAsyncThunk('appTasks/updateInvocieId', async (data, { }) => {
+  await axios.post('/tasks/updateinvocieid', data)
+  return response.data.task
+})
+
+export const updateTask = createAsyncThunk('appTasks/updateTask', async (task, { }) => {
+  const response = await axios.post('/tasks/create', task)
+  return response.data.task
+})
+
+export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
+  await axios.post('/tasks/delete', { id })
+  await dispatch(getData(getState().tasks.params))
   return id
 })
 
-export const appUsersSlice = createSlice({
-  name: 'appUsers',
+export const appTasksSlice = createSlice({
+  name: 'appTasks',
   initialState: {
     data: [],
     total: 1,
     params: {},
     allData: [],
-    selectedUser: null
+    selectedTask: null,
+    taskId: null,
+    editflag : true
   },
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(getAllData.fulfilled, (state, action) => {
-        state.allData = action.payload
-      })
       .addCase(getData.fulfilled, (state, action) => {
         state.data = action.payload.data
         state.params = action.payload.params
         state.total = action.payload.totalPages
       })
-      .addCase(getUser.fulfilled, (state, action) => {
-        state.selectedUser = action.payload
+      .addCase(getTask.fulfilled, (state, action) => {
+        state.selectedTask = action.payload
+      })
+      .addCase(addTask.fulfilled, (state, action) => {
+        state.taskId = action.payload
+      })
+      .addCase(updateTask.fulfilled, (state, action) => {
+        state.taskId = action.payload
       })
   }
 })
 
-export default appUsersSlice.reducer
+export default appTasksSlice.reducer

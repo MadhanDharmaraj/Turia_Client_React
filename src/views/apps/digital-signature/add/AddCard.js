@@ -108,6 +108,7 @@ const AddCard = () => {
       const data = {}
 
       data['name'] = obj.name
+      data['createdBy'] = userId
       data['email'] = obj.email
       data['organizationId'] = activeOrgId
       data['clientId'] = clientId

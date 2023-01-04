@@ -2,13 +2,11 @@
 import { Fragment, useState, useEffect, forwardRef } from 'react'
 import { Link } from 'react-router-dom'
 // ** Invoice List Sidebar
-import Sidebar from './Sidebar'
-
 // ** Table Columns
 import { columns } from './columns'
 
 // ** Store & Actions
-import { getAllData, getData } from '../store'
+import { getData } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 
 // ** Third Party Components
@@ -164,10 +162,10 @@ const CustomHeader = ({ store, handlePerPage, rowsPerPage, handleFilter, searchT
   )
 }
 
-const UsersList = () => {
+const TaskList = () => {
   // ** Store Vars
   const dispatch = useDispatch()
-  const store = useSelector(state => state.users)
+  const store = useSelector(state => state.task)
 
   // ** States
   const [sort, setSort] = useState('desc')
@@ -178,11 +176,17 @@ const UsersList = () => {
   //const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentRole, setCurrentRole] = useState({ value: '', label: 'Select Role' })
   const [currentPlan, setCurrentPlan] = useState({ value: '', label: 'Select Plan' })
-  const [currentStatus, setCurrentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
+  const [currentStatus, setCurrentStatus] = useState({ value: '1', label: 'To Do', number: 0 })
+
+  // ** Bootstrap Checkbox Component
+  const BootstrapCheckbox = forwardRef((props, ref) => (
+    <div className='form-check'>
+      <Input type='checkbox' ref={ref} {...props} />
+    </div>
+  ))
 
   // ** Get data on mount
   useEffect(() => {
-    dispatch(getAllData())
     dispatch(
       getData({
         sort,
@@ -198,13 +202,14 @@ const UsersList = () => {
   }, [dispatch, store.data.length, sort, sortColumn, currentPage])
 
   // ** User filter options
-  const roleOptions = [
-    { value: '', label: 'Select Role' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'author', label: 'Author' },
-    { value: 'editor', label: 'Editor' },
-    { value: 'maintainer', label: 'Maintainer' },
-    { value: 'subscriber', label: 'Subscriber' }
+  const statusOptions = [
+    { value: '1', label: 'To Do' },
+    { value: '2', label: 'In Progress' },
+    { value: '3', label: 'Completed' },
+    { value: '4', label: 'On Hold' },
+    { value: '5', label: 'Cancelled' },
+    { value: '6', label: 'Sent to Review' },
+    { value: '7', label: 'Request Changes' }
   ]
 
   const planOptions = [
@@ -215,19 +220,6 @@ const UsersList = () => {
     { value: 'team', label: 'Team' }
   ]
 
-  const statusOptions = [
-    { value: '', label: 'Select Status', number: 0 },
-    { value: 'pending', label: 'Pending', number: 1 },
-    { value: 'active', label: 'Active', number: 2 },
-    { value: 'inactive', label: 'Inactive', number: 3 }
-  ]
-
-  // ** Bootstrap Checkbox Component
-  const BootstrapCheckbox = forwardRef((props, ref) => (
-    <div className='form-check'>
-      <Input type='checkbox' ref={ref} {...props} />
-    </div>
-  ))
 
   // ** Function in get data on page change
   const handlePagination = page => {
@@ -321,9 +313,7 @@ const UsersList = () => {
       return store.data
     } else if (store.data.length === 0 && isFiltered) {
       return []
-    } else {
-      return store.allData.slice(0, rowsPerPage)
-    }
+    } 
   }
 
   const handleSort = (column, sortDirection) => {
@@ -353,7 +343,7 @@ const UsersList = () => {
               <Select
                 isClearable={false}
                 value={currentRole}
-                options={roleOptions}
+                options={planOptions}
                 className='react-select'
                 classNamePrefix='select'
                 theme={selectThemeColors}
@@ -405,7 +395,7 @@ const UsersList = () => {
               <Select
                 isClearable={false}
                 value={currentRole}
-                options={roleOptions}
+                options={planOptions}
                 className='react-select'
                 classNamePrefix='select'
                 theme={selectThemeColors}
@@ -491,4 +481,4 @@ const UsersList = () => {
   )
 }
 
-export default UsersList
+export default TaskList

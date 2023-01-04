@@ -5,11 +5,11 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@src/configs/axios/axiosConfig'
 
 export const getData = createAsyncThunk('appTasks/getData', async params => {
-  const response = await axios.get('/tasks/list', params)
+  const response = await axios.post('/tasks/list', params)
   return {
     params,
-    data: response.data.tasks,
-    totalPages: response.data.total
+    data: response.data.tasks.tasks,
+    totalPages: response.data.tasks.total
   }
 })
 
@@ -19,22 +19,37 @@ export const getClient = createAsyncThunk('appTasks/getClient', async id => {
 })
 
 export const getTask = createAsyncThunk('appTasks/getTask', async id => {
-  const response = await axios.get('/tasks/get', { id })
+  const response = await axios.post('/tasks/get', { id })
   return response.data.task
 })
 
-export const addTask = createAsyncThunk('appTasks/addTask', async (task, {  }) => {
-  await axios.post('/tasks/create', task)      
+export const addTask = createAsyncThunk('appTasks/addTask', async (task, { }) => {
+  const response = await axios.post('/tasks/create', task)
   return response.data.task
 })
 
-export const updateInvocieId = createAsyncThunk('appTasks/updateInvocieId', async (data, {  }) => {
+export const addTaskParticipants = createAsyncThunk('appTasks/addTaskParticipants', async (taskparticpants, { }) => {
+  await axios.post('/taskparticpants/create', taskparticpants)
+  return []
+})
+
+export const addTaskWorkflow = createAsyncThunk('appTasks/addTaskWorkflow', async (taskworkflows, { }) => {
+  await axios.post('/taskworkflows/create', taskworkflows)
+  return []
+})
+
+export const updateInvocieId = createAsyncThunk('appTasks/updateInvocieId', async (data, { }) => {
   await axios.post('/tasks/updateinvocieid', data)
   return response.data.task
 })
 
+export const updateTask = createAsyncThunk('appTasks/updateTask', async (task, { }) => {
+  const response = await axios.post('/tasks/create', task)
+  return response.data.task
+})
+
 export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
-  await axios.delete('/tasks/delete', { id })
+  await axios.post('/tasks/delete', { id })
   await dispatch(getData(getState().tasks.params))
   return id
 })
@@ -46,7 +61,9 @@ export const appTasksSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    selectedTask: null
+    selectedTask: null,
+    taskId: null,
+    editflag : true
   },
   reducers: {},
   extraReducers: builder => {
@@ -60,7 +77,10 @@ export const appTasksSlice = createSlice({
         state.selectedTask = action.payload
       })
       .addCase(addTask.fulfilled, (state, action) => {
-        state.selectedTask = action.payload
+        state.taskId = action.payload
+      })
+      .addCase(updateTask.fulfilled, (state, action) => {
+        state.taskId = action.payload
       })
   }
 })
