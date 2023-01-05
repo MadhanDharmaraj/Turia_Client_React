@@ -50,6 +50,7 @@ const AddCard = () => {
     invoiceId: yup.number().default(0),
     startDate: yup.string().required('Please Select Start Date'),
     endDate: yup.string().required('Please Select End Date'),
+    recurringFlag : yup.boolean().default(false),
     priority: yup.string().required("Please select a Priority"),
     invoiceFlag: yup.boolean().default(false),
     invoiceItems: yup.array().of(

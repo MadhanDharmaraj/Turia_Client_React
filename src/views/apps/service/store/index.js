@@ -3,6 +3,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
+import { orgUserId } from '@src/helper/sassHelper'
+const userId = orgUserId()
 
 export const getData = createAsyncThunk('appServices/getData', async params => {
   const response = await axios.post('/services/list', params)
@@ -29,7 +31,7 @@ export const updateService = createAsyncThunk('appServices/updateService', async
 })
 
 export const deleteService = createAsyncThunk('appServices/deleteService', async (id, { dispatch, getState }) => {
-  await axios.post('/services/delete', { id })
+  await axios.post('/services/delete', { id, updatedBy: userId })
   await dispatch(getData(getState().users.params))
   return id
 })
@@ -47,12 +49,12 @@ export const addWokflow = createAsyncThunk('appServices/addWokflow', async (rows
 })
 
 export const listWokflow = createAsyncThunk('appServices/listWokflow', async ({ id }, { }) => {
-  const response = await axios.post('/workflows/list', { serviceId : id })
+  const response = await axios.post('/workflows/list', { serviceId: id })
   return response.data.workflows
 })
 
 export const deleteWokflow = createAsyncThunk('appServices/deleteWokflow', async ({ id }, { }) => {
-  const response = await axios.post('/workflows/delete', { id })
+  const response = await axios.post('/workflows/delete', { id, updatedBy: userId })
   return response.data.workflows
 })
 

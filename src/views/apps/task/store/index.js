@@ -3,6 +3,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
+import { orgUserId } from '@src/helper/sassHelper'
+const userId = orgUserId()
 
 export const getData = createAsyncThunk('appTasks/getData', async params => {
   const response = await axios.post('/tasks/list', params)
@@ -48,8 +50,19 @@ export const updateTask = createAsyncThunk('appTasks/updateTask', async (task, {
   return response.data.task
 })
 
+export const updateStatus = createAsyncThunk('appTasks/updateStatus', async (data, { dispatch }) => {
+  await axios.post('/tasks/updatestatus', data)
+  await dispatch(getTask(data.id))
+  return ''
+})
+
+export const addTaskConversation = createAsyncThunk('appTasks/addTaskConversation', async (data, { }) => {
+  await axios.post('/taskconversations/create', data)
+  return ''
+})
+
 export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
-  await axios.post('/tasks/delete', { id })
+  await axios.post('/tasks/delete', { id, updatedBy :userId })
   await dispatch(getData(getState().tasks.params))
   return id
 })
@@ -63,7 +76,7 @@ export const appTasksSlice = createSlice({
     allData: [],
     selectedTask: null,
     taskId: null,
-    editflag : true
+    editflag: true
   },
   reducers: {},
   extraReducers: builder => {
@@ -77,10 +90,10 @@ export const appTasksSlice = createSlice({
         state.selectedTask = action.payload
       })
       .addCase(addTask.fulfilled, (state, action) => {
-        state.taskId = action.payload
+        state.taskId = action.payload.id
       })
       .addCase(updateTask.fulfilled, (state, action) => {
-        state.taskId = action.payload
+        state.taskId = action.payload.id
       })
   }
 })

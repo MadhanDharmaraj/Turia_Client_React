@@ -3,7 +3,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
-
+import { orgUserId } from '@src/helper/sassHelper'
+const userId = orgUserId()
 
 export const getData = createAsyncThunk('appDepartment/getData', async params => {
   const response = await axios.post(`/departments/list`, params)
@@ -28,7 +29,7 @@ export const updateDepartment = createAsyncThunk('appDepartment/updateDepartment
 })
 
 export const deleteDepartment = createAsyncThunk('appDepartment/updateDepartment', async (id, { dispatch, getState }) => {
-  await axios.post('/departments/delete', { id })
+  await axios.post('/departments/delete', { id, updatedBy : userId })
   await dispatch(getData(getState().invoiceaccount.params))
   return id
 })

@@ -85,7 +85,7 @@ const EditCard = () => {
       await dispatch(addTaskParticipants({ rows: arr }))
 
       const id = store.taskId
-      navigate(`/task/view/${id}`)
+      navigate(`/recurring-task/view/${id}`)
 
     }
   }, [store.taskId])
@@ -477,7 +477,7 @@ const EditCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button className='add-new-user' outline color='warning' tag={Link} to='/task/list'>
+            <Button className='add-new-user' outline color='warning' tag={Link} to='/recurring-task/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

@@ -1,33 +1,57 @@
 // ** React Imports
 import { useState, Fragment } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 // ** Reactstrap Imports
-import { Row, Col, Card, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover } from 'reactstrap'
+import { Row, Col, Card, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover, Input, Label } from 'reactstrap'
 
 // ** Third Party Components
 import Swal from 'sweetalert2'
-import { Clock } from 'react-feather'
+import { Clock, X } from 'react-feather'
 import { useForm } from 'react-hook-form'
 import withReactContent from 'sweetalert2-react-content'
 
 // ** Custom Components
 import Avatar from '@components/avatar'
-
+import { updateStatus, addTaskConversation } from '../store/index'
 // ** Styles
+import { useDispatch } from 'react-redux'
 import '@styles/react/libs/react-select/_react-select.scss'
 import moment from 'moment'
+import { orgUserId, activeOrganizationid } from '@src/helper/sassHelper'
+const userId = orgUserId()
+const activeOrgId = activeOrganizationid()
+const statusColors = [
+  'light-success',
+  'light-warning',
+  'light-secondary'
+]
 
-const statusColors = {
-  active: 'light-success',
-  pending: 'light-warning',
-  inactive: 'light-secondary'
-}
+const statusArr = ["", "To Do", "In Progress", "Completed", "On Hold", "Cancelled", "Sent To Review", "Request Changes"]
+
+const priorityColors = [
+  '',
+  'light-success',
+  'light-warning',
+  'light-danger'
+]
+
+const priorityArr = [
+  '',
+  'Low',
+  'Medium',
+  'High'
+]
+
 
 const MySwal = withReactContent(Swal)
 
 const UserInfoCard = ({ selectedTask }) => {
   // ** State
+  const { id } = useParams()
+  const dispatch = useDispatch()
   const [setShow] = useState(false)
+  const [reviewText, setReviewText] = useState('')
+  const [reviewOption, setReviewOption] = useState('')
 
   // ** Hook
   const {
@@ -68,29 +92,92 @@ const UserInfoCard = ({ selectedTask }) => {
     return moment.unix(value).format("MMM DD, YYYY")
   }
 
+  const taskStatusUpdate = async (sts) => {
+    const data = {
+      status: sts || reviewOption,
+      updatedBy: userId,
+      id
+    }
+    await dispatch(updateStatus(data))
+
+    if (reviewText !== '') {
+      const conversation = {
+        taskId: id,
+        organizationId: activeOrgId,
+        attachmentIds: [],
+        comment: reviewText,
+        createdBy: userId
+      }
+      await dispatch(addTaskConversation(conversation))
+    }
+    setPopoverOpen(false)
+  }
+
   return (
     <Fragment>
       <Card>
         <CardBody>
           <div className='d-flex'>
             <div>
-              <Badge color='success' className='text-capitalize'>
-                Sent to Review
+              <Badge color={statusColors[selectedTask.taskstatus]} className='text-capitalize'>
+                {statusArr[selectedTask.taskstatus]}
               </Badge>
             </div>
             <div className='ms-auto'>
               <Fragment >
-                <Button color='primary' outline id='controlledPopover' size='sm'>
-                  Review Task
-                </Button>
+                {selectedTask.taskstatus !== '3' &&
+                  <Button color='primary' outline id='controlledPopover' size='sm' disabled={selectedTask.taskstatus === '3'}>
+                    Review Task
+                  </Button>
+                }
+                {selectedTask.taskstatus === '3' &&
+                  <Button color='primary' outline id='controlledPopover' size='sm' className='ms-1' >
+                    Re Open
+                  </Button>
+                }
+
                 <Popover placement='bottom'
                   target='controlledPopover'
                   isOpen={popoverOpen}
-                  toggle={() => setPopoverOpen(!popoverOpen)}>
-                  <PopoverHeader>Review Task</PopoverHeader>
-                  <PopoverBody>
-                    Macaroon chocolate candy. I love carrot cake gingerbread cake lemon
-                    drops. Muffin sugar plum marzipan pie.
+                  toggle={() => setPopoverOpen(!popoverOpen)}
+                  style={{ width: '500px', background: '#ffffff' }}>
+                  <PopoverHeader>
+                    <div className='d-flex justify-content-between'>
+                      Review Task
+                      <X onClick={() => setPopoverOpen(false)} className='cursor-pointer' />
+                    </div>
+                  </PopoverHeader>
+
+                  <PopoverBody >
+                    <Row className='px-1'>
+                      <Input type='textarea' rows={6} cols={50} onInput={(e) => setReviewText(e.target.value)} />
+                    </Row>
+                    {(selectedTask.taskstatus === '1' || selectedTask.taskstatus === '2' || selectedTask.taskstatus === '7') &&
+                      <Button color='primary' size='sm' className='mt-1' onClick={() => { taskStatusUpdate(6) }}> Send To Review</Button>
+                    }
+                    {(selectedTask.taskstatus === '3' || selectedTask.taskstatus === '4' || selectedTask.taskstatus === '5') &&
+                      <Button color='primary' size='sm' className='mt-1' onClick={() => { taskStatusUpdate(2) }}> Re Open</Button>
+                    }
+                    {
+                      selectedTask.taskstatus === '6' &&
+                      <div>
+                        <Row className='my-1'>
+                          <Col>
+                            <Input type='radio' id="status_1" value={3} name="status" onChange={() => { setReviewOption(3) }} />
+                            <Label for="status_1" className='ms-1'>Approved</Label>
+                          </Col>
+                          <Label>Submit feedback and Mark as Complete.</Label>
+                        </Row>
+                        <Row className='mb-1'>
+                          <Col>
+                            <Input id="status_2" type='radio' value={7} name="status" onChange={() => { setReviewOption(7) }} />
+                            <Label for="status_2" className='ms-1'>Request Changes</Label>
+                          </Col>
+                          <Label>Submit feedback that must be addressed before Approval.</Label>
+                        </Row>
+                        <Button color='primary' size='sm' onClick={() => { taskStatusUpdate() }}> Submit Review</Button>
+                      </div>
+                    }
                   </PopoverBody>
                 </Popover>
               </Fragment>
@@ -138,8 +225,8 @@ const UserInfoCard = ({ selectedTask }) => {
                 </li>
                 <li className='mb-75'>
                   <span className='fw-bolder me-25'>Priority:</span>
-                  <Badge className='text-capitalize' color={statusColors[selectedTask.status]}>
-                    Medium
+                  <Badge className='text-capitalize' color={priorityColors[selectedTask.priority]}>
+                    {priorityArr[selectedTask.priority]}
                   </Badge>
                 </li>
 

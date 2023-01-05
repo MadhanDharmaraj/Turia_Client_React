@@ -41,6 +41,7 @@ const AddCard = () => {
     designationId: yup.string().required("Please Select Designation"),
     roleId: yup.string().required("Please Select Role"),
     invitedAt: yup.string().default(moment().unix()),
+    recurringFlag: yup.boolean().default(true),
     expiryDate: yup.string().default(moment().add(5, 'days').unix()),
     departmentId: yup.string().required("Please Select Department"),
     isRegistered: yup.boolean().default(false),

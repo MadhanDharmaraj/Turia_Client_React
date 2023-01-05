@@ -150,7 +150,7 @@ const UserInfoCard = ({ selectedTask }) => {
             <Button color='primary' onClick={() => setShow(true)}>
               Edit
             </Button>
-            <Button className='ms-1' color='danger' outline tag={Link} to={`/task/list`}>
+            <Button className='ms-1' color='danger' outline tag={Link} to={`/recurring-task/list`}>
               Cancel
             </Button>
           </div>

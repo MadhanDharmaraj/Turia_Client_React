@@ -36,7 +36,6 @@ const AddCard = () => {
   const inputRef = useRef(null)
   const navigate = useNavigate()
   const [setOpen] = useState(false)
-  const [date, setDate] = useState("")
 
   const schema = yup.object().shape({
     createdBy: yup.string().default(userId),
@@ -52,6 +51,7 @@ const AddCard = () => {
     endDate: yup.string().required('Please Select End Date'),
     priority: yup.string().required("Please select a Priority"),
     invoiceFlag: yup.boolean().default(false),
+    recurringFlag: yup.boolean().default(true),
     invoiceItems: yup.array().of(
       yup.object().shape({
         serviceId: yup.number().required("Please Select Service Item"),
@@ -80,6 +80,11 @@ const AddCard = () => {
     { id: 1, name: "Low" },
     { id: 2, name: "Medium" },
     { id: 3, name: "High" }
+  ]
+
+  const durationOptions = [
+    { id: 1, name: "Monthly" },
+    { id: 2, name: "Yearly" }
   ]
 
   const [assigneeUserOptions, setAssigneeUserOptions] = useState([{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }])
@@ -116,7 +121,7 @@ const AddCard = () => {
         await dispatch(addInvoice(data))
       } else {
         const id = store.taskId
-        navigate(`/task/view/${id}`)
+        navigate(`/recurring-task/view/${id}`)
       }
     }
   }, [store.taskId])
@@ -132,7 +137,7 @@ const AddCard = () => {
         const id = store.taskId
         await dispatch(updateInvocieId({ updatedBy: userId, id, invoiceId }))
 
-        navigate(`/task/view/${id}`)
+        navigate(`/recurring-task/view/${id}`)
       }
     }
   }, [invoicestore.invoiceId])
@@ -603,56 +608,6 @@ const AddCard = () => {
                   {errors.reviewer && <FormFeedback className='text-danger'>{errors.reviewer?.message}</FormFeedback>}
                 </Col>
               </Row>
-
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='startDate'>
-                  Start Date
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    value={date}
-                    name="startDate"
-                    control={control}
-                    rules={{ required: true }}
-                    options={{ dateFormat: "d-m-Y" }}
-                    render={({ field }) => (
-                      <Flatpickr
-                        value={field.value}
-                        onChange={(date, dateStr) => { field.onChange(dateStr) }}
-                        options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
-                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.startDate })}  />
-                    )}
-                  />
-
-                  {errors.startDate && <FormFeedback className='text-danger'>{errors.startDate?.message}</FormFeedback>}
-                </Col>
-              </Row>
-
-              <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label' for='endDate'>
-                  End Date
-                </Label>
-                <Col sm='9'>
-                  <Controller
-                    value={date}
-                    onChange={date => setDate(date)}
-                    name="endDate"
-                    control={control}
-                    rules={{ required: true }}
-                    options={{ dateFormat: "d-m-Y" }}
-                    render={({ field }) => (
-                      <Flatpickr
-                        value={field.value}
-                        onChange={(date, dateStr) => { field.onChange(dateStr) }}
-                        options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
-                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.endDate })} />
-                    )}
-                  />
-
-                  {errors.endDate && <FormFeedback className='text-danger'>{errors.endDate?.message}</FormFeedback>}
-                </Col>
-              </Row>
-
               <Row className='mb-1'>
                 <Label sm='3' size='lg' className='form-label' for='priority'>
                   Priority
@@ -679,6 +634,80 @@ const AddCard = () => {
 
                   />
                   {errors.priority && <FormFeedback className='text-danger'>{errors.priority?.message}</FormFeedback>}
+                </Col>
+              </Row>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='duration'>
+                  Duration
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    control={control}
+                    name="duration"
+                    id="duration"
+                    render={({ field, value, ref }) => (
+                      <Select
+                        {...field}
+                        inputRef={ref}
+                        className={classnames('react-select', { 'is-invalid': errors.duration })}
+                        {...field}
+                        classNamePrefix='select'
+                        options={durationOptions}
+                        value={durationOptions.find(c => { return c.id === value })}
+                        onChange={val => field.onChange(val.id)}
+                        getOptionLabel={(option) => option.name}
+                        getOptionValue={(option) => option.id}
+                      />
+                    )}
+
+                  />
+                  {errors.duration && <FormFeedback className='text-danger'>{errors.duration?.message}</FormFeedback>}
+                </Col>
+              </Row>
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='startDate'>
+                  Start Date
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    name="startDate"
+                    control={control}
+                    rules={{ required: true }}
+                    options={{ dateFormat: "d-m-Y" }}
+                    render={({ field }) => (
+                      <Flatpickr
+                        value={field.value}
+                        onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                        options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.startDate })} />
+                    )}
+                  />
+
+                  {errors.startDate && <FormFeedback className='text-danger'>{errors.startDate?.message}</FormFeedback>}
+                </Col>
+              </Row>
+
+              <Row className='mb-1'>
+                <Label sm='3' size='lg' className='form-label' for='endDate'>
+                  End Date
+                </Label>
+                <Col sm='9'>
+                  <Controller
+                    onChange={date => setDate(date)}
+                    name="endDate"
+                    control={control}
+                    rules={{ required: true }}
+                    options={{ dateFormat: "d-m-Y" }}
+                    render={({ field }) => (
+                      <Flatpickr
+                        value={field.value}
+                        onChange={(date, dateStr) => { field.onChange(dateStr) }}
+                        options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
+                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.endDate })} />
+                    )}
+                  />
+
+                  {errors.endDate && <FormFeedback className='text-danger'>{errors.endDate?.message}</FormFeedback>}
                 </Col>
               </Row>
             </div>
@@ -825,7 +854,7 @@ const AddCard = () => {
       <Card>
         <CardBody>
           <div className='modal-footer border-0'>
-            <Button className='add-new-user' outline color='warning' tag={Link} to='/task/list'>
+            <Button className='add-new-user' outline color='warning' tag={Link} to='/recurring-task/list'>
               Cancel
             </Button>
             <Button color='primary' type="submit" >

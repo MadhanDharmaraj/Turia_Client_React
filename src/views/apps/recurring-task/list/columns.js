@@ -49,7 +49,7 @@ export const columns = [
         {renderClient(row)}
         <div className='d-flex flex-column'>
           <Link
-            to={`/task/view/${row.id}`}
+            to={`/recurring-task/view/${row.id}`}
             className='user_name text-truncate text-body'
             onClick={() => store.dispatch(getTask(row.id))}
           >
@@ -101,11 +101,11 @@ export const columns = [
     cell: row => (
       <div className='column-action d-flex align-items-center'>
         <Col tag={Link} lg={4}
-          to={`/task/view/${row.id}`}
+          to={`/recurring-task/view/${row.id}`}
           onClick={() => store.dispatch(getTask(row.id))} >
           <Eye className='cursor-pointer mt-0' size={16} />
         </Col>
-        <Col tag={Link} to={`/task/edit/${row.id}`} lg={4}
+        <Col tag={Link} to={`/recurring-task/edit/${row.id}`} lg={4}
           onClick={() => store.dispatch(getTask(row.id))} >
           <Edit
             className='cursor-pointer ms-1 mt-0' size={16} />

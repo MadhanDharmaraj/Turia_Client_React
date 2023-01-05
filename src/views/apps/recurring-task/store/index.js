@@ -3,6 +3,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
+import { orgUserId } from '@src/helper/sassHelper'
+const userId = orgUserId()
 
 export const getData = createAsyncThunk('appTasks/getData', async params => {
   const response = await axios.post('/tasks/list', params)
@@ -29,12 +31,12 @@ export const addTask = createAsyncThunk('appTasks/addTask', async (task, { }) =>
 })
 
 export const addTaskParticipants = createAsyncThunk('appTasks/addTaskParticipants', async (taskparticpants, { }) => {
-  await axios.post('/taskparticpants/create', taskparticpants)
+  await axios.post('/recurring-taskparticpants/create', taskparticpants)
   return []
 })
 
 export const addTaskWorkflow = createAsyncThunk('appTasks/addTaskWorkflow', async (taskworkflows, { }) => {
-  await axios.post('/taskworkflows/create', taskworkflows)
+  await axios.post('/recurring-taskworkflows/create', taskworkflows)
   return []
 })
 
@@ -49,7 +51,7 @@ export const updateTask = createAsyncThunk('appTasks/updateTask', async (task, {
 })
 
 export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
-  await axios.post('/tasks/delete', { id })
+  await axios.post('/tasks/delete', { id, updatedBy :userId })
   await dispatch(getData(getState().tasks.params))
   return id
 })

@@ -3,6 +3,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
+import { orgUserId } from '@src/helper/sassHelper'
+const userId = orgUserId()
 
 export const getData = createAsyncThunk('appDigitalSignature/getData', async params => {
   const response = await axios.post('/digitalsignature/list', params)
@@ -43,7 +45,7 @@ export const deleteDigitalSignature = createAsyncThunk('appDigitalSignature/dele
 })
 
 export const deleteDigitalSignaturelist = createAsyncThunk('appDigitalSignature/deleteDigitalSignature', async (id, { dispatch, getState }) => {
-  await axios.post('/digitalsignature/delete', { id })
+  await axios.post('/digitalsignature/delete', { id, updatedBy : userId })
   await dispatch(getData(getState().digitalsignature.params))
   await dispatch(getAllData())
   return null

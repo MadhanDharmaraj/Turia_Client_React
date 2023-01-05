@@ -195,6 +195,7 @@ const TaskList = () => {
         page: currentPage,
         perPage: rowsPerPage,
         role: currentRole.value,
+        recurringFlag : true,
         status: currentStatus.value,
         currentPlan: currentPlan.value
       })
@@ -232,7 +233,8 @@ const TaskList = () => {
         page: page.selected + 1,
         role: currentRole.value,
         status: currentStatus.value,
-        currentPlan: currentPlan.value
+        currentPlan: currentPlan.value,
+        recurringFlag : true
       })
     )
     setCurrentPage(page.selected + 1)
@@ -250,6 +252,7 @@ const TaskList = () => {
         page: currentPage,
         role: currentRole.value,
         currentPlan: currentPlan.value,
+        recurringFlag : true,
         status: currentStatus.value
       })
     )
@@ -268,7 +271,8 @@ const TaskList = () => {
         perPage: rowsPerPage,
         role: currentRole.value,
         status: currentStatus.value,
-        currentPlan: currentPlan.value
+        currentPlan: currentPlan.value,
+        recurringFlag : true
       })
     )
   }
@@ -302,6 +306,7 @@ const TaskList = () => {
       role: currentRole.value,
       currentPlan: currentPlan.value,
       status: currentStatus.value,
+      recurringFlag : true,
       q: searchTerm
     }
 
@@ -328,6 +333,7 @@ const TaskList = () => {
         perPage: rowsPerPage,
         role: currentRole.value,
         status: currentStatus.value,
+        recurringFlag : true,
         currentPlan: currentPlan.value
       })
     )
@@ -358,6 +364,7 @@ const TaskList = () => {
                       page: currentPage,
                       perPage: rowsPerPage,
                       status: currentStatus.value,
+                      recurringFlag : true,
                       currentPlan: currentPlan.value
                     })
                   )
@@ -384,6 +391,7 @@ const TaskList = () => {
                       perPage: rowsPerPage,
                       role: currentRole.value,
                       currentPlan: data.value,
+                      recurringFlag : true,
                       status: currentStatus.value
                     })
                   )
@@ -410,6 +418,7 @@ const TaskList = () => {
                       page: currentPage,
                       perPage: rowsPerPage,
                       status: currentStatus.value,
+                      recurringFlag : true,
                       currentPlan: currentPlan.value
                     })
                   )

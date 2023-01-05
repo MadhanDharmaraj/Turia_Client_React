@@ -19,7 +19,7 @@ export const inviteMail = createAsyncThunk('appUsers/inviteMail', async id => {
 })
 
 export const getUser = createAsyncThunk('appUsers/getUser', async id => {
-  const response = await axios.post('/api/users/user', { id })
+  const response = await axios.post('/invitations/user', { id })
   return response.data.user
 })
 

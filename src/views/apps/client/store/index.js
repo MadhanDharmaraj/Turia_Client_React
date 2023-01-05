@@ -3,8 +3,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
-
-
+import { orgUserId } from '@src/helper/sassHelper'
+const userId = orgUserId()
 export const getData = createAsyncThunk('appUsers/getData', async params => {
   const response = await axios.post(`/clients/list`, params)
   return {
@@ -49,13 +49,13 @@ export const getConatctInfo = createAsyncThunk('appClients/getClientInfo', async
 })
 
 export const deleteClient = createAsyncThunk('appClients/deleteClient', async (id, { dispatch, getState }) => {
-  await axios.post('/clients/delete', { id })
+  await axios.post('/clients/delete', { id, updatedBy: userId })
   await dispatch(getData(getState().client.params))
   return id
 })
 
 export const deleteContactInfo = createAsyncThunk('appClients/deleteContactInfo', async (id, {}) => {
-  await axios.post('/contactinformation/delete', { id })
+  await axios.post('/contactinformation/delete', { id, updatedBy: userId })
   return null
 })
 

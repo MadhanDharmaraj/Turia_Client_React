@@ -52,7 +52,7 @@ const TaskView = () => {
     <Alert color='danger'>
       <h4 className='alert-heading'>Task not found</h4>
       <div className='alert-body'>
-        Task with id: {id} doesn't exist. Check list of all Tasks: <Link to='/task/list'>Tasks List</Link>
+        Task with id: {id} doesn't exist. Check list of all Tasks: <Link to='/recurring-task/list'>Tasks List</Link>
       </div>
     </Alert>
   )

@@ -8,14 +8,14 @@ import { columns } from './columns'
 // ** Store & Actions
 import { getInvitations } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
-
+import Select from 'react-select'
 // ** Third Party Components
 import ReactPaginate from 'react-paginate'
 import DataTable from 'react-data-table-component'
 import { ChevronDown, Share, Printer, FileText, File, Grid, Copy } from 'react-feather'
 
 // ** Utils
-//import { selectThemeColors } from '@utils'
+import { selectThemeColors } from '@utils'
 
 // ** Reactstrap Imports
 import {
@@ -26,8 +26,6 @@ import {
   Label,
   Button,
   CardBody,
-  CardTitle,
-  CardHeader,
   DropdownMenu,
   DropdownItem,
   DropdownToggle,
@@ -166,15 +164,18 @@ const UsersList = () => {
   const dispatch = useDispatch()
   const store = useSelector(state => state.team)
 
+  const statusOptions = [
+    { value: '1', label: 'Active' },
+    { value: '2', label: 'In Active' },
+    { value: '3', label: 'Invited' }
+  ]
   // ** States
   const [sort, setSort] = useState('desc')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState('id')
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [currentRole] = useState({ value: '', label: 'Select Role' })
-  const [currentPlan] = useState({ value: '', label: 'Select Plan' })
-  const [currentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
+  const [currentStatus] = useState({ value: '1', label: 'Active', number: 0 })
 
   // ** Get data on mount
   useEffect(() => {
@@ -184,10 +185,8 @@ const UsersList = () => {
         sortColumn,
         q: searchTerm,
         page: currentPage,
-        perPage: rowsPerPage,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        perPage: rowsPerPage,        
+        status: currentStatus.value
       })
     )
   }, [dispatch, store.data.length, sort, sortColumn, currentPage])
@@ -201,9 +200,7 @@ const UsersList = () => {
         q: searchTerm,
         perPage: rowsPerPage,
         page: page.selected + 1,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        status: currentStatus.value
       })
     )
     setCurrentPage(page.selected + 1)
@@ -219,9 +216,7 @@ const UsersList = () => {
         q: searchTerm,
         perPage: value,
         page: currentPage,
-        role: currentRole.value,
-        currentPlan: currentPlan.value,
-        status: currentStatus.value
+        currentPlan: currentPlan.value
       })
     )
     setRowsPerPage(value)
@@ -237,9 +232,7 @@ const UsersList = () => {
         sortColumn,
         page: currentPage,
         perPage: rowsPerPage,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        status: currentStatus.value
       })
     )
   }
@@ -299,15 +292,45 @@ const UsersList = () => {
         q: searchTerm,
         page: currentPage,
         perPage: rowsPerPage,
-        role: currentRole.value,
-        status: currentStatus.value,
-        currentPlan: currentPlan.value
+        status: currentStatus.value
       })
     )
   }
 
   return (
     <Fragment>
+      <Card>
+        <CardBody>
+          <Row>
+            <Col md='3'>
+              <Label for='status-select'>Status</Label>
+              <Select
+                theme={selectThemeColors}
+                isClearable={false}
+                className='react-select'
+                classNamePrefix='select'
+                options={statusOptions}
+                value={currentStatus}
+                onChange={data => {
+                  setCurrentStatus(data)
+                  dispatch(
+                    getData({
+                      sort,
+                      sortColumn,
+                      q: searchTerm,
+                      page: currentPage,
+                      status: data.value,
+                      perPage: rowsPerPage,
+                      role: currentRole.value,
+                      currentPlan: currentPlan.value
+                    })
+                  )
+                }}
+              />
+            </Col>
+          </Row>
+        </CardBody>
+      </Card>
       <Card className='overflow-hidden'>
         <div className='react-dataTable'>
           <DataTable
