@@ -18,7 +18,7 @@ import Select from 'react-select'
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { getData, addAccount, updateAccount, deleteAccount } from './store/invoiceaccount'
+import { getInvoiceAccount, addAccount, updateAccount, deleteAccount } from './store/invoiceaccount'
 import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
 import Swal from 'sweetalert2'
@@ -83,6 +83,7 @@ const InvoiceAccounts = (tabId) => {
             confirmButton: 'btn btn-success'
           }
         })
+        await dispatch(getInvoiceAccount())
         return true
       } else if (result.dismiss === MySwal.DismissReason.cancel) {
         return false
@@ -99,14 +100,14 @@ const InvoiceAccounts = (tabId) => {
       await dispatch(addAccount(data))
       reset({})
     }
+    await dispatch(getInvoiceAccount())
 
   }
 
   useEffect(async () => {
     if (tabId.data === 'invoiceaccount') {
-      await dispatch(getData())
+      await dispatch(getInvoiceAccount())
     }
-
   }, [tabId])
 
   useEffect(() => {
@@ -249,7 +250,7 @@ const InvoiceAccounts = (tabId) => {
             <Col lg='6' className='mt-2 mt-lg-0'>
               <h6 className='fw-bolder mb-2'>My Accounts</h6>
               <div className='added-cards'>
-                {data !== undefined && data.map((card, index) => {
+                {Array.isArray(data) && data.map((card, index) => {
                   return (
                     <div
                       key={index}

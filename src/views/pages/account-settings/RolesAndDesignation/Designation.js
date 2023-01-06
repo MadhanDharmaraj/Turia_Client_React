@@ -71,6 +71,7 @@ const Designation = (tabId) => {
             confirmButton: 'btn btn-success'
           }
         })
+        await dispatch(getData())
         return true
       } else if (result.dismiss === MySwal.DismissReason.cancel) {
         return false
@@ -78,12 +79,13 @@ const Designation = (tabId) => {
     })
   }
 
-  const resetForm = () => {
+  const resetForm = async () => {
     reset({
       organizationId: activeOrgId,
       id: '',
       name: ''
     })
+    await dispatch(getData())
   }
 
   const onSubmit = async data => {

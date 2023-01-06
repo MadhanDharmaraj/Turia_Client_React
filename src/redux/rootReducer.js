@@ -31,6 +31,8 @@ import leaves from '@src/views/apps/leave/store/index.js'
 import holidays from '@src/views/pages/account-settings/Attendance/store/holidays.js'
 import leavesettings from '@src/views/pages/account-settings/Attendance/store/leavesettings.js'
 import profile from '@src/views/apps/profile/store/index.js'
+import notes from '@src/views/apps/notes/store/index.js'
+import organization from '@src/views/pages/account-settings/store/index.js'
 
 const rootReducer = {
   auth,
@@ -63,7 +65,9 @@ const rootReducer = {
   dashboard,
   holidays,
   leavesettings,
-  profile
+  profile,
+  notes,
+  organization
 }
 
 export default rootReducer

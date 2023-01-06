@@ -16,20 +16,20 @@ export const getData = createAsyncThunk('appRole/getData', async params => {
 export const addRole = createAsyncThunk('appRole/addRole', async (data, { dispatch, getState }) => {
 
   await axios.post(`/roles/create`, data)
-  await dispatch(getData(getState().invoiceaccount.params))
+  await dispatch(getData(getState().role.params))
   return []
 
 })
 
 export const updateRole = createAsyncThunk('appRole/updateRole', async (data, { dispatch, getState }) => {
   await axios.post(`/roles/update`, data)
-  await dispatch(getData(getState().invoiceaccount.params))
+  await dispatch(getData(getState().role.params))
   return []
 })
 
 export const deleteRole = createAsyncThunk('appRole/deleteRole', async (id, { dispatch, getState }) => {
   await axios.post('/roles/delete', { id, updatedBy : userId })
-  await dispatch(getData(getState().invoiceaccount.params))
+  await dispatch(getData(getState().role.params))
   return id
 })
 

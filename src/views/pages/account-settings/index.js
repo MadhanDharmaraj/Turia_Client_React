@@ -5,7 +5,7 @@ import { Fragment, useState, useEffect } from 'react'
 import axios from 'axios'
 
 // ** Reactstrap Imports
-import { Row, Col, TabContent, TabPane } from 'reactstrap'
+import { Row, Col, TabContent, TabPane, Card } from 'reactstrap'
 
 // ** Demo Components
 import Tabs from './Tabs'
@@ -40,8 +40,9 @@ const AccountSettings = () => {
       {data !== null ? (
         <Row>
           <Col xs={12}>
-            <Tabs className='mb-2' activeTab={activeTab} toggleTab={toggleTab} />
-
+            <Card className='pt-1 ps-1'>
+              <Tabs className='mb-2' activeTab={activeTab} toggleTab={toggleTab} />
+            </Card>
             <TabContent activeTab={activeTab}>
               <TabPane tabId='1'>
                 <AccountTabContent data={data.general} />
@@ -59,13 +60,11 @@ const AccountSettings = () => {
                 <RolesandDesignationContent />
               </TabPane>
               <TabPane tabId='6'>
-                <NotificationsTabContent />
-              </TabPane>
-              <TabPane tabId='7'>
                 <ConnectionsTabContent />
               </TabPane>
             </TabContent>
           </Col>
+
         </Row>
       ) : null}
     </Fragment>

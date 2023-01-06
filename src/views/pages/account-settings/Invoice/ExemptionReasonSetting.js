@@ -18,9 +18,8 @@ import axios from '@src/configs/axios/axiosConfig'
 import { useForm, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { } from './store/invoiceaccount'
 import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
-import { addExemption, updateExemption } from './store/exemptionreason'
+import { addExemption, updateExemption, deleteExemption } from './store/exemptionreason'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
@@ -49,6 +48,16 @@ const InvoiceAccounts = (tabId) => {
     defaultValues: schema.cast()
   })
 
+
+  const getList = () => {
+    axios.post('/exemptionreasons/list')
+      .then((res) => {
+        setData(res.data.exemptionreasons)
+      })
+      .catch((err) => { console.log(err) })
+  }
+
+
   const deletefn = (id) => {
     return MySwal.fire({
       title: 'Are you sure?',
@@ -63,7 +72,7 @@ const InvoiceAccounts = (tabId) => {
       buttonsStyling: false
     }).then(async (result) => {
       if (result.value) {
-        await dispatch(deleteAccount(id))
+        await dispatch(deleteExemption(id))
         MySwal.fire({
           icon: 'success',
           title: 'Deleted!',
@@ -72,6 +81,7 @@ const InvoiceAccounts = (tabId) => {
             confirmButton: 'btn btn-success'
           }
         })
+        getList()
         return true
       } else if (result.dismiss === MySwal.DismissReason.cancel) {
         return false
@@ -88,16 +98,9 @@ const InvoiceAccounts = (tabId) => {
       await dispatch(addExemption(data))
       reset({})
     }
-
+    getList()
   }
 
-  const getList = () => {
-    axios.post('/exemptionreasons/list')
-      .then((res) => {
-        setData(res.data.exemptionreasons)
-      })
-      .catch((err) => { console.log(err) })
-  }
   const getRow = (fieldLabel, fieldName, reqflag = true) => {
     return (
       <Col md={12}>

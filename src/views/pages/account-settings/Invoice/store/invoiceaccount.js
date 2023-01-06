@@ -6,7 +6,7 @@ import axios from '@src/configs/axios/axiosConfig'
 import { orgUserId } from '@src/helper/sassHelper'
 const userId = orgUserId()
 
-export const getData = createAsyncThunk('appInvoiceSetting/getData', async params => {
+export const getInvoiceAccount = createAsyncThunk('appInvoiceSetting/getData', async params => {
   const response = await axios.post(`/transactionaccounts/list`, params)
   return {
     params,
@@ -40,13 +40,14 @@ export const appInvoiceAccountSlice = createSlice({
     data: [],
     total: 1,
     params: {},
-    allData: []
+    allData: [],
+    accounts : []
   },
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(getData.fulfilled, (state, action) => {
-        state.data = action.payload.data
+      .addCase(getInvoiceAccount.fulfilled, (state, action) => {
+        state.accounts = action.payload.data
         state.params = action.payload.params
       })
 

@@ -147,10 +147,10 @@ const AddCard = () => {
   const getRow = (fieldLabel, fieldName, reqflag = false) => {
     return (
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
+        <Label sm='4' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
-        <Col sm='9'>
+        <Col sm='8'>
           <Controller
             id={fieldName}
             name={fieldName}
@@ -167,10 +167,10 @@ const AddCard = () => {
     return (
 
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName} >
+        <Label sm='4' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName} >
           {fieldLabel}
         </Label>
-        <Col sm='9'>
+        <Col sm='8'>
           <Controller
             control={control}
             name={fieldName}
@@ -224,10 +224,10 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label required' for='contactPersonName'>
+                <Label sm='4' size='lg' className='form-label required' for='contactPersonName'>
                   Client Type
                 </Label>
-                <Col sm='9'>
+                <Col sm='8'>
                   <div className='form-check form-check-primary form-check-inline'>
                     <Controller
                       name='clientType'

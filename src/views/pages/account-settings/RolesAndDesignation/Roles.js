@@ -22,12 +22,13 @@ import {
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 // ** Third Party Components
-import { Copy, Info } from 'react-feather'
+import { Info, Trash2 } from 'react-feather'
 import { useForm, Controller } from 'react-hook-form'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 
 // ** Custom Components
-import AvatarGroup from '@components/avatar-group'
-import { getData, addRole, updateRole } from './store/roles' //deleteRole
+import { getData, addRole, updateRole, deleteRole } from './store/roles' //deleteRole
 // ** FAQ Illustrations
 import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 import illustration from '@src/assets/images/illustration/faq-illustrations.svg'
@@ -47,6 +48,7 @@ const rolesArr = [
 
 const Roles = (tabId) => {
     // ** States
+    const MySwal = withReactContent(Swal)
     const [show, setShow] = useState(false)
     const [data, setData] = useState([])
     const [modalType, setModalType] = useState('Add New')
@@ -70,8 +72,9 @@ const Roles = (tabId) => {
         defaultValues: schema.cast()
     })
 
-    const onReset = () => {
+    const onReset = async () => {
         setShow(false)
+        await dispatch(getData())
         reset({ id: '', name: '', description: '' })
     }
 
@@ -88,6 +91,37 @@ const Roles = (tabId) => {
         reset(role)
         setModalType('Edit')
         setShow(true)
+    }
+
+    const deletefn = (id) => {
+        return MySwal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, delete it!',
+            customClass: {
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-outline-danger ms-1'
+            },
+            buttonsStyling: false
+        }).then(async (result) => {
+            if (result.value) {
+                await dispatch(deleteRole(id))
+                MySwal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Department has been deleted.',
+                    customClass: {
+                        confirmButton: 'btn btn-success'
+                    }
+                })
+                await dispatch(getData())
+                return true
+            } else if (result.dismiss === MySwal.DismissReason.cancel) {
+                return false
+            }
+        })
     }
 
     const handleModalClosed = () => {
@@ -132,9 +166,9 @@ const Roles = (tabId) => {
                                                 <small className='fw-bolder'>Edit Role</small>
                                             </Link>
                                         </div>
-                                        <Link to='' className='text-body' onClick={e => e.preventDefault()}>
-                                            <Copy className='font-medium-5' />
-                                        </Link>
+
+                                        <Trash2 className='font-medium-5' onClick={() => deletefn(item.id)} />
+
                                     </div>
                                 </CardBody>
                             </Card>

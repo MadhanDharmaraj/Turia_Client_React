@@ -1,48 +1,61 @@
 // ** React Imports
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 // ** Third Party Components
 import Select from 'react-select'
-import Cleave from 'cleave.js/react'
 import { useForm, Controller } from 'react-hook-form'
 import 'cleave.js/dist/addons/cleave-phone.us'
-
+import classnames from 'classnames'
+import axios from '@src/configs/axios/axiosConfig'
 // ** Reactstrap Imports
-import { Row, Col, Form, Card, Input, Label, Button, CardBody, CardTitle, CardHeader, FormFeedback } from 'reactstrap'
-
-// ** Utils
-import { selectThemeColors } from '@utils'
-
+import { Row, Col, Card, Input, Label, Button, CardBody, CardTitle, CardHeader, Form, FormFeedback } from 'reactstrap'
 // ** Demo Components
 import DeleteAccount from './DeleteAccount'
+import { getOrganization, updateOrganization } from './store'
+import { useDispatch, useSelector } from 'react-redux'
+import * as yup from "yup"
+import { yupResolver } from "@hookform/resolvers/yup"
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 
-const countryOptions = [
-  { value: 'uk', label: 'UK' },
-  { value: 'usa', label: 'USA' },
-  { value: 'france', label: 'France' },
-  { value: 'russia', label: 'Russia' },
-  { value: 'canada', label: 'Canada' }
-]
-
-const currencyOptions = [
-  { value: 'usd', label: 'USD' },
-  { value: 'euro', label: 'Euro' },
-  { value: 'pound', label: 'Pound' },
-  { value: 'bitcoin', label: 'Bitcoin' }
-]
-
+const activeOrgId = activeOrganizationid()
+const userId = orgUserId()
+console.log(userId)
 const AccountTabs = ({ data }) => {
   // ** Hooks
-  const defaultValues = {
-    lastName: '',
-    firstName: data.fullName.split(' ')[0]
-  }
+  const dispatch = useDispatch()
+  const [businessEntityIdOptions, setBusinessEntityIdOptions] = useState([])
+  const [stateOptions, setStateOptions] = useState([])
+  const [countryOptions, setCountryOptions] = useState([])
+  const phoneRegExp = /^[0-9\- ]{10,10}$/
+  const pinzipcodeRegExp = /^[0-9\- ]{6,6}$/
+  const store = useSelector(state => state.organization)
+  const OrganizationSchema = yup.object().shape({
+    updatedBy: yup.string().default(userId),
+    id: yup.string().default(''),
+    name: yup.string().required('Please Enter Business Name'),
+    businessEmail: yup.string().email().required('Please Enter Business Email'),
+    contactNo: yup.string().required('Please Enter Contact Number').matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
+    businessEntityId: yup.string().required('Please Select Business Entity'),
+    businessTypeId: yup.string().required('Please Select Business Type'),
+    isGstRegistered: yup.boolean(),
+    gstin: yup.string().required('Please Enter GSTIN'),
+    addressLine1: yup.string().required('Please Enter Address Line 1'),
+    addressLine2: yup.string().required('Please Enter Area, Street, Sector, Village'),
+    countryId: yup.string().required('Please Select CountryId'),
+    stateId: yup.string().required('Please Select State'),
+    pinZipCode: yup.string().required('Please Enter Postal Code').matches(pinzipcodeRegExp, { message: 'Postal Code is not valid', excludeEmptyString: true }),
+    city: yup.string().required('Please Enter City')
+  })
+
   const {
     control,
-    setError,
     handleSubmit,
-    formState: { errors }
-  } = useForm({ defaultValues })
+    formState: { errors }, reset
+  } = useForm({
+    defaultValues: OrganizationSchema.cast(),
+    resolver: yupResolver(OrganizationSchema)
+  })
+
 
   // ** States
   const [avatar, setAvatar] = useState(data.avatar ? data.avatar : '')
@@ -56,23 +69,120 @@ const AccountTabs = ({ data }) => {
     reader.readAsDataURL(files[0])
   }
 
-  const onSubmit = data => {
-    if (Object.values(data).every(field => field.length > 0)) {
-      return null
-    } else {
-      for (const key in data) {
-        if (data[key].length === 0) {
-          setError(key, {
-            type: 'manual'
-          })
-        }
-      }
-    }
+  const onSubmit = async data => {
+    await dispatch(updateOrganization(data))
   }
 
   const handleImgReset = () => {
     setAvatar(require('@src/assets/images/avatars/avatar-blank.png').default)
   }
+
+  const getBusineessEntity = () => {
+    axios.post('/businessentities/list').then(response => {
+      const arr = response.data
+      setBusinessEntityIdOptions(arr.businessentities)
+    })
+  }
+
+  const getCountries = () => {
+    axios.post('/countries/list').then(response => {
+      const arr = response.data
+      setCountryOptions(arr.countries)
+    })
+  }
+
+  const getStates = () => {
+    axios.post('/states/list').then(response => {
+      const arr = response.data
+      setStateOptions(arr.states)
+    })
+  }
+
+  useEffect(async () => {
+    getBusineessEntity()
+    getCountries()
+    getStates()
+  }, [])
+
+  useEffect(async () => {
+    await dispatch(getOrganization(activeOrgId))
+  }, [])
+
+  const getRow = (fieldLabel, fieldName, reqflag = false) => {
+    return (
+      <Row className='mb-1'>
+        <Label sm='4' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
+          {fieldLabel}
+        </Label>
+        <Col sm='8'>
+          <Controller
+            id={fieldName}
+            name={fieldName}
+            control={control}
+            render={({ field }) => <Input invalid={errors[fieldName] && true} {...field} />}
+          />
+          {errors[fieldName] && <FormFeedback>{errors[fieldName].message}</FormFeedback>}
+        </Col>
+      </Row>
+    )
+  }
+
+  const getSelectRow = (fieldLabel, fieldName, options, reqflag = false) => {
+    return (
+
+      <Row className='mb-1'>
+        <Label sm='4' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName} >
+          {fieldLabel}
+        </Label>
+        <Col sm='8'>
+          <Controller
+            control={control}
+            name={fieldName}
+            id={fieldName}
+            render={({ field, ref }) => (
+              <Select
+                inputRef={ref}
+                className={classnames('react-select', { 'is-invalid': errors[fieldName] })}
+                {...field}
+                classNamePrefix='select'
+                options={options}
+                value={options.find(c => { return c.id === field.value })}
+                onChange={val => { return field.onChange(val.id) }}
+                getOptionLabel={(option) => option.name}
+                getOptionValue={(option) => option.id}
+              />
+            )}
+
+          />
+          {errors[fieldName] && <FormFeedback className='text-danger'>{errors[fieldName]?.message}</FormFeedback>}
+        </Col>
+      </Row>
+
+    )
+  }
+
+  useEffect(() => {
+    if (store.organizationData !== null) {
+      const data = store.organizationData
+      reset({
+        updatedBy: userId,
+        name: data.name,
+        id : data.id,
+        businessEmail: data.businessemail,
+        contactNo: data.contactno,
+        businessEntityId: data.businessentityid,
+        businessTypeId: data.businesstypeid,
+        isGstRegistered: data.isgstregistered,
+        gstin: data.gstin,
+        addressLine1: data.addressline1,
+        addressLine2: data.addressline2,
+        countryId: data.countryid,
+        stateId: data.stateid,
+        pinZipCode: data.pinzipcode,
+        city: data.city
+      })
+    }
+  }, [store.organizationData])
 
   return (
     <Fragment>
@@ -98,152 +208,59 @@ const AccountTabs = ({ data }) => {
               </div>
             </div>
           </div>
-          <Form className='mt-2 pt-50' onSubmit={handleSubmit(onSubmit)}>
+          <Row tag={Form} className='mt-1' onSubmit={handleSubmit(onSubmit)}>
             <Row>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='firstName'>
-                  Business Name
-                </Label>
-                <Controller
-                  name='firstName'
-                  control={control}
-                  render={({ field }) => (
-                    <Input id='firstName' placeholder='John' invalid={errors.firstName && true} {...field} />
-                  )}
-                />
-                {errors && errors.firstName && <FormFeedback>Please enter a valid First Name</FormFeedback>}
+              <Col md='6' >
+                {getRow('Business Name', 'name', true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='lastName'>
-                  Business Type
-                </Label>
-                <Controller
-                  name='lastName'
-                  control={control}
-                  render={({ field }) => (
-                    <Input id='lastName' placeholder='Doe' invalid={errors.lastName && true} {...field} />
-                  )}
-                />
-                {errors.lastName && <FormFeedback>Please enter a valid Last Name</FormFeedback>}
+              <Col md='6' >
+                {getRow('Business E-mail', 'businessEmail', true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='emailInput'>
-                  Business E-mail
-                </Label>
-                <Input id='emailInput' type='email' name='email' placeholder='Email' defaultValue={data.email} />
+              <Col md='6' >
+                {getRow('Conatct No', 'contactNo', true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='phNumber'>
-                  Contact No
-                </Label>
-                <Cleave
-                  id='phNumber'
-                  name='phNumber'
-                  className='form-control'
-                  placeholder='1 234 567 8900'
-                  options={{ phone: true, phoneRegionCode: 'US' }}
-                />
+              <Col md='6'>
+                {getSelectRow('Business Type', 'businessTypeId', businessEntityIdOptions, true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='company'>
-                  Business Entity
-                </Label>
-                <Select
-                  id='currency'
-                  isClearable={false}
-                  className='react-select'
-                  classNamePrefix='select'
-                  options={currencyOptions}
-                  theme={selectThemeColors}
-                  defaultValue={currencyOptions[0]}
-                />
+              <Col md='6'>
+                {getSelectRow('Business Entity', 'businessEntityId', businessEntityIdOptions, true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='currency'>
-                  Currency
-                </Label>
-                <Select
-                  id='currency'
-                  isClearable={false}
-                  className='react-select'
-                  classNamePrefix='select'
-                  options={currencyOptions}
-                  theme={selectThemeColors}
-                  defaultValue={currencyOptions[0]}
-                />
-              </Col>
-
-              <Col className='my-lg-0 my-1' lg='6' sm='12'>
-                <div className='d-flex flex-column'>
-                  <Label for='switch-primary' className='form-check-label mb-50'>
-                    Is GSTIN Registered?
+              <Col md='6' className='d-flex justify-content-between'>
+                <div className='form-switch form-check-success col-md-12 p-0'>
+                  <Label className='form-label' md={5} for='pincode'>
+                    Is GST Registered?
                   </Label>
-                  <div className='form-switch form-check-primary'>
-                    <Input type='switch' id='switch-primary' name='primary' defaultChecked />
-                  </div>
+                  <Input type='switch' id='switch-success' name='isGstRegistered' defaultChecked />
                 </div>
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='gstin'>
-                  GSTIN
-                </Label>
-                <Input id='gstin' name='gstin' placeholder='GSTIN' />
+              <Col md='6'>
+                {getRow('GSTIN', 'gstin', true)}
               </Col>
-              <hr className='invoice-spacing my-2' />
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='address'>
-                  Address Line 1
-                </Label>
-                <Input id='address' name='address' placeholder='12, Business Park' />
+              <Col md='6' >
+                {getRow('Address', 'addressLine1', true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='address'>
-                  Address Line 2
-                </Label>
-                <Input id='address' name='address' placeholder='12, Business Park' />
+              <Col md='6'>
+                {getRow('Area, Street, Sector, Village', 'addressLine2', true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='accountState'>
-                  State
-                </Label>
-                <Input id='accountState' name='state' placeholder='California' />
+              <Col md='6'>
+                {getSelectRow('State', 'stateId', stateOptions, true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='accountState'>
-                  City
-                </Label>
-                <Input id='accountState' name='state' placeholder='California' />
+              <Col md='6'>
+                {getRow('Postal Code', 'pinZipCode', true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='zipCode'>
-                  Zip Code
-                </Label>
-                <Input id='zipCode' name='zipCode' placeholder='123456' maxLength='6' />
+              <Col md='6'>
+                {getRow('Town/City', 'city', true)}
               </Col>
-              <Col sm='6' className='mb-1'>
-                <Label className='form-label' for='country'>
-                  Country
-                </Label>
-                <Select
-                  id='country'
-                  isClearable={false}
-                  className='react-select'
-                  classNamePrefix='select'
-                  options={countryOptions}
-                  theme={selectThemeColors}
-                  defaultValue={countryOptions[0]}
-                />
-              </Col>
-              <Col className='mt-2' sm='12'>
-                <Button type='submit' className='me-1' color='primary'>
-                  Save changes
-                </Button>
-                <Button color='secondary' outline>
-                  Discard
-                </Button>
+              <Col md='6'>
+                {getSelectRow('Country', 'countryId', countryOptions, true)}
               </Col>
             </Row>
-          </Form>
+            <div className='d-flex justify-content-between mt-2'>
+              <Button type='submit' className='me-1' color='primary'>
+                Submit
+              </Button>
+            </div>
+          </Row>
         </CardBody>
       </Card>
       <DeleteAccount />

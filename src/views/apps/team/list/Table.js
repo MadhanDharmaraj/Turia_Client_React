@@ -175,7 +175,7 @@ const UsersList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState('id')
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [currentStatus] = useState({ value: '1', label: 'Active', number: 0 })
+  const [currentStatus, setCurrentStatus] = useState({ value: '1', label: 'Active', number: 0 })
 
   // ** Get data on mount
   useEffect(() => {
@@ -275,9 +275,7 @@ const UsersList = () => {
       return store.data
     } else if (store.data.length === 0 && isFiltered) {
       return []
-    } else {
-      return store.allData.slice(0, rowsPerPage)
-    }
+    } 
   }
 
   const handleSort = (column, sortDirection) => {
@@ -312,7 +310,7 @@ const UsersList = () => {
                 onChange={data => {
                   setCurrentStatus(data)
                   dispatch(
-                    getData({
+                    getInvitations({
                       sort,
                       sortColumn,
                       q: searchTerm,

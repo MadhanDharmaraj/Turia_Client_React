@@ -5,6 +5,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from '@src/configs/axios/axiosConfig'
 import { orgUserId } from '@src/helper/sassHelper'
 const userId = orgUserId()
+
 export const getData = createAsyncThunk('appInvoiceSetting/getData', async params => {
   const response = await axios.post(`/transactionaccounts/list`, params)
   return {

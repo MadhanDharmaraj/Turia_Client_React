@@ -40,14 +40,5 @@ export const columns = [
     sortField: 'id',
     minWidth: '107px',
     cell: row => <span>{row.totalhours}</span>
-  },
-  {
-    name: 'Entry Type',
-    sortable: true,
-    sortField: 'id',
-    minWidth: '107px',
-    cell: () => <div>
-      <Button outline size='sm'>View Others's</Button>
-    </div>
   }
 ]

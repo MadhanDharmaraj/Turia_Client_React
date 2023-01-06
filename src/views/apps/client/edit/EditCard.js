@@ -12,7 +12,7 @@ import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { activeOrganizationid, orgUserId} from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 // ** Reactstrap Imports
 import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback, CardTitle, CardHeader } from 'reactstrap'
 
@@ -46,7 +46,7 @@ const EditCard = () => {
 
   const schema = yup.object().shape({
     clientType: yup.number(),
-    updatedBy : yup.string().default(userId),
+    updatedBy: yup.string().default(userId),
     uniqueIdentity: yup.string().nullable(),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when(["clientType"], { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
@@ -246,10 +246,10 @@ const EditCard = () => {
   const getRow = (fieldLabel, fieldName, reqflag = false) => {
     return (
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
+        <Label sm='4' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
-        <Col sm='9'>
+        <Col sm='8'>
           <Controller
             id={fieldName}
             name={fieldName}
@@ -266,10 +266,10 @@ const EditCard = () => {
     return (
 
       <Row className='mb-1'>
-        <Label sm='3' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
+        <Label sm='4' size='lg' className={classnames(`form-label ${reqflag ? 'required' : ''}`)} for={fieldName}>
           {fieldLabel}
         </Label>
-        <Col sm='9'>
+        <Col sm='8'>
           <Controller
             control={control}
             name={fieldName}
@@ -309,10 +309,10 @@ const EditCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label required' for='contactPersonName'>
+                <Label sm='4' size='lg' className='form-label required' for='contactPersonName'>
                   Client Type
                 </Label>
-                <Col sm='9'>
+                <Col sm='8'>
                   <div className='form-check form-check-primary form-check-inline'>
                     <Controller
                       name='clientType'

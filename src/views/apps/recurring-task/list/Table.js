@@ -152,7 +152,7 @@ const CustomHeader = ({ store, handlePerPage, rowsPerPage, handleFilter, searchT
               </DropdownMenu>
             </UncontrolledDropdown>
 
-            <Button className='add-new-user' color='primary' tag={Link} to='/task/add'>
+            <Button className='add-new-user' color='primary' tag={Link} to='/recurring-task/add'>
               Add Task
             </Button>
           </div>

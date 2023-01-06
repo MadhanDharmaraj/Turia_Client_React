@@ -37,12 +37,16 @@ export const deleteUser = createAsyncThunk('appUsers/deleteUser', async (id, { d
 
 export const attendaceList = createAsyncThunk('appUsers/attendaceList', async (params, { }) => {
   const response = await axios.post('/employeeattendances/list', params)
-  return  response.data.employeeattendances
+  return {
+    params,
+    data: response.data.employeeattendances.employeeattendances,
+    totalPages: response.data.employeeattendances.total
+  }
 })
 
 export const leaveList = createAsyncThunk('appUsers/leaveList', async (params, { }) => {
   const response = await axios.post('/employeesleaves/list', params)
-  return  response.data.employeesleaves
+  return response.data.employeesleaves
 })
 
 export const applyLeave = createAsyncThunk('appUsers/applyLeave', async (data, { dispatch }) => {
@@ -60,7 +64,7 @@ export const appUsersSlice = createSlice({
     allData: [],
     selectedUser: null,
     employeeLeaves: [],
-    employeeAttendances : []
+    employeeAttendances: []
   },
   reducers: {},
   extraReducers: builder => {
@@ -77,7 +81,9 @@ export const appUsersSlice = createSlice({
         state.employeeLeaves = action.payload
       })
       .addCase(attendaceList.fulfilled, (state, action) => {
-        state.employeeAttendances = action.payload
+        state.employeeAttendances = action.payload.data
+        state.params = action.payload.params
+        state.total = action.payload.totalPages
       })
   }
 })
