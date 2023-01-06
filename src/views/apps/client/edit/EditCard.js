@@ -12,7 +12,7 @@ import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
+import { activeOrganizationid, orgUserId} from '@src/helper/sassHelper'
 // ** Reactstrap Imports
 import { Row, Col, Card, Label, Button, CardBody, CardText, Input, FormFeedback, CardTitle, CardHeader } from 'reactstrap'
 
@@ -47,7 +47,7 @@ const EditCard = () => {
   const schema = yup.object().shape({
     clientType: yup.number(),
     updatedBy : yup.string().default(userId),
-    uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
+    uniqueIdentity: yup.string().nullable(),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when(["clientType"], { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
     contactnumber: yup.string().matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
@@ -280,6 +280,7 @@ const EditCard = () => {
                 className={classnames('react-select', { 'is-invalid': errors[fieldName] })}
                 {...field}
                 classNamePrefix='select'
+                isDisabled={fieldName === 'currency'}
                 options={options}
                 value={options.find(c => { return c.id === field.value })}
                 onChange={val => field.onChange(val.id)}
@@ -476,7 +477,7 @@ const EditCard = () => {
               {getRow('GSTIN', 'gstin', true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Currency', 'currency', currencyOptions, true)}
+              {getSelectRow('Currency', 'currency', currencyOptions, false)}
             </Col>
           </Row>
         </CardBody>

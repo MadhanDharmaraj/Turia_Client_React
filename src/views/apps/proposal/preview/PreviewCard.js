@@ -56,7 +56,7 @@ const PreviewCard = ({ data }) => {
           </div>
           <div lg={6} className='mt-md-0 mt-2'>
             <h4 className='invoice-title'>
-              Invoice <span className='invoice-number'>{data.uniqueno}</span>
+              Proposal <span className='invoice-number'>{data.uniqueno}</span>
             </h4>
             <div className='invoice-date-wrapper'>
               <p className='invoice-date-title'>Date Issued:</p>

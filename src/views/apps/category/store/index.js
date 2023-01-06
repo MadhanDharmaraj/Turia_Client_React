@@ -33,7 +33,7 @@ export const updateCategory = createAsyncThunk('appCategories/updateCategory', a
 
 export const deleteCategory = createAsyncThunk('appCategories/deleteCategory', async (id, { dispatch, getState }) => {
   await axios.post('/categories/delete', { id, updatedBy: userId })
-  await dispatch(getData(getState().categories.params))
+  await dispatch(getData(getState().category.params))
   return id
 })
 

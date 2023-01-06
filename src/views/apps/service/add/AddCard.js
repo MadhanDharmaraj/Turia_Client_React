@@ -36,11 +36,12 @@ const AddCard = () => {
     categoryType: yup.number().default(1),
     name: yup.string().required("Please Enter Service Name"),
     organizationId: yup.number().default(activeOrgId),
-    taxGroupId: yup.string().required("Please Select Tax Rate"),
-    sellingPrice: yup.string().required("Please Enter Professional Fee"),
+    taxGroupId: yup.string().nullable(),
+    sellingPrice: yup.string().nullable(),
     isTaxApplicable: yup.boolean().default(true),
     exemptionReasonId: yup.number().when(["isTaxApplicable"], { is: (isTaxApplicable) => !isTaxApplicable, then: yup.number().required('Please Select Exemption Reason') }).nullable(),
-    sacCode: yup.string().required("Please Enter SAC Code")
+    sacCode: yup.string().nullable()
+
   })
 
   const { handleSubmit, control, formState: { errors }, setValue } = useForm({
@@ -168,17 +169,17 @@ const AddCard = () => {
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('SAC Code', 'sacCode', true)}
+              {getRow('SAC Code', 'sacCode', false)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Professional Fee', 'sellingPrice', true)}
+              {getRow('Professional Fee', 'sellingPrice', false)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Tax Rate', 'taxGroupId', taxGroupOptions, true)}
+              {getSelectRow('Tax Rate', 'taxGroupId', taxGroupOptions, false)}
             </Col>
           </Row>
           {!isTaxApplicable &&

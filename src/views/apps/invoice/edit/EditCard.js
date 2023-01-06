@@ -581,7 +581,7 @@ const AddCard = (data) => {
               {/* Address and Contact */}
               <CardBody className='invoice-padding pt-0'>
                 <Row className='row-bill-to invoice-spacing'>
-                  <Col className='col-bill-to ps-0' xl='8'>
+                  <Col className='col-bill-to ps-0' xl='6'>
                     <h6 className='invoice-to-title'>Invoice To:</h6>
                     <div className='invoice-customer'>
                       <Controller
@@ -622,6 +622,7 @@ const AddCard = (data) => {
                       </table>
                     </Col>
                   </Col>
+                  <Col className='col-bill-to ps-0' xl='2'></Col>
                   <Col className='pe-0 mt-xl-0 mt-2' xl='4'>
                     <h6 className='mb-2'>Payment Details:</h6>
                     <table>
@@ -655,7 +656,7 @@ const AddCard = (data) => {
                   </Col>
                 </Row>
                 <Row className='row-bill-to invoice-spacing'>
-                  <Col className='col-bill-to ps-0' xl='8'>
+                  <Col className='col-bill-to ps-0' xl='6'>
                     <h6 className='invoice-to-title mt-2'>Place Of Supply:</h6>
                     <div className='invoice-customer'>
                       <Controller
@@ -679,6 +680,7 @@ const AddCard = (data) => {
                     </div>
                     {(selectedClient.gstin !== '' && selectedClient.gstin !== undefined) && <div className='mt-1'> GSTIN : {selectedClient.gstin}</div>}
                   </Col>
+                  <Col className='col-bill-to ps-0' xl='2'></Col>
                   <Col className='pe-0 mt-xl-0 mt-2' xl='4'>
                     <table>
                       <tbody>

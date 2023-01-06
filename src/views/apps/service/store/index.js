@@ -32,29 +32,31 @@ export const updateService = createAsyncThunk('appServices/updateService', async
 
 export const deleteService = createAsyncThunk('appServices/deleteService', async (id, { dispatch, getState }) => {
   await axios.post('/services/delete', { id, updatedBy: userId })
-  await dispatch(getData(getState().users.params))
+  await dispatch(getData(getState().service.params))
   return id
 })
 
 export const updateStatus = createAsyncThunk('appServices/updateStatus', async (data, { dispatch, getState }) => {
   await axios.post(`/services/statusupdate`, data)
-  console.log(getState().service)
-  await dispatch(getData(getState().Service.service))
+  await dispatch(getData(getState().service.service))
   return ''
 })
 
-export const addWokflow = createAsyncThunk('appServices/addWokflow', async (rows, { }) => {
-  const response = await axios.post('/workflows/createandupdate', rows)
-  return response.data.workflows
-})
-
-export const listWokflow = createAsyncThunk('appServices/listWokflow', async ({ id }, { }) => {
+export const listWokflow = createAsyncThunk('appServices/listWokflow', async (id, { }) => {
   const response = await axios.post('/workflows/list', { serviceId: id })
   return response.data.workflows
 })
 
-export const deleteWokflow = createAsyncThunk('appServices/deleteWokflow', async ({ id }, { }) => {
-  const response = await axios.post('/workflows/delete', { id, updatedBy: userId })
+export const addWokflow = createAsyncThunk('appServices/addWokflow', async ({ rows, sericdeId }, { dispatch }) => {
+  const response = await axios.post('/workflows/createandupdate', rows)
+  await dispatch(listWokflow(sericdeId))
+  return response.data.workflows
+})
+
+export const deleteWokflow = createAsyncThunk('appServices/deleteWokflow', async (data, { dispatch }) => {
+  const response = await axios.post('/workflows/delete', { id: data.workflowId, updatedBy: userId })
+  const id = data.id
+  await dispatch(listWokflow(id))
   return response.data.workflows
 })
 
@@ -83,9 +85,6 @@ export const appServicesSlice = createSlice({
         state.workFlowLists = action.payload
       })
       .addCase(listWokflow.fulfilled, (state, action) => {
-        state.workFlowLists = action.payload
-      })
-      .addCase(deleteWokflow.fulfilled, (state, action) => {
         state.workFlowLists = action.payload
       })
   }

@@ -1,12 +1,11 @@
 // ** React Imports
 import { useEffect, useState } from 'react'
-import { Plus, Trash2 } from 'react-feather'
+import { Plus, Trash2, X } from 'react-feather'
 import { useForm, Controller, useFieldArray } from "react-hook-form"
 import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { addWokflow, listWokflow, deleteWokflow } from '../store'
 // ** Third Party Components
-import { store } from '@store/store'
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
@@ -22,8 +21,14 @@ import { ReactSortable } from 'react-sortablejs'
 
 const CheckList = () => {
 
+  const storeLoc = useSelector(state => state.service)
+  const [workflowList, setWorkflowList] = useState([])
+  const [addFlag, setAddFLag] = useState(false)
 
-  const deletefun = (id) => {
+  const dispatch = useDispatch()
+  const { id } = useParams()
+
+  const deletefun = (workflowId) => {
 
     return MySwal.fire({
       title: 'Are you sure?',
@@ -38,7 +43,7 @@ const CheckList = () => {
       buttonsStyling: false
     }).then(async (result) => {
       if (result.value) {
-        await store.dispatch(deleteWokflow(id))
+        await dispatch(deleteWokflow({ workflowId, id }))
         MySwal.fire({
           icon: 'success',
           title: 'Deleted!',
@@ -54,12 +59,6 @@ const CheckList = () => {
     })
   }
 
-  const storeLoc = useSelector(state => state.service)
-  const [workflowList, setWorkflowList] = useState([])
-  const [addFlag, setAddFLag] = useState(false)
-
-  const dispatch = useDispatch()
-  const { id } = useParams()
   // ** States
   const schema = yup.object().shape({
     rows: yup.array().of(
@@ -82,7 +81,7 @@ const CheckList = () => {
 
   const { fields, append, remove } = useFieldArray({ name: 'rows', control, keyName: "rowid" })
   const onSubmit = async data => {
-    await dispatch(addWokflow(data))
+    await dispatch(addWokflow(data, id))
   }
 
   const addExisting = (() => {
@@ -127,7 +126,7 @@ const CheckList = () => {
 
   useEffect(async () => {
 
-    await dispatch(listWokflow({ id }))
+    await dispatch(listWokflow(id))
 
   }, [])
 
@@ -154,8 +153,8 @@ const CheckList = () => {
               <ReactSortable tag='ul' className='list-group' list={workflowList} setList={setWorkflowList}>
                 {workflowList.map(item => {
                   return (
-                    <ListGroupItem className='draggable' key={item.name}>
-                      <div className='d-flex align-items-center'>
+                    <ListGroupItem className='draggable' key={item.id}>
+                      <div className='d-flex align-items-center ju'>
                         <div>
                           <h5 className='mt-0'>{item.name}</h5>
                           {item.description}

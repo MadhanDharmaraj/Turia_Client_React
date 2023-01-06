@@ -14,21 +14,26 @@ import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 
+import { orgUserId, activeOrganizationid } from '@src/helper/sassHelper'
+const userId = orgUserId()
+const activeOrgId = activeOrganizationid()
+
+
 const CategoryEdit = (props) => {
   // ** States
   const dispatch = useDispatch()
   const [category, setCategory] = useState({})
   const { id } = useParams()
   const schema = yup.object().shape({
+    organizationId : yup.string().default(activeOrgId),
+    updatedBy : yup.string().default(userId),
     name: yup.string().required("Please Enter Category Name")
   })
 
+
   const { handleSubmit, control, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      organizationId: 1,
-      name: ''
-    }
+    defaultValues:schema.cast()
   })
   const [formModal, setFormModal] = useState(false)
   const closeModal = () => {

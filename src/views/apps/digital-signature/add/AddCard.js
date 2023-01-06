@@ -177,7 +177,7 @@ const AddCard = () => {
                         id='dsc_list_name'
                         name={`rows[${i}].name`}
                         render={({ field }) => (
-                          <Input type='text'  {...register(`rows.${i}.name`)} invalid={errors.rows?.[i]?.name && true} {...field} />
+                          <Input type='text' invalid={errors.rows?.[i]?.name && true} {...field} />
                         )}
                       />
                       {errors.rows?.[i]?.name && <FormFeedback>{errors.rows?.[i]?.name.message}</FormFeedback>}
@@ -189,7 +189,7 @@ const AddCard = () => {
                         id='dsc_list_email'
                         name={`rows[${i}].email`}
                         render={({ field }) => (
-                          <Input type='email'  {...register(`rows.${i}.email`)} invalid={errors.rows?.[i]?.email && true} {...field} />
+                          <Input type='email' invalid={errors.rows?.[i]?.email && true} {...field} />
                         )}
                       />
                       {errors.rows?.[i]?.email && <FormFeedback>{errors.rows?.[i]?.email.message}</FormFeedback>}
@@ -201,7 +201,7 @@ const AddCard = () => {
                         id='dsc_list_contactNumber'
                         name={`rows[${i}].contact`}
                         render={({ field }) => (
-                          <Input type='number' {...register(`rows.${i}.contact`)} invalid={errors.rows?.[i]?.contact && true} {...field} />
+                          <Input type='number'invalid={errors.rows?.[i]?.contact && true} {...field} />
                         )}
                       />
                       {errors.rows?.[i]?.contact && <FormFeedback>{errors.rows?.[i]?.contact.message}</FormFeedback>}

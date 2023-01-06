@@ -263,8 +263,6 @@ const UsersList = () => {
   // ** Table data to render
   const dataToRender = () => {
     const filters = {
-      role: currentRole.value,
-      currentPlan: currentPlan.value,
       status: currentStatus.value,
       q: searchTerm
     }
@@ -320,9 +318,7 @@ const UsersList = () => {
                       q: searchTerm,
                       page: currentPage,
                       status: data.value,
-                      perPage: rowsPerPage,
-                      role: currentRole.value,
-                      currentPlan: currentPlan.value
+                      perPage: rowsPerPage
                     })
                   )
                 }}

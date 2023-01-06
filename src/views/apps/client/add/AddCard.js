@@ -45,7 +45,7 @@ const AddCard = () => {
     clientType: yup.number().default(2),
     createdBy: yup.string().default(userId),
     organization: yup.number().default(activeOrgId),
-    uniqueIdentity: yup.string().required("Please Enter Unique Identity"),
+    uniqueIdentity: yup.string().nullable(),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
     name: yup.string().when("clientType", { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
     contactNumber: yup.string().required("Please Enter Conatct Number").matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
@@ -54,7 +54,7 @@ const AddCard = () => {
     gstRegistrationType: yup.string().required("Please select a GST Type"),
     gstin: yup.string().required("Please Enter GSTIN No"),
     placeOfSupply: yup.string().required("Please select Place Of Supply"),
-    currency: yup.string(),
+    currency: yup.string().default(3),
     billingAddressZip: yup.string().matches(zipcodeExp, { message: 'Zip Code is not valid', excludeEmptyString: true }),
     contact_info: yup.array().of(
       yup.object().shape({
@@ -180,6 +180,7 @@ const AddCard = () => {
                 inputRef={ref}
                 className={classnames('react-select', { 'is-invalid': errors[fieldName] })}
                 {...field}
+                isDisabled={fieldName === 'currency'}
                 classNamePrefix='select'
                 options={options}
                 value={options.find(c => { return c.id === field.value })}
@@ -256,7 +257,7 @@ const AddCard = () => {
               </Row>
             </Col>
             <Col md='6' className='mb-1'>
-              {getRow('Unique No', 'uniqueIdentity', true)}
+              {getRow('Unique No', 'uniqueIdentity', false)}
             </Col>
           </Row>
 
@@ -395,7 +396,7 @@ const AddCard = () => {
               {getRow('GSTIN', 'gstin', true)}
             </Col>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Currency', 'currency', currencyOptions, true)}
+              {getSelectRow('Currency', 'currency', currencyOptions, false)}
             </Col>
           </Row>
         </CardBody>

@@ -40,14 +40,13 @@ const EditCard = () => {
     id: yup.string().default(id),
     categoryId: yup.string().required("Please select a Category"),
     categoryType: yup.number().default(1),
-    organizationId: yup.number().default(activeOrgId),
     name: yup.string().required("Please Enter Service Name"),
-    taxGroupId: yup.string().required("Please Select Tax Rate"),
+    organizationId: yup.number().default(activeOrgId),
+    taxGroupId: yup.string().nullable(),
+    sellingPrice: yup.string().nullable(),
     isTaxApplicable: yup.boolean().default(true),
-    exemptionReasonId: yup.number()
-      .when(["isTaxApplicable"], { is: (isTaxApplicable) => !isTaxApplicable, then: yup.number().required('Please Select Exemption Reason') }).nullable(),
-    sellingPrice: yup.string().required("Please Enter Professional Fee"),
-    sacCode: yup.string().required("Please Enter SAC Code")
+    exemptionReasonId: yup.number().when(["isTaxApplicable"], { is: (isTaxApplicable) => !isTaxApplicable, then: yup.number().required('Please Select Exemption Reason') }).nullable(),
+    sacCode: yup.string().nullable()
   })
 
 
@@ -203,17 +202,17 @@ const EditCard = () => {
 
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('SAC Code', 'sacCode', true)}
+              {getRow('SAC Code', 'sacCode', false)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Professional Fee', 'sellingPrice', true)}
+              {getRow('Professional Fee', 'sellingPrice', false)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Tax Rate', 'taxGroupId', taxGroupOptions, true)}
+              {getSelectRow('Tax Rate', 'taxGroupId', taxGroupOptions, false)}
             </Col>
           </Row>
           {!isTaxApplicable &&

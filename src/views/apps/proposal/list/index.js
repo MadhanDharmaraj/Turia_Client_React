@@ -12,7 +12,7 @@ import { ChevronDown } from 'react-feather'
 import DataTable from 'react-data-table-component'
 
 // ** Reactstrap Imports
-import { Button, Input, Row, Col, Card, CardBody, Label } from 'reactstrap'
+import { Button, Input, Row, Col, Card } from 'reactstrap'
 
 // ** Store & Actions
 import { getData } from '../store'
@@ -21,7 +21,6 @@ import { useDispatch, useSelector } from 'react-redux'
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
-import { selectThemeColors } from '@utils'
 
 const CustomHeader = ({ handleFilter, value, handlePerPage, rowsPerPage }) => {
   return (
@@ -58,7 +57,7 @@ const CustomHeader = ({ handleFilter, value, handlePerPage, rowsPerPage }) => {
               type='text'
               value={value}
               onChange={e => handleFilter(e.target.value)}
-              placeholder='Search Invoice'
+              placeholder='Search Proposal'
             />
           </div>
         </Col>
@@ -78,13 +77,7 @@ const ProposalList = () => {
   const [sortColumn, setSortColumn] = useState('id')
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [currentStatus, setCurrentStatus] = useState({ id: 1, name: 'Active' })
-
-  const statusOptions = [
-    { id: '', name: 'Select Status' },
-    { id: 1, name: 'Active' },
-    { id: 2, name: 'Inactive' }
-  ]
+  const [currentStatus, setCurrentStatus] = useState({ id: 4, name: 'Draft' })
 
   // ** Bootstrap Checkbox Component
   const BootstrapCheckbox = forwardRef((props, ref) => (
@@ -201,9 +194,7 @@ const ProposalList = () => {
       return store.data
     } else if (store.data.length === 0 && isFiltered) {
       return []
-    } else {
-      return store.allData.slice(0, rowsPerPage)
-    }
+    } 
   }
 
   const handleSort = (column, sortDirection) => {
@@ -223,39 +214,6 @@ const ProposalList = () => {
 
   return (
     <div className='invoice-list-wrapper'>
-      <Card>
-        <CardBody>
-          <Row>
-            <Col md='4'>
-              <Label for='status-select'>Status</Label>
-              <Select
-                theme={selectThemeColors}
-                isClearable={false}
-                className='react-select'
-                classNamePrefix='select'
-                options={statusOptions}
-                value={currentStatus}
-                getOptionLabel={(option) => option.name}
-                getOptionValue={(option) => option.id}
-                onChange={async data => {
-                  setCurrentStatus(data)
-                  setBlock(true)
-                  await dispatch(
-                    getData({
-                      sort,
-                      sortColumn,
-                      q: searchTerm,
-                      page: currentPage,
-                      perPage: rowsPerPage,
-                      status: data.id
-                    })
-                  )
-                }}
-              />
-            </Col>
-          </Row>
-        </CardBody>
-      </Card>
       <Card>
         <div className='invoice-list-dataTable react-dataTable'>
           <DataTable

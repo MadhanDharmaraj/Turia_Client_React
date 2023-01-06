@@ -13,20 +13,24 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from "react"
 
+import { orgUserId, activeOrganizationid } from '@src/helper/sassHelper'
+const userId = orgUserId()
+const activeOrgId = activeOrganizationid()
+
 const CategoryAdd = (props) => {
   // ** States
   const dispatch = useDispatch()
   const schema = yup.object().shape({
+    organizationId : yup.string().default(activeOrgId),
+    createdBy : yup.string().default(userId),
     name: yup.string().required("Please Enter Category Name")
   })
 
   const { handleSubmit, control, reset, formState: { errors } } = useForm({
     resolver: yupResolver(schema),
-    defaultValues: {
-      organizationId: 1,
-      name: ''
-    }
+    defaultValues: schema.cast()
   })
+  
   const [formModal, setFormModal] = useState(false)
   const closeModal = () => {
     setFormModal(false)

@@ -15,6 +15,8 @@ import { MoreVertical, Trash2, Eye, Edit, CheckCircle, XCircle } from 'react-fea
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
 const MySwal = withReactContent(Swal)
+import { orgUserId } from '@src/helper/sassHelper'
+const userId = orgUserId()
 // ** Renders Client Columns
 const renderService = row => {
   return (<Avatar
@@ -135,7 +137,7 @@ export const columns = [
                 e.preventDefault()
                 const id = row.id
                 const status = 1
-                const obj = { id, status }
+                const obj = { id, status, updatedBy: userId }
                 store.dispatch(updateStatus(obj))
               }}>
                 <CheckCircle size={14} className='me-50' />
@@ -147,7 +149,7 @@ export const columns = [
                 e.preventDefault()
                 const id = row.id
                 const status = 2
-                const obj = { id, status }
+                const obj = { id, status, updatedBy: userId }
                 store.dispatch(updateStatus(obj))
               }}>
                 <XCircle size={14} className='me-50' />

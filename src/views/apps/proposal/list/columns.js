@@ -99,7 +99,7 @@ export const columns = [
     sortField: 'id',
     minWidth: '107px',
     // selector: row => row.id,
-    cell: row => <Link to={`/invoice/view/${row.id}`}>{`${row.uniqueno}`}</Link>
+    cell: row => <Link to={`/proposal/view/${row.id}`}>{`${row.uniqueno}`}</Link>
   },
   {
     sortable: true,

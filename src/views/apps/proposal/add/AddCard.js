@@ -160,9 +160,9 @@ const AddCard = () => {
     organizationGstin: yup.string().default(activeOrg.gstin),
     gstin: yup.string(),
     note: yup.string().default(noteText),
-    status: yup.number().default(1),
+    status: yup.number().default(4),
     calculateTaxes: yup.string(),
-    paymentStatus: yup.number().default(4),
+    paymentStatus: yup.number().default(5),
     rows: yup.array().of(
       yup.object().shape({
         serviceId: yup.number().required("Please Select Service Item"),
@@ -199,7 +199,7 @@ const AddCard = () => {
       invoiceItems[key].invoiceId = id
     })
     await dispatch(addInvoiceItems(invoiceItems))
-    navigate(`/invoice/view/${store.invoiceId}`)
+    navigate(`/proposal/view/${store.invoiceId}`)
   }
 
   const addItem = (() => {
@@ -426,7 +426,7 @@ const AddCard = () => {
                   </div>
                   <div className='invoice-number-date mt-md-0 mt-2'>
                     <div className='d-flex align-items-center justify-content-md-end mb-1'>
-                      <h4 className='invoice-title'>Invoice</h4>
+                      <span className='title'>Proposal:</span>
                       <InputGroup className='input-group-merge invoice-edit-input-group disabled'>
                         <InputGroupText>
                           <Hash size={15} />
@@ -441,7 +441,7 @@ const AddCard = () => {
                       </InputGroup>
                     </div>
                     <div className='d-flex align-items-center mb-1'>
-                      <span className='title'>Invoice Date:</span>
+                      <span className='title'>Proposal Date:</span>
                       <Controller
                         control={control}
                         name={`invoiceDate`}
@@ -482,8 +482,8 @@ const AddCard = () => {
               {/* Address and Contact */}
               <CardBody className='invoice-padding pt-0'>
                 <Row className='row-bill-to invoice-spacing'>
-                  <Col className='col-bill-to ps-0' xl='8'>
-                    <h6 className='invoice-to-title'>Invoice To:</h6>
+                  <Col className='col-bill-to ps-0' xl='6'>
+                    <h6 className='invoice-to-title'>Proposal To:</h6>
                     <div className='invoice-customer'>
                       <Controller
                         control={control}
@@ -523,6 +523,7 @@ const AddCard = () => {
                       </table>
                     </Col>
                   </Col>
+                  <Col className='col-bill-to ps-0' xl='2'></Col>
                   <Col className='pe-0 mt-xl-0 mt-2' xl='4'>
                     <h6 className='mb-2'>Payment Details:</h6>
                     <table>
@@ -556,7 +557,7 @@ const AddCard = () => {
                   </Col>
                 </Row>
                 <Row className='row-bill-to invoice-spacing'>
-                  <Col className='col-bill-to ps-0' xl='8'>
+                  <Col className='col-bill-to ps-0' xl='6'>
                     <h6 className='invoice-to-title mt-2'>Place Of Supply:</h6>
                     <div className='invoice-customer'>
                       <Controller
@@ -580,6 +581,7 @@ const AddCard = () => {
                     </div>
                     {(selectedClient.gstin !== '' && selectedClient.gstin !== undefined) && <div className='mt-1'> GSTIN : {selectedClient.gstin}</div>}
                   </Col>
+                  <Col className='col-bill-to ps-0' xl='2'></Col>
                   <Col className='pe-0 mt-xl-0 mt-2' xl='4'>
                     <table>
                       <tbody>
@@ -592,7 +594,7 @@ const AddCard = () => {
                                 name={`isRcmApplicable`}
                                 id='isRcmApplicable'
                                 render={({ }) => (
-                                  <Input type='switch' id='switch-success' defaultChecked />
+                                  <Input type='switch' id='switch-success'  />
                                 )}
                               />
                             </div></td>

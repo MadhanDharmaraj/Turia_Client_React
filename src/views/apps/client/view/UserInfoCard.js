@@ -45,12 +45,12 @@ const UserInfoCard = ({ selectedClient }) => {
             {selectedClient !== null ? (
               <ul className='list-unstyled'>
                 <li className='mb-75 row'>
-                  <span className='fw-bolder col-6'>Name:</span>
-                  <span className='col-6 text-end'>{selectedClient.contactpersonname}</span>
-                </li>
-                <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Business Name:</span>
                   <span className='col-6 text-end'>{selectedClient.name}</span>
+                </li>
+                <li className='mb-75 row'>
+                  <span className='fw-bolder col-6'>Conatct Person Name:</span>
+                  <span className='col-6 text-end'>{selectedClient.contactpersonname}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Email:</span>
@@ -96,7 +96,7 @@ const UserInfoCard = ({ selectedClient }) => {
               <ul className='list-unstyled'>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Currency:</span>
-                  <span className='col-6 text-end'>{selectedClient.name}</span>
+                  <span className='col-6 text-end'>{selectedClient.currenciescode}</span>
                 </li>
                 <li className='mb-75 row'>
                   <span className='fw-bolder col-6'>Place of Supply:</span>
