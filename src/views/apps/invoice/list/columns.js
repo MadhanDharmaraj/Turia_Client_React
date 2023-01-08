@@ -87,7 +87,7 @@ const deleteClientfun = (id) => {
 
 const dateFormat = (value) => {
 
-  return moment.unix(value).format("MMM DD, YYYY")
+  return moment(value, 'x').format("MMM DD, YYYY")
 
 }
 

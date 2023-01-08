@@ -63,7 +63,7 @@ export const addTaskConversation = createAsyncThunk('appTasks/addTaskConversatio
 
 export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
   await axios.post('/tasks/delete', { id, updatedBy :userId })
-  await dispatch(getData(getState().tasks.params))
+  await dispatch(getData(getState().task.params))
   return id
 })
 

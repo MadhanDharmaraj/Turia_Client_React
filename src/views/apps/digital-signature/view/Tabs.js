@@ -22,7 +22,7 @@ const UserTabs = ({ active, toggleTab }) => {
           </NavLink>
         </NavItem>
         <NavItem>
-          <NavLink active={active === '2'} onClick={() => toggleTab('2')}>
+          <NavLink active={active === 'dscnotes'} onClick={() => toggleTab('dscnotes')}>
             <Lock className='font-medium-3 me-50' />
             <span className='fw-bold'>Notes</span>
           </NavLink>
@@ -32,8 +32,8 @@ const UserTabs = ({ active, toggleTab }) => {
         <TabPane tabId='1'>
           <UserProjectsList />
         </TabPane>
-        <TabPane tabId='2'>
-          <Conversation />
+        <TabPane tabId='dscnotes'>
+          <Conversation tabId={active}/>
         </TabPane>
       </TabContent>
     </Fragment>

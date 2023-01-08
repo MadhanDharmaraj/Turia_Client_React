@@ -6,17 +6,11 @@ import { columns } from './columns'
 
 // ** Third Party Components
 import DataTable from 'react-data-table-component'
-import { ChevronDown, ExternalLink, Printer, FileText, File, Clipboard, Copy } from 'react-feather'
+import { ChevronDown } from 'react-feather'
 
 // ** Reactstrap Imports
 import {
-  Card,
-  CardTitle,
-  CardHeader,
-  DropdownMenu,
-  DropdownItem,
-  DropdownToggle,
-  UncontrolledButtonDropdown
+  Card
 } from 'reactstrap'
 
 // ** Store & Actions
@@ -27,7 +21,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import '@styles/react/apps/app-invoice.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 
-const TaskList = () => {
+const TaskList = (data) => {
   // ** Store Vars
   const dispatch = useDispatch()
   const store = useSelector(state => state.task)
@@ -41,17 +35,19 @@ const TaskList = () => {
   const [sortColumn, setSortColumn] = useState('id')
 
   useEffect(() => {
-    dispatch(
-      getData({
-        sort,
-        q: value,
-        sortColumn,
-        page: currentPage,
-        perPage: rowsPerPage,
-        status: statusValue
-      })
-    )
-  }, [dispatch, store.data.length])
+    if (data.tabId === 'clienttasklist') {
+      dispatch(
+        getData({
+          sort,
+          q: value,
+          sortColumn,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: statusValue
+        })
+      )
+    }
+  }, [dispatch, store.data.length, data.tabId])
 
   const dataToRender = () => {
     const filters = {
@@ -67,8 +63,6 @@ const TaskList = () => {
       return store.data.slice(0, rowsPerPage)
     } else if (store.data.length === 0 && isFiltered) {
       return []
-    } else {
-      return store.allData.slice(0, rowsPerPage)
     }
   }
 
@@ -86,41 +80,9 @@ const TaskList = () => {
       })
     )
   }
-console.log()
   return (
     <div className='invoice-list-wrapper'>
       <Card>
-        <CardHeader className='py-1'>
-          <CardTitle tag='h4'>Tasks</CardTitle>
-          <UncontrolledButtonDropdown>
-            <DropdownToggle color='secondary' outline caret>
-              <ExternalLink className='font-small-4 me-50' />
-              <span>Export</span>
-            </DropdownToggle>
-            <DropdownMenu end>
-              <DropdownItem className='w-100'>
-                <Printer className='font-small-4 me-50' />
-                <span>Print</span>
-              </DropdownItem>
-              <DropdownItem className='w-100'>
-                <FileText className='font-small-4 me-50' />
-                <span>CSV</span>
-              </DropdownItem>
-              <DropdownItem className='w-100'>
-                <File className='font-small-4 me-50' />
-                <span>Excel</span>
-              </DropdownItem>
-              <DropdownItem className='w-100'>
-                <Clipboard className='font-small-4 me-50' />
-                <span>PDF</span>
-              </DropdownItem>
-              <DropdownItem className='w-100'>
-                <Copy className='font-small-4 me-50' />
-                <span>Copy</span>
-              </DropdownItem>
-            </DropdownMenu>
-          </UncontrolledButtonDropdown>
-        </CardHeader>
         <div className='invoice-list-dataTable react-dataTable'>
           <DataTable
             noHeader

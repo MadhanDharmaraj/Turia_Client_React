@@ -5,13 +5,10 @@ import { Fragment } from 'react'
 import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
 
 // ** Icons Imports
-import { User, Lock, Bookmark, Bell, Link, FileText, MessageCircle, Clock } from 'react-feather'
+import { Bell, FileText, MessageCircle, Clock } from 'react-feather'
 
 // ** User Components
-import InvoiceList from './InvoiceList'
 import Conversation from './Conversation'
-import Connections from './Connections'
-import BillingPlanTab from './BillingTab'
 import UserTimeline from './UserTimeline'
 import TimeSheet from './TimeSheet'
 import Templates from './Templates'
@@ -27,7 +24,7 @@ const UserTabs = ({ active, toggleTab }) => {
           </NavLink>
         </NavItem>
         <NavItem>
-          <NavLink active={active === '2'} onClick={() => toggleTab('2')}>
+          <NavLink active={active === 'tasknotes'} onClick={() => toggleTab('tasknotes')}>
             <MessageCircle className='font-medium-3 me-50' />
             <span className='fw-bold'>Conversation</span>
           </NavLink>
@@ -49,8 +46,8 @@ const UserTabs = ({ active, toggleTab }) => {
         <TabPane tabId='1'>
           <Templates />
         </TabPane>
-        <TabPane tabId='2'>
-          <Conversation />
+        <TabPane tabId='tasknotes'>
+          <Conversation tabId={active}/>
         </TabPane>
         <TabPane tabId='3'>
           <TimeSheet />

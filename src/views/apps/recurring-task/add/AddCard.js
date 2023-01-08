@@ -258,7 +258,8 @@ const AddCard = () => {
       Invoicedata['invoiceDate'] = moment().startOf('day').format('x')
       Invoicedata['organizationId'] = activeOrgId
       Invoicedata['note'] = ''
-      Invoicedata['paymentStatus'] = 4
+      Invoicedata['paymentStatus'] = 5
+      Invoicedata['status'] = 4
       Invoicedata['paymentDue'] = moment().startOf('day').format('x')
 
       setInvoiceData(Invoicedata)

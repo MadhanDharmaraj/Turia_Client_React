@@ -21,18 +21,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import '@styles/react/apps/app-invoice.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
 
-const ConatctInfo = () => {
+const ConatctInfo = (data) => {
   // ** Store Vars
   const dispatch = useDispatch()
   const store = useSelector(state => state.client.clientInformations)
-  const {id}  = useParams()
+  const { id } = useParams()
   useEffect(() => {
-    dispatch(getConatctInfo(id))
-    
-  }, [])
+
+    if (data.tabId === 'contactInformation') {
+      dispatch(getConatctInfo(id))
+    }
+  }, [data.tabId])
 
   const dataToRender = () => {
-  
+
     return store
   }
 

@@ -3,16 +3,17 @@ import { Fragment } from 'react'
 import Notes from '@src/views/apps/notes/index.js'
 // ** Third Party Components
 import 'cleave.js/dist/addons/cleave-phone.us'
+import { useParams } from 'react-router-dom'
 
 // ** Images
-const ConversationTab = () => {
+const ConversationTab = (data) => {
   // ** Hook
   //** State */
- 
+  const { id } = useParams()
 
   return (
     <Fragment>
-      <Notes moduleName={'client'} moduleRefId={'1'} />
+      <Notes moduleName={'client'} moduleRefId={id} tabId={data.tabId} />
     </Fragment>
   )
 }

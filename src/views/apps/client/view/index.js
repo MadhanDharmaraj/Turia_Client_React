@@ -29,7 +29,7 @@ const ClientView = () => {
     dispatch(getClient(parseInt(id)))
   }, [dispatch])
 
-  const [active, setActive] = useState('1')
+  const [active, setActive] = useState('contactInformation')
 
   const toggleTab = tab => {
     if (active !== tab) {

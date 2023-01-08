@@ -13,6 +13,10 @@ import { MoreVertical, FileText, Trash2, Archive, Eye, Edit, CheckCircle, XCircl
 
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
+
+const MySwal = withReactContent(Swal)
 
 // ** Renders Client Columns
 const renderClient = row => {
@@ -26,6 +30,34 @@ const renderClient = row => {
     />
   )
 
+}
+
+const deletefn = (id) => {
+
+  return MySwal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    customClass: {
+      confirmButton: 'btn btn-primary',
+      cancelButton: 'btn btn-outline-danger ms-1'
+    },
+    buttonsStyling: false
+  }).then(async (result) => {
+    if (result.value) {
+      await store.dispatch(deleteTask(id))
+      MySwal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: 'Invoice has been deleted.',
+        customClass: {
+          confirmButton: 'btn btn-success'
+        }
+      })
+    }
+  })
 }
 
 const statusObj = [
@@ -114,22 +146,14 @@ export const columns = [
           <DropdownToggle tag='div' className='btn btn-sm'>
             <MoreVertical size={14} className='cursor-pointer' />
           </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <CheckCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Active</span>
-            </DropdownItem>
-            <DropdownItem tag='a' href='/' className='w-100' onClick={e => e.preventDefault()}>
-              <XCircle size={14} className='me-50' />
-              <span className='align-middle'>Mark as Inactive</span>
-            </DropdownItem>
+          <DropdownMenu>  
             <DropdownItem
               tag='a'
               href='/'
               className='w-100'
               onClick={e => {
                 e.preventDefault()
-                store.dispatch(deleteTask(row.id))
+                deletefn(row.id)
               }}
             >
               <Trash2 size={14} className='me-50' />

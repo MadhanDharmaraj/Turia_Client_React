@@ -32,7 +32,7 @@ const AddCard = () => {
 
   const schema = yup.object().shape({
     createdBy: yup.string().default(userId),
-    categoryId: yup.string().required("Please select a Category"),
+    categoryId: yup.string().nullable(),
     categoryType: yup.number().default(1),
     name: yup.string().required("Please Enter Service Name"),
     organizationId: yup.number().default(activeOrgId),
@@ -40,8 +40,8 @@ const AddCard = () => {
     sellingPrice: yup.string().nullable(),
     isTaxApplicable: yup.boolean().default(true),
     exemptionReasonId: yup.number().when(["isTaxApplicable"], { is: (isTaxApplicable) => !isTaxApplicable, then: yup.number().required('Please Select Exemption Reason') }).nullable(),
-    sacCode: yup.string().nullable()
-
+    sacCode: yup.string().nullable(),
+    description: yup.string().nullable()
   })
 
   const { handleSubmit, control, formState: { errors }, setValue } = useForm({
@@ -158,15 +158,14 @@ const AddCard = () => {
         <CardBody className='pb-0'>
           <Row>
             <Col md='6' className='mb-1'>
-              {getSelectRow('Category', 'categoryId', categoryOptions, true)}
+              {getRow('Name', 'name', true)}
             </Col>
           </Row>
           <Row>
             <Col md='6' className='mb-1'>
-              {getRow('Name', 'name', true)}
+              {getSelectRow('Category', 'categoryId', categoryOptions, false)}
             </Col>
           </Row>
-
           <Row>
             <Col md='6' className='mb-1'>
               {getRow('SAC Code', 'sacCode', false)}
@@ -192,7 +191,7 @@ const AddCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label required' for='description'>
+                <Label sm='3' size='lg' className='form-label' for='description'>
                   Description
                 </Label>
                 <Col sm='9'>

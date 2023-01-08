@@ -12,28 +12,43 @@ import {
   Label,
   ListGroup,
   ListGroupItem,
+  Col,
   Row
 } from 'reactstrap'
 
 // ** Third Party Components
 import 'cleave.js/dist/addons/cleave-phone.us'
-import { X, Heart, Paperclip } from 'react-feather'
+import { X, Paperclip, Edit, Trash2 } from 'react-feather'
 import Avatar from '@src/@core/components/avatar'
-import { getData, addNotes } from './store/index'
+import { getData, addNotes, deleteNotes, updateNotes } from './store/index'
 import { useDispatch, useSelector } from 'react-redux'
-
+import Swal from 'sweetalert2'
+import withReactContent from 'sweetalert2-react-content'
 import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
+import moment from 'moment'
 
 const activeOrgId = activeOrganizationid()
 const userId = orgUserId()
-
+const MySwal = withReactContent(Swal)
 // ** Images
 const Notes = props => {
   // ** Hook
-
-  const { moduleName, moduleRefId } = props
+  const { moduleName, moduleRefId, tabId } = props
 
   console.log(moduleName)
+
+  const renderClient = row => {
+
+    return (
+      <Avatar
+        initials
+        className='me-1'
+        color={'light-primary'}
+        content={row.username.charAt(0) || 'T'}
+      />
+    )
+
+  }
 
   const dispatch = useDispatch()
   //** State */
@@ -43,6 +58,51 @@ const Notes = props => {
 
   const store = useSelector(state => state.notes)
 
+  const deletefn = (id) => {
+
+    return MySwal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!',
+      customClass: {
+        confirmButton: 'btn btn-primary',
+        cancelButton: 'btn btn-outline-danger ms-1'
+      },
+      buttonsStyling: false
+    }).then(async (result) => {
+      if (result.value) {
+        await store.dispatch(deleteNotes(id))
+        MySwal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Invoice has been deleted.',
+          customClass: {
+            confirmButton: 'btn btn-success'
+          }
+        })
+      }
+    })
+  }
+
+  const editNote = (k) => {
+    setData(
+      data.map((obj, i) => {
+        if (i === k) {
+          return { ...obj, editFlag: true }
+        } else {
+          return { ...obj, editFlag: false }
+        }
+      })
+    )
+  }
+
+  const dateformat = (val) => {
+
+    return moment(val, 'x').format('h:m A')
+
+  }
   const { getRootProps, getInputProps } = useDropzone({
     multiple: true,
     onDrop: (acceptedFiles, rejectedFiles) => {
@@ -68,14 +128,30 @@ const Notes = props => {
     setFiles([...filtered])
   }
 
+  const setEditComment = (k, val) => {
+    setData(
+      data.map((obj, i) => {
+        if (i === k) {
+          return { ...obj, description: val }
+        }
+      })
+    )
+  }
+
+  const saveNote = async (obj) => {
+    if (obj.description !== '') {
+      await dispatch(updateNotes(obj))
+    }
+  }
+
   useEffect(async () => {
-    if (moduleRefId !== null) {
+    if (tabId === 'clientnotes' || tabId === 'tasknotes' || tabId === 'dscnotes') {
       await dispatch(getData(moduleRefId))
     }
-  }, [moduleRefId])
-  
+  }, [tabId])
+
   useEffect(() => {
-    setData(store.data)
+    setData(store.data || [])
   }, [store.data])
 
   const postComment = async () => {
@@ -84,12 +160,14 @@ const Notes = props => {
         organizationId: activeOrgId,
         createdBy: userId,
         updatedBy: userId,
-        comment,
-        attachment_ids: [],
-        modulerefernceid: moduleRefId,
+        description: comment,
+        attachmentIds: [],
+        moduleReferenceId: moduleRefId,
         moduleId: 1
       }
       await dispatch(addNotes(data))
+
+      setComment('')
     }
 
   }
@@ -98,7 +176,7 @@ const Notes = props => {
     <ListGroupItem key={`${file.name}-${index}`} className='d-flex align-items-center justify-content-between'>
       <div className='file-details d-flex align-items-center'>
         <div className='file-preview me-1'>
-          <img className='rounded' alt={file.name} src={URL.createObjectURL(file)} height='28' width='28' />
+          <Avatar />
         </div>
         <div>
           <p className='file-name mb-0'>{file.name}</p>
@@ -135,20 +213,38 @@ const Notes = props => {
 
           <ListGroup>{fileList}</ListGroup>
 
-          {data.map(() => {
+          {data.map((item, k) => {
             return (
-              <div className='d-flex align-items-start my-1'>
-                <Avatar className='mt-25 me-75' imgHeight='34' imgWidth='34' />
+              <div className='d-flex align-items-start my-1' key={k}>
+                {renderClient(item)}
                 <div className='profile-user-info w-100'>
                   <div className='d-flex align-items-center justify-content-between'>
-                    <h6 className='mb-0'>Madhan</h6>
-                    <a href='/' onClick={e => e.preventDefault()}>
-                      <Heart
-                        size={18} />
-                      <span className='align-middle ms-25 text-muted'>2</span>
-                    </a>
+                    <h6 className='mb-0'>{item.username}
+                      &nbsp;&nbsp;<span>{dateformat(item.createdon)}</span>
+                    </h6>
+                    {!item.editFlag &&
+                      <Col className='d-flex' md={1}>
+                        <Edit size={18} className='col-4 cursor-pointer' onClick={() => editNote(k)} />
+                        <Trash2 size={18} className='ms-1 col-4 cursor-pointer' onClick={() => deletefn(item.id)} />
+                      </Col>
+                    }
                   </div>
-                  <small>Test</small>
+                  {!item.editFlag &&
+                    <Row className='mt-1'>
+                      <small>{item.description}</small>
+                    </Row>
+                  }
+                  {item.editFlag &&
+                    <Row className='mt-2'>
+                      <Input value={item.description} onInput={(e) => { setEditComment(k, e.target.value) }} />
+
+                      <Col className='d-flex justify-content-end mt-1' >
+
+                        <Button size='sm' color='warning' outline onClick={() => editNote(-1)}>Cancel</Button>
+                        <Button size='sm' color='primary' className='ms-1' onClick={() => saveNote(item)} >Save</Button>
+                      </Col>
+                    </Row>
+                  }
                 </div>
               </div>
             )

@@ -46,7 +46,8 @@ const EditCard = () => {
     sellingPrice: yup.string().nullable(),
     isTaxApplicable: yup.boolean().default(true),
     exemptionReasonId: yup.number().when(["isTaxApplicable"], { is: (isTaxApplicable) => !isTaxApplicable, then: yup.number().required('Please Select Exemption Reason') }).nullable(),
-    sacCode: yup.string().nullable()
+    sacCode: yup.string().nullable(),
+    description : yup.string().nullable()
   })
 
 
@@ -225,7 +226,7 @@ const EditCard = () => {
           <Row>
             <Col md='6' className='mb-1'>
               <Row className='mb-1'>
-                <Label sm='3' size='lg' className='form-label required' for='description'>
+                <Label sm='3' size='lg' className='form-label' for='description'>
                   Description
                 </Label>
                 <Col sm='9'>
