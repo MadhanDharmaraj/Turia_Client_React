@@ -106,7 +106,7 @@ const Login = () => {
         if (data[key].length === 0) {
           setError(key, {
             type: 'manual',
-            message : `Please Enter a ${key}`
+            message: `Please Enter a ${key}`
           })
         }
       }
@@ -179,6 +179,8 @@ const Login = () => {
             </CardTitle>
             <CardText className='mb-2'>Please sign-in to your account and start the adventure</CardText>
             <Form className='auth-login-form mt-2' onSubmit={handleSubmit(onSubmit)}>
+
+              {errors['action'] && <p className='text-danger'>{errors['action']?.message}</p>}
               <div className='mb-1'>
                 <Label className='form-label' for='email'>
                   Email
