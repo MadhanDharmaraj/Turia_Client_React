@@ -12,7 +12,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 // ** Custom Components
 import Avatar from '@components/avatar'
-import { updateStatus, addTaskConversation } from '../store/index'
+import { updateStatus, addTaskConversation, startTimer, endTimer } from '../store/index'
 // ** Styles
 import { useDispatch } from 'react-redux'
 import '@styles/react/libs/react-select/_react-select.scss'
@@ -52,7 +52,7 @@ const UserInfoCard = ({ selectedTask }) => {
   const [setShow] = useState(false)
   const [reviewText, setReviewText] = useState('')
   const [reviewOption, setReviewOption] = useState('')
-
+  const [timerFlag, setTimerFlag] = useState(false)
   // ** Hook
   const {
     formState: { }
@@ -62,6 +62,35 @@ const UserInfoCard = ({ selectedTask }) => {
     }
   })
 
+  const taskStartTimer = async () => {
+
+    setTimerFlag(true)
+
+    const data = {
+      organizationId: activeOrgId,
+      taskId: id,
+      userId,
+      startTime: moment().unix()
+    }
+
+    await dispatch(startTimer(data))
+
+  }
+
+  const taskEndTimer = async () => {
+
+    setTimerFlag(false)
+
+    const data = {
+      organizationId: activeOrgId,
+      taskId: id,
+      userId,
+      endTime: moment().unix()
+    }
+
+    await dispatch(endTimer(data))
+
+  }
   // ** render user img
   const renderUserImg = () => {
     if (selectedTask !== null) {
@@ -201,8 +230,14 @@ const UserInfoCard = ({ selectedTask }) => {
           </div>
           <div className='border-bottom mb-1 mt-1 pb-50 align-items-center d-flex'>
             <span className='fw-bolder pb-50'>Details</span>
-            <Button className='ms-auto' color='success' size='sm'>
-              <Clock size={16} className='me-25'></Clock>Start Timer</Button>
+            {!timerFlag &&
+              <Button className='ms-auto' color='success' size='sm' onClick={() => taskStartTimer()}>
+                <Clock size={16} className='me-25'></Clock>Start Timer</Button>
+            }
+            {timerFlag &&
+              <Button className='ms-auto' color='danger' size='sm' onClick={() => taskEndTimer()}>
+                <Clock size={16} className='me-25' ></Clock>End Timer</Button>
+            }
           </div>
           <div className='info-container'>
             {selectedTask !== null ? (

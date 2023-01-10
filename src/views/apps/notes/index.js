@@ -145,7 +145,7 @@ const Notes = props => {
   }
 
   useEffect(async () => {
-    if (tabId === 'clientnotes' || tabId === 'tasknotes' || tabId === 'dscnotes') {
+    if (tabId === 'clientnotes' || tabId === 'tasknotes' || tabId === 'dscnotes' || tabId === 'servicetemplate') {
       await dispatch(getData(moduleRefId))
     }
   }, [tabId])
@@ -198,7 +198,7 @@ const Notes = props => {
             <Label className='form-check-label' for={`add-comment-`}>
               Add Comment
             </Label>
-            <Input id={`add-comment-`} type='textarea' rows='3' placeholder='Add Comment' onInput={(e) => setComment(e.target.value)} />
+            <Input id={`add-comment-`} type='textarea' rows='3' placeholder='Add Comment' value={comment} onInput={(e) => setComment(e.target.value)} />
           </fieldset>
 
           <input {...getInputProps()} />
@@ -231,7 +231,7 @@ const Notes = props => {
                   </div>
                   {!item.editFlag &&
                     <Row className='mt-1'>
-                      <small>{item.description}</small>
+                      <div>{item.description.replace(/(\\n)/g, "\n")}</div>
                     </Row>
                   }
                   {item.editFlag &&

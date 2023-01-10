@@ -2,12 +2,11 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import classnames from 'classnames'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 // ** Custom Components
 import { addClient, addContactInfo } from '../store'
 import axios from '@src/configs/axios/axiosConfig'
-
-import { X, Plus, Hash } from 'react-feather'
+import { X, Plus } from 'react-feather'
 import Select from 'react-select'
 import { useForm, useFieldArray, Controller } from "react-hook-form"
 import * as yup from "yup"
@@ -41,13 +40,16 @@ const AddCard = () => {
   const [clientInfo, setClientInfo] = useState([])
   const [contactId, setConatctId] = useState(null)
 
+
+  const store = useSelector(state => state.client)
+
   const schema = yup.object().shape({
     clientType: yup.number().default(2),
     createdBy: yup.string().default(userId),
     organization: yup.number().default(activeOrgId),
     uniqueIdentity: yup.string().nullable(),
     contactPersonName: yup.string().required("Please Enter a Contact Person Name"),
-    name: yup.string().when("clientType", { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }),
+    name: yup.string().when("clientType", { is: (clientType) => clientType === 2, then: yup.string().required("Please Enter Business Name.") }).default(''),
     contactNumber: yup.string().required("Please Enter Conatct Number").matches(phoneRegExp, { message: 'Phone number is not valid', excludeEmptyString: true }),
     email: yup.string().email("Please Enter valid Email").required("Please Enter valid Email"),
     businessEntity: yup.string().when("clientType", { is: (clientType) => clientType === 2, then: yup.string().required("Please Select Business Enity.") }),
@@ -55,6 +57,11 @@ const AddCard = () => {
     gstin: yup.string().required("Please Enter GSTIN No"),
     placeOfSupply: yup.string().required("Please select Place Of Supply"),
     currency: yup.string().default(3),
+    billingAddressLine1: yup.string().nullable(),
+    billingAddressLine2: yup.string().nullable(),
+    billingAddressCity: yup.string().nullable(),
+    billingAddressState: yup.number().nullable(),
+    billingAddressCountry: yup.number().nullable(),
     billingAddressZip: yup.string().matches(zipcodeExp, { message: 'Zip Code is not valid', excludeEmptyString: true }),
     contact_info: yup.array().of(
       yup.object().shape({
@@ -69,7 +76,7 @@ const AddCard = () => {
   })
 
 
-  const { handleSubmit, control, formState: { errors } } = useForm({
+  const { handleSubmit, control, formState: { errors }, setError } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
@@ -87,13 +94,26 @@ const AddCard = () => {
     }
   }
 
+  useEffect(() => {
+    if (store.clientErrors !== null) {
+
+      Object.keys(store.clientErrors).map((obj) => {
+        setError(obj, { type: 'custom', message: store.clientErrors[obj][0] })
+      })
+    }
+  }, [store.clientErrors])
+
   const onSubmit = async (data) => {
 
     const temp = data.contact_info
     setClientInfo(predata => ([...predata, ...temp]))
     delete data.contact_info
     const datatemp = await dispatch(addClient(data))
-    setConatctId(datatemp.payload.client.id)
+    if (datatemp.payload.client === undefined) {
+      return false
+    } else {
+      setConatctId(datatemp.payload.client.id)
+    }
 
   }
 
@@ -199,13 +219,16 @@ const AddCard = () => {
   }
 
   useEffect(() => {
-    getBusineessEntity()
-    getCountries()
-    getCurrency()
-    getGSTRegType()
-    getStates()
+    if (contactId === null) {
+      getBusineessEntity()
+      getCountries()
+      getCurrency()
+      getGSTRegType()
+      getStates()
 
-    addItem()
+      addItem()
+    }
+
     if (contactId !== null) {
       saveContactInfo(contactId)
     }

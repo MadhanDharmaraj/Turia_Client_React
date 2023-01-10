@@ -57,6 +57,11 @@ const EditCard = () => {
     gstin: yup.string().required("Please Enter GSTIN No"),
     placeOfSupply: yup.string().required("Please select Place Of Supply"),
     currency: yup.string(),
+    billingAddressLine1: yup.string().nullable(),
+    billingAddressLine2: yup.string().nullable(),
+    billingAddressCity: yup.string().nullable(),
+    billingAddressState: yup.number().nullable(),
+    billingAddressCountry: yup.number().nullable(),
     billingAddressZip: yup.string().matches(zipcodeExp, { message: 'Zip Code is not valid', excludeEmptyString: true }),
     contact_info: yup.array().of(
       yup.object().shape({

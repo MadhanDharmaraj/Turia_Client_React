@@ -24,6 +24,7 @@ const AccountTabs = ({ data }) => {
   // ** Hooks
   const dispatch = useDispatch()
   const [businessEntityIdOptions, setBusinessEntityIdOptions] = useState([])
+  const [businessTypesOptions, setBusinessTypesOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
   const [countryOptions, setCountryOptions] = useState([])
   const phoneRegExp = /^[0-9\- ]{10,10}$/
@@ -84,6 +85,13 @@ const AccountTabs = ({ data }) => {
     })
   }
 
+  const getBusineessTypes = () => {
+    axios.post('/businesstypes/dropdown').then(response => {
+      const arr = response.data
+      setBusinessTypesOptions(arr.businesstypes)
+    })
+  }
+
   const getCountries = () => {
     axios.post('/countries/list').then(response => {
       const arr = response.data
@@ -100,6 +108,7 @@ const AccountTabs = ({ data }) => {
 
   useEffect(async () => {
     getBusineessEntity()
+    getBusineessTypes()
     getCountries()
     getStates()
   }, [])
@@ -223,7 +232,7 @@ const AccountTabs = ({ data }) => {
                 {getSelectRow('Business Type', 'businessTypeId', businessEntityIdOptions, true)}
               </Col>
               <Col md='6'>
-                {getSelectRow('Business Entity', 'businessEntityId', businessEntityIdOptions, true)}
+                {getSelectRow('Business Entity', 'businessEntityId', businessTypesOptions, true)}
               </Col>
               <Col md='6' className='d-flex justify-content-between'>
                 <div className='form-switch form-check-success col-md-12 p-0'>

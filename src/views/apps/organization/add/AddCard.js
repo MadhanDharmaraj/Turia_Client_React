@@ -36,6 +36,7 @@ const Organization = ({ stepper }) => {
 
   const dispatch = useDispatch()
   const navigate = useNavigate({})
+  const [businessTypesOptions, setBusinessTypesOptions] = useState([])
   const [businessEntityIdOptions, setBusinessEntityIdOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
   const [countryOptions, setCountryOptions] = useState([])
@@ -81,6 +82,13 @@ const Organization = ({ stepper }) => {
     })
   }
 
+  const getBusineessTypes = () => {
+    axios.post('/businesstypes/dropdown').then(response => {
+      const arr = response.data
+      setBusinessTypesOptions(arr.businesstypes)
+    })
+  }
+
   const getCountries = () => {
     axios.post('/countries/list').then(response => {
       const arr = response.data
@@ -100,8 +108,8 @@ const Organization = ({ stepper }) => {
       userId: user.id,
       name: user.name,
       organizationId: org.id,
-      email : user.email,
-      userTypeId : user.accounttype 
+      email: user.email,
+      userTypeId: user.accounttype
     }
     await dispatch(createOrganizationUser(data))
     navigate(getHomeRouteForLoggedInUser(data.role))
@@ -109,14 +117,15 @@ const Organization = ({ stepper }) => {
 
   useEffect(() => {
     getBusineessEntity()
+    getBusineessTypes()
     getCountries()
     getStates()
 
     if (store.activeOrganization !== null) {
-      localStorage.setItem('activeOrganization',store.activeOrganization)
+      localStorage.setItem('activeOrganization', store.activeOrganization)
       const user = store.loginUser
       const org = store.activeOrganization
-     
+
       createOrgUser(user, org)
       toast(t => (
         <ToastContent t={t} name={data.name} />
@@ -202,7 +211,7 @@ const Organization = ({ stepper }) => {
             {getSelectRow('Business Type', 'businessTypeId', businessEntityIdOptions, true)}
           </Col>
           <Col md='6'>
-            {getSelectRow('Business Entity', 'businessEntityId', businessEntityIdOptions, true)}
+            {getSelectRow('Business Entity', 'businessEntityId', businessTypesOptions, true)}
           </Col>
           <Col md='6'>
             <Label className='form-label' for='pincode'>

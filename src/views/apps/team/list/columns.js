@@ -9,7 +9,7 @@ import { store } from '@store/store'
 import { getInvitations, deleteUser } from '../store'
 
 // ** Icons Imports
-import { MoreVertical, Trash2, Eye, Edit } from 'react-feather'
+import { MoreVertical, Trash2, Eye, Edit, Send } from 'react-feather'
 
 // ** Reactstrap Imports
 import { Badge, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, Col } from 'reactstrap'
@@ -114,7 +114,7 @@ export const columns = [
         <Col tag={Link} lg={4}
           to={`/team/edit/${row.id}`}
           onClick={() => store.dispatch(getInvitations(row.id))} >
-          <Edit
+          <Send
             className='cursor-pointer ms-1 mt-0' size={16} />
         </Col>
         <UncontrolledDropdown>
@@ -133,6 +133,18 @@ export const columns = [
             >
               <Trash2 size={14} className='me-50' />
               <span className='align-middle'>Delete</span>
+            </DropdownItem>
+            <DropdownItem
+              tag='a'
+              href='/'
+              className='w-100'
+              onClick={e => {
+                e.preventDefault()
+                store.dispatch(deleteUser(row.id))
+              }}
+            >
+              <Edit size={14} className='me-50' />
+              <span className='align-middle'>Edit</span>
             </DropdownItem>
           </DropdownMenu>
         </UncontrolledDropdown>

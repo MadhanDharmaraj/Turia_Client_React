@@ -62,9 +62,19 @@ export const addTaskConversation = createAsyncThunk('appTasks/addTaskConversatio
 })
 
 export const deleteTask = createAsyncThunk('appTasks/deleteTask', async (id, { dispatch, getState }) => {
-  await axios.post('/tasks/delete', { id, updatedBy :userId })
+  await axios.post('/tasks/delete', { id, updatedBy: userId })
   await dispatch(getData(getState().task.params))
   return id
+})
+
+export const startTimer = createAsyncThunk('appTasks/startTimer', async (data, { }) => {
+  await axios.post('/tasks/starttimer', data)
+  return ''
+})
+
+export const endTimer = createAsyncThunk('appTasks/endTimer', async (data, { }) => {
+  await axios.post('/tasks/endtimer', data)
+  return ''
 })
 
 export const appTasksSlice = createSlice({

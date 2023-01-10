@@ -24,7 +24,8 @@ export const addClient = createAsyncThunk('appClients/addClient', async (client,
     const response = await axios.post(`/clients/create`, client)
     return { client: response.data.clients }
   } catch (ex) {
-    return rejectWithValue(getExceptionPayload(ex))
+    console.log(ex.response)
+    return rejectWithValue(ex.response)
   }
 })
 
@@ -54,7 +55,7 @@ export const deleteClient = createAsyncThunk('appClients/deleteClient', async (i
   return id
 })
 
-export const deleteContactInfo = createAsyncThunk('appClients/deleteContactInfo', async (id, {}) => {
+export const deleteContactInfo = createAsyncThunk('appClients/deleteContactInfo', async (id, { }) => {
   await axios.post('/contactinformation/delete', { id, updatedBy: userId })
   return null
 })
@@ -74,6 +75,7 @@ export const appClientsSlice = createSlice({
     data: [],
     total: 1,
     params: {},
+    clientErrors: null,
     allData: [],
     selectedClient: null,
     clientId: null,
@@ -92,6 +94,9 @@ export const appClientsSlice = createSlice({
       })
       .addCase(addClient.fulfilled, (state, action) => {
         state.clientId = action.payload.client.id
+      })
+      .addCase(addClient.rejected, (state, action) => {
+        state.clientErrors = action.payload.data.errors
       })
       .addCase(getClient.fulfilled, (state, action) => {
         state.selectedClient = action.payload

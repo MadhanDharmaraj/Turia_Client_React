@@ -37,6 +37,7 @@ const Organization = ({ stepper }) => {
   const dispatch = useDispatch()
   const navigate = useNavigate({})
   const [businessEntityIdOptions, setBusinessEntityIdOptions] = useState([])
+  const [businessTypesOptions, setBusinessTypesOptions] = useState([])
   const [stateOptions, setStateOptions] = useState([])
   const [countryOptions, setCountryOptions] = useState([])
   const store = useSelector(state => state.register)
@@ -81,6 +82,13 @@ const Organization = ({ stepper }) => {
     })
   }
 
+  const getBusineessTypes = () => {
+    axios.post('/businesstypes/dropdown').then(response => {
+      const arr = response.data
+      setBusinessTypesOptions(arr.businesstypes)
+    })
+  }
+
   const getCountries = () => {
     axios.post('/countries/list').then(response => {
       const arr = response.data
@@ -109,6 +117,7 @@ const Organization = ({ stepper }) => {
   useEffect(async () => {
     if (store.verifyprocess) {
       getBusineessEntity()
+      getBusineessTypes()
       getCountries()
       getStates()
     }
@@ -224,7 +233,7 @@ const Organization = ({ stepper }) => {
             {getSelectRow('Business Type', 'businessTypeId', businessEntityIdOptions, true)}
           </Col>
           <Col md='6'>
-            {getSelectRow('Business Entity', 'businessEntityId', businessEntityIdOptions, true)}
+            {getSelectRow('Business Entity', 'businessEntityId', businessTypesOptions, true)}
           </Col>
           <Col md='6'>
             <Label className='form-label' for='pincode'>
