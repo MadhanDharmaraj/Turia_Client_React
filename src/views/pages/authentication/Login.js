@@ -71,7 +71,7 @@ const Login = () => {
 
   const getOrganization = async (data) => {
     const user = { userId: data.users.id }
-    const res = await axios.post('organizations/list', user)
+    const res = await axios.post('organizationusers/usersorganization', user)
     localStorage.setItem('activeOrganization', JSON.stringify(res.data.organizations[0]))
     navigate(getHomeRouteForLoggedInUser(data.role))
   }

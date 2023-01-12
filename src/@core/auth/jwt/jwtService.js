@@ -24,6 +24,11 @@ export default class JwtService {
           // ** eslint-disable-next-line no-param-reassign
           config.headers.Authorization = `${this.jwtConfig.tokenType} ${accessToken}`
         }
+        const orgId = this.getactiveOrganizationId()
+        // ** If token is present add it to request's Authorization Header
+        if (orgId) {
+          config.params.organizationId = orgId
+        }
         return config
       },
       error => Promise.reject(error)

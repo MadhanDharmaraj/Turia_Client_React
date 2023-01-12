@@ -58,13 +58,18 @@ const invitationRegister = () => {
       .catch((err) => { console.log(err) })
   }
 
+  const createOrgUser = async (data) => {
+    await dispatch(createOrganizationUser(data))
+  }
+
   const onSubmit = async (data) => {
     await dispatch(inviteregister(data))
 
     useJwt
       .login({ email: data.email, password: data.password })
-      .then(res => {
+      .then(async res => {
         const data = res.data
+        const user = res.data.users
         data.role = 'admin'
         data.ability = [
           {
@@ -72,8 +77,23 @@ const invitationRegister = () => {
             subject: 'all'
           }
         ]
-        dispatch(handleLogin(data))
+        await dispatch(handleLogin(data))
         ability.update(data.ability)
+
+        const OrgUser = {}
+        const fullname = `${invitaion.firstname} ${invitaion.lastname}`
+        OrgUser['name'] = fullname
+        OrgUser['email'] = invitaion.email
+        OrgUser['createBy'] = user.id
+        OrgUser['userId'] = user.id
+        OrgUser['email'] = invitaion.email
+        OrgUser['departmentId'] = invitaion.designationid
+        OrgUser['designationId'] = invitaion.departmentid
+        OrgUser['userTypeId'] = invitaion.usertypeid
+        OrgUser['organizationId'] = invitaion.organizationid
+        OrgUser['roleId'] = invitaion.roleid
+
+        createOrgUser(OrgUser)
 
         toast(t => (
           <ToastContent t={t} name={data.name} />
@@ -83,16 +103,13 @@ const invitationRegister = () => {
 
   }
 
-  const createOrgUser = async (data) => {
-    await dispatch(createOrganizationUser(data))
-  }
-
   useEffect(async () => {
     if (store.registerSuccess) {
       const user = store.loginUser
+      localStorage.setItem('activeOrganization', JSON.stringify(store.activeOrganization[0]))
       navigate(getHomeRouteForLoggedInUser(user.role))
     }
-  }, [store.registerSuccess])
+  }, [store.registerSuccess, store.activeOrganization])
 
   useEffect(async () => {
     if (store.loginUser !== null) {
@@ -106,7 +123,7 @@ const invitationRegister = () => {
       OrgUser['organizationId'] = invitaion.organizationid
       OrgUser['roleId'] = invitaion.roleid
 
-      createOrgUser(OrgUser)
+      //createOrgUser(OrgUser)
     }
     if (store.loginError !== null) {
       errors.email = store.loginError.email
