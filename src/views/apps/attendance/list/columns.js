@@ -49,7 +49,7 @@ export const columns = [
     minWidth: '138px',
     sortable: true,
     sortField: 'punchout',
-    cell: row => <span>{row.punchout ? dateFormat(row.punchout) : ''}</span>
+    cell: row => <span>{row.punchout ? dateFormat(row.punchout) : 0}</span>
   },
   {
     name: 'Running Time',
@@ -57,7 +57,7 @@ export const columns = [
     sortable: true,
     sortField: 'department',
     selector: row => row.department,
-    cell: row => <span className='text-capitalize'>{row.totalhours}</span>
+    cell: row => <span className='text-capitalize'>{row.totalhours || 0}</span>
   },
   {
     name: 'Entry Type',

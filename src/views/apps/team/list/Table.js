@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 import { columns } from './columns'
 
 // ** Store & Actions
-import { getInvitations } from '../store'
+import { invitationsList, userList } from '../store'
 import { useDispatch, useSelector } from 'react-redux'
 import Select from 'react-select'
 // ** Third Party Components
@@ -175,66 +175,123 @@ const UsersList = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortColumn, setSortColumn] = useState('id')
   const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [currentStatus, setCurrentStatus] = useState({ value: '1', label: 'Active', number: 0 })
+  const [currentStatus, setCurrentStatus] = useState({ value: '3', label: 'Invited', number: 0 })
 
   // ** Get data on mount
   useEffect(() => {
-    dispatch(
-      getInvitations({
-        sort,
-        sortColumn,
-        q: searchTerm,
-        page: currentPage,
-        perPage: rowsPerPage,        
-        status: currentStatus.value
-      })
-    )
+    if (currentStatus.value === '3') {
+      dispatch(
+        invitationsList({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: currentStatus.value
+        })
+      )
+    } else {
+      dispatch(
+        userList({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: currentStatus.value
+        })
+      )
+    }
+
   }, [dispatch, store.data.length, sort, sortColumn, currentPage])
 
   // ** Function in get data on page change
   const handlePagination = page => {
-    dispatch(
-      getInvitations({
-        sort,
-        sortColumn,
-        q: searchTerm,
-        perPage: rowsPerPage,
-        page: page.selected + 1,
-        status: currentStatus.value
-      })
-    )
+    if (currentStatus.value === '3') {
+      dispatch(
+        invitationsList({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          perPage: rowsPerPage,
+          page: page.selected + 1,
+          status: currentStatus.value
+        })
+      )
+    } else {
+      dispatch(
+        userList({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          perPage: rowsPerPage,
+          page: page.selected + 1,
+          status: currentStatus.value
+        })
+      )
+    }
+
     setCurrentPage(page.selected + 1)
   }
 
   // ** Function in get data on rows per page
   const handlePerPage = e => {
     const value = parseInt(e.currentTarget.value)
-    dispatch(
-      getInvitations({
-        sort,
-        sortColumn,
-        q: searchTerm,
-        perPage: value,
-        page: currentPage,
-        currentPlan: currentPlan.value
-      })
-    )
+
+    if (currentStatus.value === '3') {
+      dispatch(
+        invitationsList({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          perPage: value,
+          page: currentPage,
+          status: currentStatus.value
+        })
+      )
+    } else {
+      dispatch(
+        userList({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          perPage: value,
+          page: currentPage,
+          status: currentStatus.value
+        })
+      )
+    }
+
     setRowsPerPage(value)
   }
 
   // ** Function in get data on search query change
   const handleFilter = val => {
     setSearchTerm(val)
-    dispatch(
-      getInvitations({
-        sort,
-        q: val,
-        sortColumn,
-        page: currentPage,
-        perPage: rowsPerPage,
-        status: currentStatus.value
-      })
-    )
+
+    if (currentStatus.value === '3') {
+      dispatch(
+        invitationsList({
+          sort,
+          q: val,
+          sortColumn,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: currentStatus.value
+        })
+      )
+    } else {
+      dispatch(
+        userList({
+          sort,
+          q: val,
+          sortColumn,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: currentStatus.value
+        })
+      )
+    }
   }
 
   // ** Custom Pagination
@@ -275,14 +332,14 @@ const UsersList = () => {
       return store.data
     } else if (store.data.length === 0 && isFiltered) {
       return []
-    } 
+    }
   }
 
   const handleSort = (column, sortDirection) => {
     setSort(sortDirection)
     setSortColumn(column.sortField)
     dispatch(
-      getInvitations({
+      invitationsList({
         sort,
         sortColumn,
         q: searchTerm,
@@ -310,7 +367,7 @@ const UsersList = () => {
                 onChange={data => {
                   setCurrentStatus(data)
                   dispatch(
-                    getInvitations({
+                    invitationsList({
                       sort,
                       sortColumn,
                       q: searchTerm,
@@ -346,7 +403,7 @@ const UsersList = () => {
                 searchTerm={searchTerm}
                 rowsPerPage={rowsPerPage}
                 handleFilter={handleFilter}
-                handlePerPage={handlePerPage}                
+                handlePerPage={handlePerPage}
               />
             }
           />

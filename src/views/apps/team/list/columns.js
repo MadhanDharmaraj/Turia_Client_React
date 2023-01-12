@@ -6,7 +6,7 @@ import Avatar from '@components/avatar'
 
 // ** Store & Actions
 import { store } from '@store/store'
-import { getInvitations, deleteUser } from '../store'
+import { getInvitation, deleteUser, inviteMail } from '../store'
 
 // ** Icons Imports
 import { MoreVertical, Trash2, Eye, Edit, Send } from 'react-feather'
@@ -55,7 +55,7 @@ export const columns = [
           <Link
             to={`/team/view/${row.id}`}
             className='user_name text-truncate text-body'
-            onClick={() => store.dispatch(getInvitations(row.id))}
+            onClick={() => store.dispatch(getInvitation(row.id))}
           >
             <span className='fw-bolder'>{row.name}</span>
           </Link>
@@ -107,13 +107,12 @@ export const columns = [
       <div className='column-action d-flex align-items-center'>
         <Col tag={Link} lg={4}
           to={`/team/view/${row.id}`}
-          onClick={() => store.dispatch(getInvitations(row.id))}>
+          onClick={() => store.dispatch(getInvitation(row.id))}>
           <Eye
             className='cursor-pointer mt-0' size={16} />
         </Col>
-        <Col tag={Link} lg={4}
-          to={`/team/edit/${row.id}`}
-          onClick={() => store.dispatch(getInvitations(row.id))} >
+        <Col
+          onClick={() => store.dispatch(inviteMail(row.id))} >
           <Send
             className='cursor-pointer ms-1 mt-0' size={16} />
         </Col>
@@ -135,13 +134,9 @@ export const columns = [
               <span className='align-middle'>Delete</span>
             </DropdownItem>
             <DropdownItem
-              tag='a'
-              href='/'
+              tag={Link} lg={4}
+              to={`/team/edit/${row.id}`}
               className='w-100'
-              onClick={e => {
-                e.preventDefault()
-                store.dispatch(deleteUser(row.id))
-              }}
             >
               <Edit size={14} className='me-50' />
               <span className='align-middle'>Edit</span>

@@ -105,7 +105,8 @@ const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) 
   )
 }
 
-const UsersList = () => {
+const UsersList = (data) => {
+
   // ** Store Vars
   const dispatch = useDispatch()
   const store = useSelector(state => state.attendance)
@@ -128,18 +129,20 @@ const UsersList = () => {
 
   // ** Get data on mount
   useEffect(() => {
-    dispatch(
-      getData({
-        sort,
-        sortColumn,
-        q: searchTerm,
-        page: currentPage,
-        perPage: rowsPerPage,
-        status: currentStatus.value,
-        date: new Date(new Date().toLocaleDateString("en-US")).getTime()
-      })
-    )
-  }, [dispatch, store.data.length, sort, sortColumn, currentPage])
+    if (data.tabId === 'todayattendance') {
+      dispatch(
+        getData({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: currentStatus.value,
+          date: new Date(new Date().toLocaleDateString("en-US")).getTime()
+        })
+      )
+    }
+  }, [dispatch, store.data.length, sort, sortColumn, currentPage, data.tabId])
 
   // ** Function in get data on page change
   const handlePagination = page => {

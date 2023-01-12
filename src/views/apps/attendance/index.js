@@ -44,10 +44,10 @@ const TeamList = () => {
       </Nav>
       <TabContent activeTab={active}>
         <TabPane tabId='todayattendance'>
-          <Table />
+          <Table tabId={active} />
         </TabPane>
         <TabPane tabId='monthlysummary'>
-          <MonthlySummary />
+          <MonthlySummary tabId={active} />
         </TabPane>
       </TabContent>
     </div>

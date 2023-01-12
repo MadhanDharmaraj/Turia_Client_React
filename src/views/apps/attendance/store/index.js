@@ -8,8 +8,17 @@ export const getData = createAsyncThunk('appAttendance/getData', async params =>
   const response = await axios.post('/employeeattendances/list', params)
   return {
     params,
-    data: response.data.employeeattendances,
-    totalPages: response.data.total
+    data: response.data.employeeattendances.employeeattendances,
+    totalPages: response.data.employeeattendances.total
+  }
+})
+
+export const getMonthlySummaries = createAsyncThunk('appAttendance/getMonthlySummaries', async params => {
+  const response = await axios.post('/employeeattendances/ ', params)
+  return {
+    params,
+    data: response.data.employeeattendances.employeeattendances,
+    totalPages: response.data.employeeattendances.total
   }
 })
 
@@ -17,6 +26,7 @@ export const appAttendanceSlice = createSlice({
   name: 'appAttendance',
   initialState: {
     data: [],
+    monthlySummaries: [],
     total: 1,
     params: {}
   },
@@ -25,6 +35,11 @@ export const appAttendanceSlice = createSlice({
     builder
       .addCase(getData.fulfilled, (state, action) => {
         state.data = action.payload.data
+        state.params = action.payload.params
+        state.total = action.payload.totalPages
+      })
+      .addCase(getMonthlySummaries.fulfilled, (state, action) => {
+        state.monthlySummaries = action.payload.data
         state.params = action.payload.params
         state.total = action.payload.totalPages
       })

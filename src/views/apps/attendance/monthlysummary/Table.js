@@ -1,5 +1,5 @@
 // ** React Imports
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
 // ** Table Columns
 import { columns } from './columns'
@@ -106,7 +106,8 @@ const CustomHeader = ({ handlePerPage, rowsPerPage, handleFilter, searchTerm }) 
   )
 }
 
-const UsersList = () => {
+const UsersList = (data) => {
+
   // ** Store Vars
   const dispatch = useDispatch()
   const store = useSelector(state => state.users)
@@ -119,20 +120,22 @@ const UsersList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [currentStatus] = useState({ value: '', label: 'Select Status', number: 0 })
 
-  // // ** Get data on mount
-  // useEffect(() => {
-  //   dispatch(
-  //     getData({
-  //       sort,
-  //       sortColumn,
-  //       q: searchTerm,
-  //       page: currentPage,
-  //       perPage: rowsPerPage,
-  //       userId,
-  //       status: currentStatus.value
-  //     })
-  //   )
-  // }, [dispatch, store.data.length, sort, sortColumn, currentPage])
+  // ** Get data on mount
+  useEffect(() => {
+    if (data.tabId === 'monthlysummary') {
+      dispatch(
+        getData({
+          sort,
+          sortColumn,
+          q: searchTerm,
+          page: currentPage,
+          perPage: rowsPerPage,
+          userId,
+          status: currentStatus.value
+        })
+      )
+    }
+  }, [dispatch, store.data.length, sort, sortColumn, currentPage, data.tabId])
 
   // ** Function in get data on page change
   const handlePagination = page => {
