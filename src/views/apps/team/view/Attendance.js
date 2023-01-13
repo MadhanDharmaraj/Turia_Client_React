@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react'
 
 // ** Table Columns
-import { columns } from './columns'
-
+import { columns } from './attendance_columns'
+import ReactPaginate from 'react-paginate'
 // ** Third Party Components
 import DataTable from 'react-data-table-component'
 import { ChevronDown, ExternalLink, Printer, FileText, File, Clipboard, Copy } from 'react-feather'
@@ -20,42 +20,48 @@ import {
 } from 'reactstrap'
 
 // ** Store & Actions
-import { getData } from '@src/views/apps/invoice/store'
+import { attendaceList } from './store/index'
 import { useDispatch, useSelector } from 'react-redux'
 
 // ** Styles
 import '@styles/react/apps/app-invoice.scss'
 import '@styles/react/libs/tables/react-dataTable-component.scss'
+import { useParams } from 'react-router-dom'
 
-const InvoiceList = () => {
+const Attendance = (data) => {
   // ** Store Vars
   const dispatch = useDispatch()
-  const store = useSelector(state => state.invoice)
-
+  const store = useSelector(state => state.profile)
+  const { id } = useParams()
   // ** States
   const [value] = useState('')
+
   const [rowsPerPage] = useState(6)
-  const [currentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
   const [statusValue] = useState('')
-  const [sort, setSort] = useState('desc')
-  const [sortColumn, setSortColumn] = useState('id')
+  const [sort] = useState('desc')
+  const [sortColumn] = useState('punchin')
 
   useEffect(() => {
-    dispatch(
-      getData({
-        sort,
-        q: value,
-        sortColumn,
-        page: currentPage,
-        perPage: rowsPerPage,
-        status: statusValue
-      })
-    )
-  }, [dispatch, store.data.length])
+    if (data.tabId === 'attendance') {
+      dispatch(
+        attendaceList({
+          sort,
+          q: value,
+          sortColumn,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: statusValue,
+          userId: id
+        })
+      )
+    }
+  }, [dispatch, store.employeeAttendances.length, data.tabId])
 
   const dataToRender = () => {
     const filters = {
       status: statusValue,
+      userId: id,
       q: value
     }
 
@@ -63,27 +69,60 @@ const InvoiceList = () => {
       return filters[k].length > 0
     })
 
-    if (store.data.length > 0) {
-      return store.data.slice(0, rowsPerPage)
-    } else if (store.data.length === 0 && isFiltered) {
+    if (store.employeeAttendances.length > 0) {
+      return store.employeeAttendances.slice(0, rowsPerPage)
+    } else if (store.employeeAttendances.length === 0 && isFiltered) {
       return []
-    } else {
-      return store.allData.slice(0, rowsPerPage)
     }
   }
 
-  const handleSort = (column, sortDirection) => {
-    setSort(sortDirection)
-    setSortColumn(column.sortField)
+    // ** Get data on mount
+    useEffect(() => {
+      dispatch(
+        attendaceList({
+          sort,
+          q: value,
+          sortColumn,
+          page: currentPage,
+          perPage: rowsPerPage,
+          status: statusValue,
+          userId: id
+        })
+      )
+    }, [dispatch, store.data.length, currentPage])
+
+  const handlePagination = page => {
     dispatch(
-      getData({
+      attendaceList({
         q: value,
         page: currentPage,
-        sort: sortDirection,
         status: statusValue,
-        perPage: rowsPerPage,
-        sortColumn: column.sortField
+        userId: id,
+        perPage: rowsPerPage
       })
+    )
+    setCurrentPage(page.selected + 1)
+  }
+
+  const CustomPagination = () => {
+    const count = Number(Math.ceil(store.total / rowsPerPage))
+
+    return (
+      <ReactPaginate
+        previousLabel={''}
+        nextLabel={''}
+        pageCount={count || 1}
+        activeClassName='active'
+        forcePage={currentPage !== 0 ? currentPage - 1 : 0}
+        onPageChange={page => handlePagination(page)}
+        pageClassName={'page-item'}
+        nextLinkClassName={'page-link'}
+        nextClassName={'page-item next'}
+        previousClassName={'page-item prev'}
+        previousLinkClassName={'page-link'}
+        pageLinkClassName={'page-link'}
+        containerClassName={'pagination react-paginate justify-content-end my-2 pe-1'}
+      />
     )
   }
 
@@ -121,16 +160,17 @@ const InvoiceList = () => {
           </UncontrolledButtonDropdown>
         </CardHeader>
         <div className='invoice-list-dataTable react-dataTable'>
-          <DataTable
+        <DataTable
             noHeader
             sortServer
+            pagination
+            responsive
+            paginationServer
             columns={columns}
-            responsive={true}
-            onSort={handleSort}
-            data={dataToRender()}
             sortIcon={<ChevronDown />}
             className='react-dataTable'
-            defaultSortField='invoiceId'
+            paginationComponent={CustomPagination}
+            data={dataToRender()}
           />
         </div>
       </Card>
@@ -138,4 +178,4 @@ const InvoiceList = () => {
   )
 }
 
-export default InvoiceList
+export default Attendance

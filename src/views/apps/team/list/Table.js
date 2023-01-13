@@ -366,16 +366,29 @@ const UsersList = () => {
                 value={currentStatus}
                 onChange={data => {
                   setCurrentStatus(data)
-                  dispatch(
-                    invitationsList({
-                      sort,
-                      sortColumn,
-                      q: searchTerm,
-                      page: currentPage,
-                      status: data.value,
-                      perPage: rowsPerPage
-                    })
-                  )
+                  if (data.value === '3') {
+                    dispatch(
+                      invitationsList({
+                        sort,
+                        sortColumn,
+                        q: searchTerm,
+                        page: currentPage,
+                        status: data.value,
+                        perPage: rowsPerPage
+                      })
+                    )
+                  } else {
+                    dispatch(
+                      userList({
+                        sort,
+                        sortColumn,
+                        q: searchTerm,
+                        page: currentPage,
+                        status: data.value,
+                        perPage: rowsPerPage
+                      })
+                    )
+                  }
                 }}
               />
             </Col>

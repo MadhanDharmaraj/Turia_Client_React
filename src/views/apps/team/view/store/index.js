@@ -3,10 +3,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 
 // ** Axios Imports
 import axios from '@src/configs/axios/axiosConfig'
-import { orgUserId } from '@src/helper/sassHelper'
-const userId = orgUserId()
 
-export const invitationsList = createAsyncThunk('appUsers/invitationsList', async params => {
+export const getInvitations = createAsyncThunk('appUsers/getInvitations', async params => {
   const response = await axios.post('/invitations/list', params)
   return {
     params,
@@ -15,28 +13,14 @@ export const invitationsList = createAsyncThunk('appUsers/invitationsList', asyn
   }
 })
 
-export const getInvitation = createAsyncThunk('appUsers/getInvitation', async id => {
-  const response = await axios.post('/invitations/get', { id })
-  return response.data.invitation
-})
-
 export const inviteMail = createAsyncThunk('appUsers/inviteMail', async id => {
   await axios.post('/invitations/invitationmail', { id })
   return ''
 })
 
-export const userList = createAsyncThunk('appUsers/userList', async params => {
-  const response = await axios.post('/organizationusers/list', params)
-  return {
-    params,
-    data: response.data.organizationusers,
-    totalPages: response.data.total
-  }
-})
-
 export const getUser = createAsyncThunk('appUsers/getUser', async id => {
   const response = await axios.post('/organizationusers/get', { id })
-  return response.data.organizationuser
+  return response.data.organizationusers
 })
 
 export const addUser = createAsyncThunk('appUsers/addUser', async (user, { dispatch, getState }) => {
@@ -46,8 +30,28 @@ export const addUser = createAsyncThunk('appUsers/addUser', async (user, { dispa
 })
 
 export const deleteUser = createAsyncThunk('appUsers/deleteUser', async (id, { dispatch, getState }) => {
-  await axios.post('/invitations/delete', { id, updatedBy: userId })
-  await dispatch(invitationsList(getState().team.params))
+  await axios.delete('/apps/users/delete', { id })
+  await dispatch(getData(getState().team.params))
+  return id
+})
+
+export const attendaceList = createAsyncThunk('appUsers/attendaceList', async (params, { }) => {
+  const response = await axios.post('/employeeattendances/list', params)
+  return {
+    params,
+    data: response.data.employeeattendances.employeeattendances,
+    totalPages: response.data.employeeattendances.total
+  }
+})
+
+export const leaveList = createAsyncThunk('appUsers/leaveList', async (params, { }) => {
+  const response = await axios.post('/employeesleaves/list', params)
+  return response.data.employeesleaves
+})
+
+export const applyLeave = createAsyncThunk('appUsers/applyLeave', async (data, { dispatch }) => {
+  await axios.post('/employeesleaves/create', data)
+  await dispatch(leaveList())
   return id
 })
 
@@ -58,23 +62,28 @@ export const appUsersSlice = createSlice({
     total: 1,
     params: {},
     allData: [],
-    selectedUser: null
+    selectedUser: null,
+    employeeLeaves: [],
+    employeeAttendances: []
   },
   reducers: {},
   extraReducers: builder => {
     builder
-      .addCase(invitationsList.fulfilled, (state, action) => {
-        state.data = action.payload.data
-        state.params = action.payload.params
-        state.total = action.payload.totalPages
-      })
-      .addCase(userList.fulfilled, (state, action) => {
+      .addCase(getInvitations.fulfilled, (state, action) => {
         state.data = action.payload.data
         state.params = action.payload.params
         state.total = action.payload.totalPages
       })
       .addCase(getUser.fulfilled, (state, action) => {
         state.selectedUser = action.payload
+      })
+      .addCase(leaveList.fulfilled, (state, action) => {
+        state.employeeLeaves = action.payload
+      })
+      .addCase(attendaceList.fulfilled, (state, action) => {
+        state.employeeAttendances = action.payload.data
+        state.params = action.payload.params
+        state.total = action.payload.totalPages
       })
   }
 })

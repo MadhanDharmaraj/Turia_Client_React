@@ -12,9 +12,9 @@ import Attendance from './Attendance'
 import JobInfo from './JobInfo'
 import TimeSheet from './TimeSheet'
 import Leave from './Leave'
-import Permissions from './Permissions' 
+import Permissions from './Permissions'
 
-const UserTabs = ({ active, toggleTab }) => {
+const UserTabs = ({ active, toggleTab, selectedUser }) => {
   return (
     <Fragment>
       <Nav pills className='mb-2'>
@@ -51,7 +51,7 @@ const UserTabs = ({ active, toggleTab }) => {
       </Nav>
       <TabContent activeTab={active}>
         <TabPane tabId='1'>
-          <JobInfo />
+          <JobInfo selectedUser={selectedUser} tabId={active} />
         </TabPane>
         <TabPane tabId='2'>
           <Permissions />

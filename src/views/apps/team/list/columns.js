@@ -28,17 +28,16 @@ const renderClient = row => {
 
 }
 
-// ** Renders Role Columns
-const statusObj = [
+const userStatusObj = [
   '',
-  'light-warning',
-  'light-success'
+  'light-success',
+  'light-danger'
 ]
 
 const statusArr = [
   '',
   'Invited',
-  'Active'
+  'Inactive'
 ]
 
 export const columns = [
@@ -95,7 +94,7 @@ export const columns = [
     sortField: 'status',
     selector: row => row.status,
     cell: row => (
-      <Badge className='text-capitalize' color={statusObj[row.status]} pill>
+      <Badge className='text-capitalize' color={userStatusObj[row.status]} pill>
         {statusArr[row.status]}
       </Badge>
     )
