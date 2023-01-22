@@ -93,6 +93,7 @@
   "scripts": {
     "start": "PORT=3002 craco start",
     "build": "craco build && mv build ../Turia_Client_React_Live_App",
+    "buildv2": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject",
     "format": "prettier --write \"src/**/*.js\"",

@@ -104,7 +104,7 @@ const CardAttendance = () => {
   }, [])
 
   useEffect(() => {
-    if (Object.keys(store.data).length > 0) {
+    if (!!store && !!store.data && Object.keys(store.data).length > 0) {
       setLoggedIn(true)
       const temp = store.data
       setData(temp)
