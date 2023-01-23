@@ -1,32 +1,31 @@
 // ** React Imports
-import { useState, Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 // ** Reactstrap Imports
-import { Row, Col, Card, CardBody, Button, Badge, PopoverHeader, PopoverBody, Popover, Input, Label } from 'reactstrap'
-
+import { Row, Col, Card, CardBody, Badge, Table, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap'
+import classnames from 'classnames'
 // ** Third Party Components
+import Conversation from './Conversation'
+import UserTimeline from './UserTimeline'
+import TimeSheet from './TimeSheet'
+import Templates from './Templates'
 import Swal from 'sweetalert2'
-import { Clock, X } from 'react-feather'
-import { useForm } from 'react-hook-form'
+import { Bell, Briefcase, Calendar, Clock, Edit, Edit3, FileText, MessageCircle, Paperclip, User, X } from 'react-feather'
 import withReactContent from 'sweetalert2-react-content'
 
 // ** Custom Components
-import Avatar from '@components/avatar'
-import { updateStatus, addTaskConversation, startTimer, endTimer } from '../store/index'
+// import Avatar from '@components/avatar'
+// import { updateStatus, addTaskConversation, startTimer, endTimer } from '../store/index'
 // ** Styles
-import { useDispatch } from 'react-redux'
+//import { useDispatch } from 'react-redux'
 import '@styles/react/libs/react-select/_react-select.scss'
 import moment from 'moment'
-import { orgUserId, activeOrganizationid } from '@src/helper/sassHelper'
-const userId = orgUserId()
-const activeOrgId = activeOrganizationid()
-const statusColors = [
-  'light-success',
-  'light-warning',
-  'light-secondary'
-]
+import Select from 'react-select'
+// import { orgUserId, activeOrganizationid } from '@src/helper/sassHelper'
+// const userId = orgUserId()
+// const activeOrgId = activeOrganizationid()
 
-const statusArr = ["", "To Do", "In Progress", "Completed", "On Hold", "Cancelled", "Sent To Review", "Request Changes"]
+const statusOptions = [{ id: 1, name: 'To Do' }, { id: 2, name: 'Inprogress' }, { id: 3, name: 'Completed' }, { id: 4, name: 'On Hold' }, { id: 5, name: 'Cancelled' }, { id: 6, name: 'Sent to Review' }, { id: 7, name: 'Request to changes' }]
 
 const priorityColors = [
   '',
@@ -42,240 +41,183 @@ const priorityArr = [
   'High'
 ]
 
-
 const MySwal = withReactContent(Swal)
 
 const UserInfoCard = ({ selectedTask }) => {
-  // ** State
+
   const { id } = useParams()
-  const dispatch = useDispatch()
-  const [setShow] = useState(false)
-  const [reviewText, setReviewText] = useState('')
-  const [reviewOption, setReviewOption] = useState('')
-  const [timerFlag, setTimerFlag] = useState(false)
-  // ** Hook
-  const {
-    formState: { }
-  } = useForm({
-    defaultValues: {
-      username: selectedTask.servicename
-    }
-  })
+  console.log(id)
+  // ** State
+  const [active, setActive] = useState('tasknotes')
+  const [taskStatus, setTaskStatus] = useState(1)
 
-  const taskStartTimer = async () => {
-
-    setTimerFlag(true)
-
-    const data = {
-      organizationId: activeOrgId,
-      taskId: id,
-      userId,
-      startTime: moment().unix()
-    }
-
-    await dispatch(startTimer(data))
-
-  }
-
-  const taskEndTimer = async () => {
-
-    setTimerFlag(false)
-
-    const data = {
-      organizationId: activeOrgId,
-      taskId: id,
-      userId,
-      endTime: moment().unix()
-    }
-
-    await dispatch(endTimer(data))
-
-  }
-  // ** render user img
-  const renderUserImg = () => {
-    if (selectedTask !== null) {
-
-      return (
-
-        <Avatar
-          initials
-          color={'light-primary'}
-          className='rounded mt-3 mb-2'
-          content={selectedTask.servicename.charAt(0) || 'T'}
-          contentStyles={{
-            borderRadius: 0,
-            fontSize: 'calc(48px)',
-            width: '100%',
-            height: '100%'
-          }}
-          style={{
-            height: '110px',
-            width: '110px'
-          }}
-        />
-      )
+  const toggleTab = tab => {
+    if (active !== tab) {
+      setActive(tab)
     }
   }
-  const [popoverOpen, setPopoverOpen] = useState(false)
+
   const dateFormat = (value) => {
     return moment.unix(value).format("MMM DD, YYYY")
   }
 
-  const taskStatusUpdate = async (sts) => {
-    const data = {
-      status: sts || reviewOption,
-      updatedBy: userId,
-      id
+  useEffect(() => {
+    if (selectedTask !== null) {
+      setTaskStatus(selectedTask.taskstatus)
     }
-    await dispatch(updateStatus(data))
+  }, [selectedTask])
 
-    if (reviewText !== '') {
-      const conversation = {
-        taskId: id,
-        organizationId: activeOrgId,
-        attachmentIds: [],
-        comment: reviewText,
-        createdBy: userId
-      }
-      await dispatch(addTaskConversation(conversation))
-    }
-    setPopoverOpen(false)
-  }
 
   return (
     <Fragment>
+      <Row className='my-1'>
+        <Col className='d-flex justify-content-between'>
+          <div>
+            <span>By {selectedTask.createdBy}</span>&nbsp;|&nbsp; <span>
+              <Briefcase size={14} /> {selectedTask.servicename}
+            </span> &nbsp;|&nbsp;
+            <span> <MessageCircle size={14} /> 4 </span>
+            &nbsp;|&nbsp;
+            <span> <Paperclip size={14} /> 4 </span>
+            &nbsp;|&nbsp;
+            <span> <Clock size={14} /> </span>
+          </div>
+          <div>
+            <Edit size={16} className='ms-1 cursor-pointer' tag={Link} to={`/task/edit/${id}`} />
+            <X size={16} className='ms-1 cursor-pointer' tag={Link} to={`/task/list`} />
+          </div>
+        </Col>
+
+      </Row>
       <Card>
         <CardBody>
-          <div className='d-flex'>
-            <div>
-              <Badge color={statusColors[selectedTask.taskstatus]} className='text-capitalize'>
-                {statusArr[selectedTask.taskstatus]}
-              </Badge>
-            </div>
-            <div className='ms-auto'>
-              <Fragment >
-                {selectedTask.taskstatus !== '3' &&
-                  <Button color='primary' outline id='controlledPopover' size='sm' disabled={selectedTask.taskstatus === '3'}>
-                    Review Task
-                  </Button>
-                }
-                {selectedTask.taskstatus === '3' &&
-                  <Button color='primary' outline id='controlledPopover' size='sm' className='ms-1' >
-                    Re Open
-                  </Button>
-                }
 
-                <Popover placement='bottom'
-                  target='controlledPopover'
-                  isOpen={popoverOpen}
-                  toggle={() => setPopoverOpen(!popoverOpen)}
-                  style={{ width: '500px', background: '#ffffff' }}>
-                  <PopoverHeader>
-                    <div className='d-flex justify-content-between'>
-                      Review Task
-                      <X onClick={() => setPopoverOpen(false)} className='cursor-pointer' />
-                    </div>
-                  </PopoverHeader>
-
-                  <PopoverBody >
-                    <Row className='px-1'>
-                      <Input type='textarea' rows={6} cols={50} onInput={(e) => setReviewText(e.target.value)} />
-                    </Row>
-                    {(selectedTask.taskstatus === '1' || selectedTask.taskstatus === '2' || selectedTask.taskstatus === '7') &&
-                      <Button color='primary' size='sm' className='mt-1' onClick={() => { taskStatusUpdate(6) }}> Send To Review</Button>
-                    }
-                    {(selectedTask.taskstatus === '3' || selectedTask.taskstatus === '4' || selectedTask.taskstatus === '5') &&
-                      <Button color='primary' size='sm' className='mt-1' onClick={() => { taskStatusUpdate(2) }}> Re Open</Button>
-                    }
-                    {
-                      selectedTask.taskstatus === '6' &&
-                      <div>
-                        <Row className='my-1'>
-                          <Col>
-                            <Input type='radio' id="status_1" value={3} name="status" onChange={() => { setReviewOption(3) }} />
-                            <Label for="status_1" className='ms-1'>Approved</Label>
-                          </Col>
-                          <Label>Submit feedback and Mark as Complete.</Label>
-                        </Row>
-                        <Row className='mb-1'>
-                          <Col>
-                            <Input id="status_2" type='radio' value={7} name="status" onChange={() => { setReviewOption(7) }} />
-                            <Label for="status_2" className='ms-1'>Request Changes</Label>
-                          </Col>
-                          <Label>Submit feedback that must be addressed before Approval.</Label>
-                        </Row>
-                        <Button color='primary' size='sm' onClick={() => { taskStatusUpdate() }}> Submit Review</Button>
-                      </div>
-                    }
-                  </PopoverBody>
-                </Popover>
-              </Fragment>
-            </div>
-          </div>
-
-          <div className='user-avatar-section'>
-            <div className='d-flex align-items-center flex-column'>
-              {renderUserImg()}
-              <div className='d-flex flex-column align-items-center text-center'>
-                <div className='user-info'>
-                  <h4>{selectedTask !== null ? selectedTask.servicename : 'Eleanor Aguilar'}</h4>
-                  {selectedTask !== null ? (
-
-                    <span>{selectedTask.clientname}</span>
-
-                  ) : null}
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className='border-bottom mb-1 mt-1 pb-50 align-items-center d-flex'>
-            <span className='fw-bolder pb-50'>Details</span>
-            {!timerFlag &&
-              <Button className='ms-auto' color='success' size='sm' onClick={() => taskStartTimer()}>
-                <Clock size={16} className='me-25'></Clock>Start Timer</Button>
-            }
-            {timerFlag &&
-              <Button className='ms-auto' color='danger' size='sm' onClick={() => taskEndTimer()}>
-                <Clock size={16} className='me-25' ></Clock>End Timer</Button>
-            }
-          </div>
-          <div className='info-container'>
-            {selectedTask !== null ? (
-              <ul className='list-unstyled'>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Task ID:</span>
-                  <span>{selectedTask.uniqueidentity}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Service Name:</span>
-                  <span>{selectedTask.servicename}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Start Date:</span>
-                  <span>{dateFormat(selectedTask.startdate)}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>End Date:</span>
-                  <span>{dateFormat(selectedTask.enddate)}</span>
-                </li>
-                <li className='mb-75'>
-                  <span className='fw-bolder me-25'>Priority:</span>
-                  <Badge className='text-capitalize' color={priorityColors[selectedTask.priority]}>
-                    {priorityArr[selectedTask.priority]}
+          <Table responsive bordered>
+            <thead>
+              <tr >
+                <th colSpan='4'>Task Information</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Reviewer</td>
+                <td >
+                  <Badge color='light-primary' pill href='#'>
+                    <User size={14} />
+                    <span className='align-middle ms-50'>Madhan</span>
                   </Badge>
-                </li>
+                </td>
+                <td >
+                  Assignee
+                </td>
+                <td>
+                  <Badge color='light-primary' pill href='#'>
+                    <User size={14} />
+                    <span className='align-middle ms-50'>Kavin</span>
+                  </Badge>
+                </td>
+              </tr>
+              <tr>
+                <td>Status</td>
+                <td >
+                  <Select
+                    className={classnames('react-select')}
+                    classNamePrefix='select'
+                    options={statusOptions}
+                    getOptionLabel={(option) => option.name}
+                    onChange={(val) => { return val.id }}
+                    value={statusOptions.find(c => { return c.id === taskStatus })}
+                    getOptionValue={(option) => option.id}
+                  />
 
-              </ul>
-            ) : null}
-          </div>
-          <div className='d-flex justify-content-center pt-2'>
-            <Button color='primary' onClick={() => setShow(true)}>
-              Edit
-            </Button>
-            <Button className='ms-1' color='danger' outline tag={Link} to={`/task/list`}>
-              Cancel
-            </Button>
-          </div>
+                </td>
+                <td >
+                  Priority
+                </td>
+                <td> <Badge className='text-capitalize' color={priorityColors[selectedTask.priority]}>
+                  {priorityArr[selectedTask.priority]}
+                </Badge>.</td>
+              </tr>
+              <tr>
+                <td>Start Date</td>
+                <td >
+                  <div className='d-flex justify-content-between' >
+                    {dateFormat(selectedTask.startdate)}
+                    <Calendar size={16} />
+                  </div>
+                </td>
+                <td >
+                  End Date
+                </td>
+                <td>
+                  <div className='d-flex justify-content-between' >
+                    {dateFormat(selectedTask.enddate)}
+                    <Calendar size={16} />
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tag</td>
+                <td >
+                  <Badge color='primary' className='text-capitalize'>
+                    Professional Tax
+                  </Badge>
+                </td>
+                <td >
+                  Complete Percentage
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+            </tbody>
+          </Table>
+
+          <Row className='mt-1 ps-1'>
+            <Fragment>
+              <Nav pills className='mb-2'>
+                <NavItem>
+                  <NavLink active={active === 'tasknotes'} onClick={() => toggleTab('tasknotes')}>
+                    <MessageCircle className='font-medium-3 me-50' />
+                    <span className='fw-bold'>Comments</span>
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink active={active === '1'} onClick={() => toggleTab('1')}>
+                    <FileText className='font-medium-3 me-50' />
+                    <span className='fw-bold'>Templates</span>
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink active={active === '4'} onClick={() => toggleTab('4')}>
+                    <Bell className='font-medium-3 me-50' />
+                    <span className='fw-bold'>Checklist Trail</span>
+                  </NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink active={active === '3'} onClick={() => toggleTab('3')}>
+                    <Clock className='font-medium-3 me-50' />
+                    <span className='fw-bold'>Timesheet</span>
+                  </NavLink>
+                </NavItem>
+              </Nav>
+              <TabContent activeTab={active}>
+
+                <TabPane tabId='tasknotes'>
+                  <Conversation tabId={active} />
+                </TabPane>
+                <TabPane tabId='1'>
+                  <Templates />
+                </TabPane>
+                <TabPane tabId='4'>
+                  <UserTimeline />
+                </TabPane>
+                <TabPane tabId='3'>
+                  <TimeSheet />
+                </TabPane>
+              </TabContent>
+            </Fragment>
+          </Row>
         </CardBody>
       </Card>
     </Fragment>

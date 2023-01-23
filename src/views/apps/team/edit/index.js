@@ -1,5 +1,5 @@
 // ** Invoice Add Components
-import AddCard from './AddCard'
+import EditCard from './EditCard'
 
 // ** Reactstrap Imports
 import { Row, Col } from 'reactstrap'
@@ -13,7 +13,7 @@ const TeamEdit = () => {
     <div className='invoice-add-wrapper'>
       <Row className='invoice-add'>
         <Col xl={12} md={12} sm={12}>
-          <AddCard />
+          <EditCard />
         </Col>
       </Row>
     </div>

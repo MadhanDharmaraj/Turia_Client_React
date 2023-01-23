@@ -1,5 +1,5 @@
 // ** React Imports
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import classnames from 'classnames'
 // ** Third Party Components
 import RoleCards from './RoleCards'
@@ -9,7 +9,7 @@ import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
 import axios from '@src/configs/axios/axiosConfig'
 
-import { addUser, inviteMail } from '../store/index'
+import { addUser, inviteMail, getUser } from '../store/index'
 import { Row, Col, Card, Label, Button, CardBody, Input, FormFeedback } from 'reactstrap'
 
 // ** Styles
@@ -20,17 +20,17 @@ import '@styles/base/pages/app-invoice.scss'
 import { useEffect, useState } from 'react'
 import { activeOrganizationid, orgUserId } from '@src/helper/sassHelper'
 import moment from 'moment'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 const activeOrgId = activeOrganizationid()
 const userId = orgUserId()
-const AddCard = () => {
+const EditCard = () => {
 
   const dispatch = useDispatch()
   const navigate = useNavigate()
-
+  const { id } = useParams()
   // ** States
   const schema = yup.object().shape({
-    createdBy: yup.string().default(userId),
+    updatedBy: yup.string().default(userId),
     organizationId: yup.string().default(activeOrgId),
     firstName: yup.string().required("Please Enter a First Name"),
     lastName: yup.string().required("Please Enter a Last Name"),
@@ -48,25 +48,14 @@ const AddCard = () => {
     invitedBy: yup.string().default(userId)
   })
 
-  const { handleSubmit, control, formState: { errors } } = useForm({
+  const { handleSubmit, control, formState: { errors }, reset } = useForm({
     resolver: yupResolver(schema),
     defaultValues: schema.cast()
   })
-
+  const store = useSelector(state => state.team)
   const [departmentOptions, setDepartmentOptions] = useState([])
   const [designationOptions, setDesignationOptions] = useState([])
   const [rolesOptions, setRolesOptions] = useState([])
-  const [permissions, setPermissions] = useState([])
-  const [roleId, setRoleId] = useState('')
-
-  const getRolePermissions = () => {
-    axios.post('/rolepermissions/list', { roleId }).
-      then((res) => {
-        setPermissions(res.data.rolepermissions[0].permissions.split(','))
-      }).catch(() => { })
-  }
-
-  console.log(permissions)
 
   const getDesignation = () => {
     axios.post('/designations/dropdown').
@@ -86,19 +75,35 @@ const AddCard = () => {
     axios.post('/roles/dropdown').then((res) => { setRolesOptions(res.data.roles) }).catch(() => { })
   }
 
-  useEffect(() => {
-    getDesignation()
-    getDepartment()
-    getRoles()
+  useEffect(async () => {
+    await getDesignation()
+    await getDepartment()
+    await getRoles()
+
+    await dispatch(getUser(id))
+
   }, [])
 
-  useEffect(() => {
-    if (roleId !== '') {
-      getRolePermissions()
+  useEffect(async () => {
+    if (store.selectedUser !== null) {
+      const data = store.selectedUser
+      const fullname = data.name.split(' ')
+      reset({
+        updatedBy: userId,
+        organizationId: activeOrgId,
+        firstName: fullname[0],
+        lastName: fullname[1],
+        name: data.name,
+        contactNo: data.contactno || '',
+        email: data.email,
+        designationId: (data.designationid),
+        roleId: (data.roleid),
+        departmentId: (data.departmentid)
+      })
     }
-  }, [roleId])
+  }, [store.selectedUser])
 
-  const invitemail = async (id) => {
+  const invitemail = async () => {
     await dispatch(inviteMail(id))
     navigate(`/team/view/${id}`)
   }
@@ -199,15 +204,14 @@ const AddCard = () => {
                     control={control}
                     name="designationId"
                     id="designationId"
-                    render={({ field, value, ref }) => (
+                    render={({ field, ref }) => (
                       <Select
                         {...field}
                         inputRef={ref}
                         className={classnames('react-select', { 'is-invalid': errors.designationId })}
-                        {...field}
                         classNamePrefix='select'
                         options={designationOptions}
-                        value={designationOptions.find(c => { return c.id === value })}
+                        value={designationOptions.find(c => { return c.id === field.value })}
                         onChange={val => field.onChange(val.id)}
                         getOptionLabel={(option) => option.name}
                         getOptionValue={(option) => option.id}
@@ -230,16 +234,15 @@ const AddCard = () => {
                     control={control}
                     name="roleId"
                     id="roleId"
-                    render={({ field, value, ref }) => (
+                    render={({ field, ref }) => (
                       <Select
                         {...field}
                         inputRef={ref}
                         className={classnames('react-select', { 'is-invalid': errors.roleId })}
-                        {...field}
                         classNamePrefix='select'
                         options={rolesOptions}
-                        value={rolesOptions.find(c => { return c.id === value })}
-                        onChange={val => { field.onChange(val.id); setRoleId(val.id) }}
+                        value={rolesOptions.find(c => { return c.id === field.value })}
+                        onChange={val => field.onChange(val.id)}
                         getOptionLabel={(option) => option.name}
                         getOptionValue={(option) => option.id}
                       />
@@ -262,15 +265,14 @@ const AddCard = () => {
                     control={control}
                     name="departmentId"
                     id="departmentId"
-                    render={({ field, value, ref }) => (
+                    render={({ field, ref }) => (
                       <Select
                         {...field}
                         inputRef={ref}
                         className={classnames('react-select', { 'is-invalid': errors.departmentId })}
-                        {...field}
                         classNamePrefix='select'
                         options={departmentOptions}
-                        value={departmentOptions.find(c => { return c.id === value })}
+                        value={departmentOptions.find(c => { return c.id === field.value })}
                         onChange={val => field.onChange(val.id)}
                         getOptionLabel={(option) => option.name}
                         getOptionValue={(option) => option.id}
@@ -309,4 +311,4 @@ const AddCard = () => {
   )
 }
 
-export default AddCard
+export default EditCard

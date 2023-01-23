@@ -100,7 +100,7 @@ const Notes = props => {
 
   const dateformat = (val) => {
 
-    return moment(val, 'x').format('h:m A')
+    return moment(val, 'x').format('YYYY, MMM-d h:m A')
 
   }
   const { getRootProps, getInputProps } = useDropzone({
@@ -219,24 +219,26 @@ const Notes = props => {
                 {renderClient(item)}
                 <div className='profile-user-info w-100'>
                   <div className='d-flex align-items-center justify-content-between'>
-                    <h6 className='mb-0'>{item.username}
-                      &nbsp;&nbsp;<span>{dateformat(item.createdon)}</span>
-                    </h6>
-                    {!item.editFlag &&
-                      <Col className='d-flex' md={1}>
-                        <Edit size={18} className='col-4 cursor-pointer' onClick={() => editNote(k)} />
-                        <Trash2 size={18} className='ms-1 col-4 cursor-pointer' onClick={() => deletefn(item.id)} />
-                      </Col>
-                    }
+                    <h6 className='mb-0'>{item.username}</h6>
                   </div>
                   {!item.editFlag &&
                     <Row className='mt-1'>
                       <div>{item.description.replace(/(\\n)/g, "\n")}</div>
+                      <div className='d-flex mt-1'>
+                        <span className='text-sm'>{dateformat(item.createdon)}</span>
+                        &nbsp;&nbsp;
+                        {!item.editFlag &&
+                          <Col className='d-flex' md={1}>
+                            <span className='text-primary cursor-pointer' onClick={() => editNote(k)} >. Edit</span> &nbsp;&nbsp;
+                            <span className='text-danger cursor-pointer' onClick={() => deletefn(item.id)} >. Delete</span>
+                          </Col>
+                        }
+                      </div>
                     </Row>
                   }
                   {item.editFlag &&
                     <Row className='mt-2'>
-                      <Input value={item.description} onInput={(e) => { setEditComment(k, e.target.value) }} />
+                      <Input type='textarea' roes='3' value={item.description} onInput={(e) => { setEditComment(k, e.target.value) }} />
 
                       <Col className='d-flex justify-content-end mt-1' >
 

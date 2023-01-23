@@ -50,7 +50,7 @@ const AddCard = () => {
     invoiceId: yup.number().default(0),
     startDate: yup.string().required('Please Select Start Date'),
     endDate: yup.string().required('Please Select End Date'),
-    recurringFlag : yup.boolean().default(false),
+    recurringFlag: yup.boolean().default(false),
     priority: yup.string().required("Please select a Priority"),
     invoiceFlag: yup.boolean().default(false),
     invoiceItems: yup.array().of(
@@ -83,14 +83,13 @@ const AddCard = () => {
     { id: 3, name: "High" }
   ]
 
-  const [assigneeUserOptions, setAssigneeUserOptions] = useState([{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }])
-  const [reviewerUserOptions, setReviewerUserOptions] = useState([{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }])
-  const userOptions = [{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }]
+  const [assigneeUserOptions, setAssigneeUserOptions] = useState([])
+  const [reviewerUserOptions, setReviewerUserOptions] = useState([])
 
   const dispatch = useDispatch()
   const [clientOptions, setClientOptions] = useState([])
   const [serviceOptions, setServiceOptions] = useState([])
-  //const [userOptions, setUserOptions] = useState([])
+  const [userOptions, setUserOptions] = useState([])
   const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
   const [invoiceFlag, setinvoiceFlag] = useState(false)
@@ -202,6 +201,18 @@ const AddCard = () => {
     setSelectedClient(res.payload)
   }
 
+  const getOrganizationUsers = async () => {
+    axios.post('/organizationusers/list').then(response => {
+      const arr = response.data
+      setReviewerUserOptions(arr.organizationusers)
+      setAssigneeUserOptions(arr.organizationusers)
+      setUserOptions(arr.organizationusers)
+    }).catch((err) => {
+      console.log(err)
+    })
+
+  }
+
   const getTaxValue = (taxType) => {
     const data = {
       type: taxType
@@ -223,7 +234,7 @@ const AddCard = () => {
       Invoicedata['billingAddressCity'] = selectedClient.billingaddresscity
       Invoicedata['billingAddressLine1'] = selectedClient.billingaddressline1
       Invoicedata['billingAddressLine2'] = selectedClient.billingaddressline1
-      Invoicedata['billingAddressState'] = selectedClient.billingaddressstatesname
+      Invoicedata['billingAddressState'] = selectedClient.billingaddressstate
       Invoicedata['billingAddressZipCode'] = selectedClient.billingaddresszip
       Invoicedata['billingCurrencyId'] = parseInt(selectedClient.currencyid)
       Invoicedata['billingCurrencySymbol'] = selectedClient.currenciessymbol
@@ -392,6 +403,7 @@ const AddCard = () => {
     getClients()
     getServices()
     getTaxGroups()
+    getOrganizationUsers()
     getExemptionReason()
   }, [])
 
@@ -622,7 +634,7 @@ const AddCard = () => {
                         value={field.value}
                         onChange={(date, dateStr) => { field.onChange(dateStr) }}
                         options={{ altInput: true, altFormat: "F j, Y", dateFormat: "U" }}
-                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.startDate })}  />
+                        className={classnames('due-date-picker', { 'flatpickr-input is-invalid': errors.startDate })} />
                     )}
                   />
 

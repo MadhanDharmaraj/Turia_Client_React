@@ -65,14 +65,13 @@ const EditCard = () => {
     { id: 3, name: "High" }
   ]
 
-  const [assigneeUserOptions, setAssigneeUserOptions] = useState([{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }])
-  const [reviewerUserOptions, setReviewerUserOptions] = useState([{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }])
-  const userOptions = [{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }]
+  const [assigneeUserOptions, setAssigneeUserOptions] = useState([])
+  const [reviewerUserOptions, setReviewerUserOptions] = useState([])
 
   const dispatch = useDispatch()
   const [clientOptions, setClientOptions] = useState([])
   const [serviceOptions, setServiceOptions] = useState([])
-  //const [userOptions, setUserOptions] = useState([])
+  const [userOptions, setUserOptions] = useState([])
 
   const [invoiceFlag, setinvoiceFlag] = useState(false)
   const [taskParticipants, seTaskParticipants] = useState([])
@@ -125,6 +124,18 @@ const EditCard = () => {
     })
   }
 
+  const getOrganizationUsers = async () => {
+    axios.post('/organizationusers/list').then(response => {
+      const arr = response.data
+      setReviewerUserOptions(arr.organizationusers)
+      setAssigneeUserOptions(arr.organizationusers)
+      setUserOptions(arr.organizationusers)
+    }).catch((err) => {
+      console.log(err)
+    })
+
+  }
+
   const getServices = () => {
     axios.post('/services/dropdown').then(response => {
       const arr = response.data
@@ -138,6 +149,7 @@ const EditCard = () => {
 
   useEffect(() => {
     getClients()
+    getOrganizationUsers()
     getServices()
   }, [])
 

@@ -87,14 +87,13 @@ const AddCard = () => {
     { id: 2, name: "Yearly" }
   ]
 
-  const [assigneeUserOptions, setAssigneeUserOptions] = useState([{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }])
-  const [reviewerUserOptions, setReviewerUserOptions] = useState([{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }])
-  const userOptions = [{ id: 1, name: 'Madhan' }, { id: 2, name: 'Kavin' }, { id: 3, name: 'Akhalya' }]
+  const [assigneeUserOptions, setAssigneeUserOptions] = useState([])
+  const [reviewerUserOptions, setReviewerUserOptions] = useState([])
 
   const dispatch = useDispatch()
   const [clientOptions, setClientOptions] = useState([])
   const [serviceOptions, setServiceOptions] = useState([])
-  //const [userOptions, setUserOptions] = useState([])
+  const [userOptions, setUserOptions] = useState([])
   const [exemptionReasonOptions, setExemptionReasonOptions] = useState([])
   const [taxGroupOptions, setTaxGroupOptions] = useState([])
   const [invoiceFlag, setinvoiceFlag] = useState(false)
@@ -201,6 +200,18 @@ const AddCard = () => {
     })
   }
 
+  const getOrganizationUsers = async () => {
+    axios.post('/organizationusers/list').then(response => {
+      const arr = response.data
+      setReviewerUserOptions(arr.organizationusers)
+      setAssigneeUserOptions(arr.organizationusers)
+      setUserOptions(arr.organizationusers)
+    }).catch((err) => {
+      console.log(err)
+    })
+
+  }
+
   const getClientData = async (id) => {
     const res = await dispatch(getClient(id))
     setSelectedClient(res.payload)
@@ -227,7 +238,7 @@ const AddCard = () => {
       Invoicedata['billingAddressCity'] = selectedClient.billingaddresscity
       Invoicedata['billingAddressLine1'] = selectedClient.billingaddressline1
       Invoicedata['billingAddressLine2'] = selectedClient.billingaddressline1
-      Invoicedata['billingAddressState'] = selectedClient.billingaddressstatesname
+      Invoicedata['billingAddressState'] = selectedClient.billingaddressstate
       Invoicedata['billingAddressZipCode'] = selectedClient.billingaddresszip
       Invoicedata['billingCurrencyId'] = parseInt(selectedClient.currencyid)
       Invoicedata['billingCurrencySymbol'] = selectedClient.currenciessymbol
@@ -397,6 +408,7 @@ const AddCard = () => {
     getServices()
     getTaxGroups()
     getExemptionReason()
+    getOrganizationUsers()
   }, [])
 
   // handle onChange event of the dropdown
